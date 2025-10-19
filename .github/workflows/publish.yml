@@ -1,0 +1,62 @@
+name: Publish NuGet
+
+on:
+  push:
+    tags:
+      - 'v*' # Publica apenas quando um novo tag de versão é criado
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Instalar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Extrair versão da tag
+        id: get_version
+        run: echo "PACKAGE_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Atualizar versão nos csproj
+        run: |
+          for csproj_file in $(find . -name "*.csproj"); do
+            sed -i "s|<Version>.*</Version>|<Version>${PACKAGE_VERSION}</Version>|" "$csproj_file"
+          done
+
+      - name: Restaurar dependências
+        run: |
+          for csproj_file in $(find . -name "*.csproj"); do
+            dotnet restore "$csproj_file"
+          done
+
+      - name: Build em Release
+        run: |
+          for csproj_file in $(find . -name "*.csproj"); do
+            dotnet build "$csproj_file" --configuration Release --no-restore
+          done
+
+      - name: Gerar pacotes NuGet
+        run: |
+          mkdir -p ./nupkg
+          for csproj_file in $(find . -name "*.csproj"); do
+            dotnet pack "$csproj_file" --configuration Release --no-build --output ./nupkg
+          done
+
+      - name: Publicar no NuGet
+        run: |
+          for nupkg in ./nupkg/*.nupkg; do
+            dotnet nuget push "$nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+          done
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish to GitHub Packages
+        run: |
+          for nupkg in ./nupkg/*.nupkg; do
+            dotnet nuget push "$nupkg" --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ secrets.GITHUB_TOKEN }}
+          done

@@ -1,0 +1,9 @@
+<Project>
+	<PropertyGroup>
+		<LangVersion>13.0</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<AdditionalFiles Include=".editorconfig" />
+	</ItemGroup>
+</Project>

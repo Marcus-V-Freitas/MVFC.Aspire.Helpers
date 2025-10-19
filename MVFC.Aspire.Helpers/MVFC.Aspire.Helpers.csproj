@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsAspireSharedProject>true</IsAspireSharedProject>
+		<Version>0.0.0</Version>
+		<Authors>Marcus Vinicius de Freitas Costa</Authors>
+		<Description>Conjunto de helpers para projetos .NET Aspire, incluindo integrações com Google Pub/Sub, CloudStorage e MongoDb (com ReplicaSets).</Description>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<RepositoryUrl></RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageProjectUrl></PackageProjectUrl>
+		<PackageTags>aspire;dotnet;helpers;pubsub;google;mongo;cloudstorage;aspire</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<IsPackable>true</IsPackable>
+		<PackageIcon>icon.png</PackageIcon>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="icon.png" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="Aspire.Hosting" Version="9.5.1" />
+		<PackageReference Include="Google.Cloud.PubSub.V1" Version="3.28.0" />
+	</ItemGroup>
+
+</Project>
