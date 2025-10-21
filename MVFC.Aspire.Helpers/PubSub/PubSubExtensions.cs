@@ -1,8 +1,8 @@
 ﻿namespace MVFC.Aspire.Helpers.PubSub;
 
 /// <summary>
-/// Fornece métodos de extensão para facilitar a configuração, inicialização e integração do emulador do Google Pub/Sub
-/// em aplicações distribuídas, incluindo a criação automática de tópicos, assinaturas e interface de administração via container.
+/// Fornece métodos de extensão para configurar, inicializar e integrar o emulador do Google Pub/Sub
+/// em aplicações distribuídas, incluindo criação automática de tópicos, assinaturas e interface de administração via container.
 /// </summary>
 public static class PubSubExtensions {
     private const int HOST_PORT = 8681;
@@ -13,32 +13,42 @@ public static class PubSubExtensions {
     /// <summary>
     /// Adiciona o emulador do Google Pub/Sub e sua interface de administração à aplicação distribuída.
     /// </summary>
-    /// <param name="builder">O construtor da aplicação distribuída (<see cref="IDistributedApplicationBuilder"/>).</param>
+    /// <param name="builder">Construtor da aplicação distribuída (<see cref="IDistributedApplicationBuilder"/>).</param>
     /// <param name="name">Nome do recurso do emulador Pub/Sub.</param>
-    /// <param name="pubSubConfig">Configuração do Pub/Sub, incluindo ProjectId e tópicos/assinaturas.</param>
-    /// <returns>Um objeto <see cref="PubSubEmulatorResources"/> contendo os recursos do emulador e UI configurados.</returns>
-    /// <exception cref="ArgumentException">Lançada se <paramref name="name"/> ou <paramref name="pubSubConfig.ProjectId"/> for nulo ou vazio.</exception>
-    public static PubSubEmulatorResources AddGcpPubSub(this IDistributedApplicationBuilder builder, string name, PubSubConfig pubSubConfig) {
+    /// <param name="pubSubConfigs">Lista de configurações do Pub/Sub, incluindo ProjectId, tópicos e assinaturas.</param>
+    /// <returns>Instância de <see cref="PubSubEmulatorResources"/> contendo os recursos do emulador e UI configurados.</returns>
+    /// <exception cref="ArgumentException">Lançada se <paramref name="name"/> ou algum <c>ProjectId</c> em <paramref name="pubSubConfigs"/> for nulo ou vazio.</exception>
+    public static PubSubEmulatorResources AddGcpPubSub(this IDistributedApplicationBuilder builder, string name, IList<PubSubConfig> pubSubConfigs) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
-        ArgumentException.ThrowIfNullOrWhiteSpace(pubSubConfig.ProjectId, nameof(pubSubConfig.ProjectId));
 
-        var pubsubEmulator = builder.BuildPubSubEmulator(name, pubSubConfig);
-        var pubsubUI = builder.BuildPubSubUI(pubsubEmulator, pubSubConfig.ProjectId);
+        var pubsubEmulator = builder.BuildPubSubEmulator(name, pubSubConfigs);
+        var pubsubUI = builder.BuildPubSubUI(pubsubEmulator, pubSubConfigs);
 
-        return new PubSubEmulatorResources(pubsubEmulator, pubsubUI, pubSubConfig);
+        return new PubSubEmulatorResources(pubsubEmulator, pubsubUI, pubSubConfigs);
     }
 
     /// <summary>
-    /// Configura o projeto para aguardar a inicialização do emulador Pub/Sub e da interface de administração,
-    /// além de definir as variáveis de ambiente necessárias e preparar o ambiente Pub/Sub.
+    /// Adiciona o emulador do Google Pub/Sub e sua interface de administração à aplicação distribuída.
     /// </summary>
-    /// <param name="project">O recurso do projeto que irá depender do Pub/Sub.</param>
+    /// <param name="builder">Construtor da aplicação distribuída (<see cref="IDistributedApplicationBuilder"/>).</param>
+    /// <param name="name">Nome do recurso do emulador Pub/Sub.</param>
+    /// <param name="pubSubConfig">Configuração do Pub/Sub, incluindo ProjectId, tópicos e assinaturas.</param>
+    /// <returns>Instância de <see cref="PubSubEmulatorResources"/> contendo os recursos do emulador e UI configurados.</returns>
+    /// <exception cref="ArgumentException">Lançada se <paramref name="name"/> ou <paramref name="pubSubConfig.ProjectId"/> for nulo ou vazio.</exception>
+    public static PubSubEmulatorResources AddGcpPubSub(this IDistributedApplicationBuilder builder, string name, PubSubConfig pubSubConfig) =>
+        builder.AddGcpPubSub(name, [pubSubConfig]);
+
+    /// <summary>
+    /// Configura o projeto para aguardar a inicialização do emulador Pub/Sub e da interface de administração,
+    /// define as variáveis de ambiente necessárias e prepara o ambiente Pub/Sub.
+    /// </summary>
+    /// <param name="project">Recurso do projeto que depende do Pub/Sub.</param>
     /// <param name="pubSubEmulatorResources">Recursos do emulador Pub/Sub e UI.</param>
-    /// <returns>O <see cref="IResourceBuilder{ProjectResource}"/> do projeto, configurado para aguardar o Pub/Sub.</returns>
+    /// <returns><see cref="IResourceBuilder{ProjectResource}"/> configurado para aguardar o Pub/Sub.</returns>
     public static IResourceBuilder<ProjectResource> WaitForGcpPubSub(this IResourceBuilder<ProjectResource> project, PubSubEmulatorResources pubSubEmulatorResources) {
         project.WaitFor(pubSubEmulatorResources.Emulator)
                .WaitFor(pubSubEmulatorResources.UI)
-               .WithEnvironment("GCP_PROJECT_IDS", pubSubEmulatorResources.PubSubConfig.ProjectId)
+               .AddGCPProjectsIds(pubSubEmulatorResources.PubSubConfigs)
                .WithEnvironment("PUBSUB_EMULATOR_HOST", $"localhost:{HOST_PORT.ToString()}")
                .PreparePubSubEnvironment(pubSubEmulatorResources);
 
@@ -48,12 +58,31 @@ public static class PubSubExtensions {
     /// <summary>
     /// Adiciona e integra o emulador do Google Pub/Sub ao projeto, configurando dependências e ambiente.
     /// </summary>
-    /// <param name="project">O recurso do projeto que irá utilizar o Pub/Sub.</param>
-    /// <param name="builder">O construtor da aplicação distribuída.</param>
+    /// <param name="project">Recurso do projeto que utilizará o Pub/Sub.</param>
+    /// <param name="builder">Construtor da aplicação distribuída.</param>
     /// <param name="name">Nome do recurso do emulador Pub/Sub.</param>
-    /// <param name="pubSubConfig">Configuração do Pub/Sub, incluindo ProjectId e tópicos/assinaturas.</param>
-    /// <returns>O <see cref="IResourceBuilder{ProjectResource}"/> do projeto, configurado para utilizar o Pub/Sub.</returns>
-    public static IResourceBuilder<ProjectResource> WithGcpPubSub(this IResourceBuilder<ProjectResource> project, IDistributedApplicationBuilder builder, string name, PubSubConfig pubSubConfig) {
+    /// <param name="pubSubConfigs">Lista de configurações do Pub/Sub.</param>
+    /// <returns><see cref="IResourceBuilder{ProjectResource}"/> configurado para utilizar o Pub/Sub.</returns>
+    public static IResourceBuilder<ProjectResource> WithGcpPubSub(this IResourceBuilder<ProjectResource> project, IDistributedApplicationBuilder builder, string name, IList<PubSubConfig> pubSubConfigs) {
+        var pubSub = builder.AddGcpPubSub(name, pubSubConfigs);
+
+        return project.WaitForGcpPubSub(pubSub);
+    }
+
+    /// <summary>
+    /// Adiciona e integra o emulador do Google Pub/Sub ao projeto, configurando dependências e ambiente.
+    /// </summary>
+    /// <param name="project">Recurso do projeto que utilizará o Pub/Sub.</param>
+    /// <param name="builder">Construtor da aplicação distribuída.</param>
+    /// <param name="name">Nome do recurso do emulador Pub/Sub.</param>
+    /// <param name="pubSubConfig">Configuração do Pub/Sub, incluindo ProjectId, tópicos e assinaturas.</param>
+    /// <returns><see cref="IResourceBuilder{ProjectResource}"/> configurado para utilizar o Pub/Sub.</returns>
+    /// <exception cref="ArgumentException">Lançada se <paramref name="name"/> ou <paramref name="pubSubConfig.ProjectId"/> for nulo ou vazio.</exception>
+    public static IResourceBuilder<ProjectResource> WithGcpPubSub(
+        this IResourceBuilder<ProjectResource> project,
+        IDistributedApplicationBuilder builder,
+        string name,
+        PubSubConfig pubSubConfig) {
         var pubSub = builder.AddGcpPubSub(name, pubSubConfig);
 
         return project.WaitForGcpPubSub(pubSub);
@@ -62,46 +91,76 @@ public static class PubSubExtensions {
     /// <summary>
     /// Cria e configura o container da interface de administração do Pub/Sub Emulator.
     /// </summary>
-    /// <param name="builder">O construtor da aplicação distribuída.</param>
-    /// <param name="pubSubEmulator">O recurso do container do emulador Pub/Sub.</param>
-    /// <param name="projectId">ID do projeto GCP utilizado pelo Pub/Sub.</param>
-    /// <returns>O <see cref="IResourceBuilder{ContainerResource}"/> configurado para a interface de administração.</returns>
-    private static IResourceBuilder<ContainerResource> BuildPubSubUI(this IDistributedApplicationBuilder builder, IResourceBuilder<ContainerResource> pubSubEmulator, string projectId) =>
+    /// <param name="builder">Construtor da aplicação distribuída.</param>
+    /// <param name="pubSubEmulator">Recurso do container do emulador Pub/Sub.</param>
+    /// <param name="pubSubConfigs">Lista de configurações do Pub/Sub.</param>
+    /// <returns><see cref="IResourceBuilder{ContainerResource}"/> configurado para a interface de administração.</returns>
+    private static IResourceBuilder<ContainerResource> BuildPubSubUI(this IDistributedApplicationBuilder builder, IResourceBuilder<ContainerResource> pubSubEmulator, IList<PubSubConfig> pubSubConfigs) =>
         builder
             .AddContainer("pubsub-ui", UI_IMAGE)
             .WithEnvironment("PUBSUB_EMULATOR_HOST", $"host.docker.internal:{HOST_PORT.ToString()}")
-            .WithEnvironment("GCP_PROJECT_IDS", projectId)
+            .AddGCPProjectsIds(pubSubConfigs)
             .WithHttpEndpoint(UI_PORT, UI_PORT, "http", isProxied: false)
             .WithHttpHealthCheck("/")
             .WaitFor(pubSubEmulator);
 
     /// <summary>
+    /// Adiciona a variável de ambiente <c>GCP_PROJECT_IDS</c> ao recurso informado, contendo uma lista separada por vírgula
+    /// com os <c>ProjectId</c> de cada configuração Pub/Sub fornecida.
+    /// </summary>
+    /// <typeparam name="T">Tipo do recurso que implementa <see cref="IResourceWithEnvironment"/>.</typeparam>
+    /// <param name="resource">Builder do recurso ao qual será adicionada a variável de ambiente.</param>
+    /// <param name="pubSubConfigs">Lista de configurações do Pub/Sub, cada uma contendo um <c>ProjectId</c>.</param>
+    /// <returns>O builder do recurso atualizado com a variável de ambiente <c>GCP_PROJECT_IDS</c> configurada.</returns>
+    private static IResourceBuilder<T> AddGCPProjectsIds<T>(this IResourceBuilder<T> resource, IList<PubSubConfig> pubSubConfigs)
+        where T : IResourceWithEnvironment =>
+        resource.WithEnvironment("GCP_PROJECT_IDS", string.Join(",", pubSubConfigs.Select(c => c.ProjectId)));
+
+    /// <summary>
     /// Cria e configura o container do emulador do Google Pub/Sub.
     /// </summary>
-    /// <param name="builder">O construtor da aplicação distribuída.</param>
+    /// <param name="builder">Construtor da aplicação distribuída.</param>
     /// <param name="name">Nome do recurso do emulador Pub/Sub.</param>
-    /// <param name="pubSubConfig">Configuração do Pub/Sub, incluindo ProjectId e tópicos/assinaturas.</param>
-    /// <returns>O <see cref="IResourceBuilder{ContainerResource}"/> configurado para o emulador Pub/Sub.</returns>
-    private static IResourceBuilder<ContainerResource> BuildPubSubEmulator(this IDistributedApplicationBuilder builder, string name, PubSubConfig pubSubConfig) =>
+    /// <param name="pubSubConfigs">Lista de configurações do Pub/Sub.</param>
+    /// <returns><see cref="IResourceBuilder{ContainerResource}"/> configurado para o emulador Pub/Sub.</returns>
+    private static IResourceBuilder<ContainerResource> BuildPubSubEmulator(this IDistributedApplicationBuilder builder, string name, IList<PubSubConfig> pubSubConfigs) =>
         builder
             .AddContainer(name, EMULATOR_IMAGE)
-            .WithEnvironment("PUBSUB_PROJECT1", BuildProjectId(pubSubConfig))
+            .AddProjects(pubSubConfigs)
             .WithHttpEndpoint(HOST_PORT, HOST_PORT, "http", isProxied: false)
             .WithHttpHealthCheck("/");
 
     /// <summary>
+    /// Adiciona variáveis de ambiente para cada projeto Pub/Sub configurado.
+    /// </summary>
+    /// <param name="container">Builder do container do emulador Pub/Sub.</param>
+    /// <param name="pubSubConfigs">Lista de configurações do Pub/Sub.</param>
+    /// <returns>O builder do container atualizado.</returns>
+    private static IResourceBuilder<ContainerResource> AddProjects(this IResourceBuilder<ContainerResource> container, IList<PubSubConfig> pubSubConfigs) {
+        var projectNumber = 0;
+
+        foreach (var pubSubConfig in pubSubConfigs) {
+            container.WithEnvironment($"PUBSUB_PROJECT{++projectNumber}", BuildProjectId(pubSubConfig));
+        }
+
+        return container;
+    }
+
+    /// <summary>
     /// Prepara o ambiente Pub/Sub, criando tópicos e assinaturas conforme a configuração fornecida.
     /// </summary>
-    /// <param name="project">O recurso do projeto que irá depender do Pub/Sub.</param>
+    /// <param name="project">Builder do recurso do projeto que depende do Pub/Sub.</param>
     /// <param name="pubSubEmulatorResources">Recursos do emulador Pub/Sub e UI.</param>
-    /// <returns>O <see cref="IResourceBuilder{ProjectResource}"/> do projeto, configurado para preparar o ambiente Pub/Sub.</returns>
+    /// <returns>O builder do projeto configurado para preparar o ambiente Pub/Sub.</returns>
     private static IResourceBuilder<ProjectResource> PreparePubSubEnvironment(this IResourceBuilder<ProjectResource> project, PubSubEmulatorResources pubSubEmulatorResources) =>
         project.OnResourceReady(async (contexto, _, ct) => {
             Environment.SetEnvironmentVariable("PUBSUB_EMULATOR_HOST", $"localhost:{HOST_PORT}");
 
             var portEndpoint = contexto.GetEndpoint("http").Port;
 
-            await pubSubEmulatorResources.PubSubConfig.ConfigurePubSubAsync(portEndpoint, ct);
+            foreach (var pubSubConfig in pubSubEmulatorResources.PubSubConfigs) {
+                await pubSubConfig.ConfigurePubSubAsync(portEndpoint, ct);
+            }
         });
 
     /// <summary>
@@ -111,9 +170,6 @@ public static class PubSubExtensions {
     /// <param name="portEndpoint">Porta HTTP do emulador Pub/Sub.</param>
     /// <param name="ct">Token de cancelamento para operações assíncronas.</param>
     private static async Task ConfigurePubSubAsync(this PubSubConfig pubSubConfig, int portEndpoint, CancellationToken ct) {
-        if (pubSubConfig == null)
-            return;
-
         var pushEndpoint = $"http://host.docker.internal:{portEndpoint}";
 
         foreach (var messageConfig in pubSubConfig.MessageConfigs) {

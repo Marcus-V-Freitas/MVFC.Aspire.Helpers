@@ -1,10 +1,8 @@
 namespace MVFC.Aspire.Helpers.AppHost.Tests;
 
-public sealed class AppHostTests
-{
+public sealed class AppHostTests {
     [Fact]
-    public async Task MongoOkStatusCode()
-    {
+    public async Task MongoOkStatusCode() {
         // Arrange
         var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.MVFC_Aspire_Helpers_AppHost_AppHost>();
 
@@ -20,8 +18,7 @@ public sealed class AppHostTests
     }
 
     [Fact]
-    public async Task CloudStorageOkStatusCode()
-    {
+    public async Task CloudStorageOkStatusCode() {
         // Arrange
         var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.MVFC_Aspire_Helpers_AppHost_AppHost>();
 
@@ -37,8 +34,7 @@ public sealed class AppHostTests
     }
 
     [Fact]
-    public async Task PubSubOkStatusCode()
-    {
+    public async Task PubSubOkStatusCode() {
         // Arrange
         var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.MVFC_Aspire_Helpers_AppHost_AppHost>();
 
@@ -46,8 +42,6 @@ public sealed class AppHostTests
         await app.StartAsync();
 
         // Act
-        await Task.Delay(TimeSpan.FromSeconds(15));
-
         var httpClient = app.CreateHttpClient("api-exemplo");
         var response = await httpClient.GetAsync("/api/pub-sub-enter");
 
