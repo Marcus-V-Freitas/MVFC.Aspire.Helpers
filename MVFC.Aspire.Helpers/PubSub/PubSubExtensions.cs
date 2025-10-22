@@ -7,7 +7,10 @@
 public static class PubSubExtensions {
     private const int HOST_PORT = 8681;
     private const int UI_PORT = 8680;
-    private const string EMULATOR_IMAGE = "messagebird/gcloud-pubsub-emulator:latest";
+    private const int ACK_DEADLINE_SECONDS_DEFAULT = 300;
+    private const int MAX_DELIVERY_ATTEMPTS_DEFAULT = 5;
+    private const char CREATION_DELIMITER = ',';
+    private const string EMULATOR_IMAGE = "thekevjames/gcloud-pubsub-emulator:latest";
     private const string UI_IMAGE = "echocode/gcp-pubsub-emulator-ui:latest";
 
     /// <summary>
@@ -114,7 +117,7 @@ public static class PubSubExtensions {
     /// <returns>O builder do recurso atualizado com a variável de ambiente <c>GCP_PROJECT_IDS</c> configurada.</returns>
     private static IResourceBuilder<T> AddGCPProjectsIds<T>(this IResourceBuilder<T> resource, IList<PubSubConfig> pubSubConfigs)
         where T : IResourceWithEnvironment =>
-        resource.WithEnvironment("GCP_PROJECT_IDS", string.Join(",", pubSubConfigs.Select(c => c.ProjectId)));
+        resource.WithEnvironment("GCP_PROJECT_IDS", string.Join(CREATION_DELIMITER, pubSubConfigs.Select(c => c.ProjectId)));
 
     /// <summary>
     /// Cria e configura o container do emulador do Google Pub/Sub.
@@ -190,17 +193,37 @@ public static class PubSubExtensions {
         }.Build();
 
         try {
-            var subscription = subscriber.GetSubscription($"projects/{projectId}/subscriptions/{messageConfig.SubscriptionName}");
+            var subscriptionName = SubscriptionName.FormatProjectSubscription(projectId, messageConfig.SubscriptionName);
+            var subscription = subscriber.GetSubscription(subscriptionName);
 
             subscription.PushConfig = BuildPushEndpoint(messageConfig, pushEndpoint);
             subscription.AckDeadlineSeconds = DefineAckDeadline(messageConfig);
+            subscription.DeadLetterPolicy = BuildDeadLetterPolicy(projectId, messageConfig);
 
-            await subscriber.UpdateSubscriptionAsync(subscription, BuildFieldMaskUpdate(), ct);
+            await subscriber.UpdateSubscriptionAsync(subscription, BuildFieldMaskUpdate(messageConfig), ct);
         }
         catch (Exception ex) {
-
             Console.WriteLine(ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Cria a política de dead letter (DLQ) para a assinatura, se um tópico de dead letter for especificado.
+    /// </summary>
+    /// <param name="projectId">ID do projeto GCP utilizado pelo Pub/Sub.</param>
+    /// <param name="messageConfig">Configuração da mensagem, incluindo o tópico de dead letter e o número máximo de tentativas.</param>
+    /// <returns>
+    /// Instância de <see cref="DeadLetterPolicy"/> configurada, ou <c>null</c> se não houver tópico de dead letter.
+    /// </returns>
+    private static DeadLetterPolicy? BuildDeadLetterPolicy(string projectId, MessageConfig messageConfig) {
+        if (string.IsNullOrWhiteSpace(messageConfig.DeadLetterTopic)) {
+            return null;
+        }
+
+        return new DeadLetterPolicy {
+            DeadLetterTopic = TopicName.FormatProjectTopic(projectId, messageConfig.DeadLetterTopic),
+            MaxDeliveryAttempts = messageConfig.MaxDeliveryAttempts ?? MAX_DELIVERY_ATTEMPTS_DEFAULT
+        };
     }
 
     /// <summary>
@@ -209,35 +232,79 @@ public static class PubSubExtensions {
     /// <param name="messageConfig">Configuração da mensagem, podendo conter o tempo de deadline em segundos.</param>
     /// <returns>Tempo limite em segundos para confirmação de mensagens.</returns>
     private static int DefineAckDeadline(MessageConfig messageConfig) =>
-        (messageConfig.AckDeadlineSeconds ?? TimeSpan.FromMinutes(5)).Seconds;
+        messageConfig.AckDeadlineSeconds ?? ACK_DEADLINE_SECONDS_DEFAULT;
 
     /// <summary>
     /// Cria o objeto <see cref="FieldMask"/> para atualização dos campos da assinatura.
     /// </summary>
-    /// <returns>Objeto <see cref="FieldMask"/> com os campos "ack_deadline_seconds" e "push_config".</returns>
-    private static FieldMask BuildFieldMaskUpdate() =>
-        new() {
-            Paths =
-            {
-                "ack_deadline_seconds",
-                "push_config"
-            }
-        };
+    /// <param name="messageConfig">Configuração da mensagem, incluindo DeadLetterTopic e MaxDeliveryAttempts.</param>
+    /// <returns>Objeto <see cref="FieldMask"/> com os campos "ack_deadline_seconds", "push_config", "dead_letter_policy".</returns>
+    private static FieldMask BuildFieldMaskUpdate(MessageConfig messageConfig) {
+        var paths = new List<string> { "ack_deadline_seconds", };
+
+        if (!string.IsNullOrEmpty(messageConfig.PushEndpoint))
+            paths.Add("push_config");
+
+        if (!string.IsNullOrWhiteSpace(messageConfig.DeadLetterTopic))
+            paths.Add("dead_letter_policy");
+
+        return new FieldMask { Paths = { paths } };
+    }
 
     /// <summary>
     /// Constrói a string de identificação do projeto e suas configurações de tópicos/assinaturas.
     /// </summary>
     /// <param name="pubSubConfig">Configuração do Pub/Sub, incluindo ProjectId e lista de <see cref="MessageConfig"/>.</param>
-    /// <returns>String contendo o ProjectId e os pares tópico:assinatura separados por vírgula.</returns>
+    /// <returns>
+    /// String contendo o ProjectId e os pares tópico:assinatura, separados por vírgula. Inclui também configurações de dead letter, se houver.
+    /// </returns>
     private static string BuildProjectId(PubSubConfig pubSubConfig) {
         var sb = new StringBuilder(pubSubConfig.ProjectId);
 
         if (!pubSubConfig.MessageConfigs.Any())
             return sb.ToString();
 
-        return sb.Append(',')
-                 .AppendJoin(',', pubSubConfig.MessageConfigs.Select(m => $"{m.TopicName}:{m.SubscriptionName}"))
+        return sb.Append(CREATION_DELIMITER)
+                 .AppendJoin(CREATION_DELIMITER, pubSubConfig.MessageConfigs.Select(m => BuildTopicSubscription(m) + BuildDeadLetter(m.DeadLetterTopic)))
                  .ToString();
+    }
+
+    /// <summary>
+    /// Constrói a string de identificação de um par tópico/assinatura.
+    /// </summary>
+    /// <param name="messageConfig">Configuração da mensagem, incluindo nome do tópico e da assinatura.</param>
+    /// <returns>
+    /// String no formato "topicName:subscriptionName".
+    /// </returns>
+    private static string BuildTopicSubscription(MessageConfig messageConfig) =>
+        BuildTopicSubscription(messageConfig.TopicName, messageConfig.SubscriptionName);
+
+    /// <summary>
+    /// Constrói a string de identificação de um par tópico/assinatura.
+    /// </summary>
+    /// <param name="topicName">Nome do tópico Pub/Sub.</param>
+    /// <param name="subscriptionName">Nome da assinatura associada ao tópico.</param>
+    /// <returns>
+    /// String no formato "topicName:subscriptionName".
+    /// </returns>
+    private static string BuildTopicSubscription(string topicName, string subscriptionName) =>
+        $"{topicName}:{subscriptionName}";
+
+    /// <summary>
+    /// Constrói a string de identificação de dead letter para um tópico, se especificado.
+    /// </summary>
+    /// <param name="deadLetterTopic">Nome do tópico de dead letter (DLQ), ou <c>null</c> se não houver.</param>
+    /// <returns>
+    /// String no formato ",deadLetterTopic:deadLetterTopic-subscription" ou string vazia se não houver dead letter.
+    /// </returns>
+    private static string BuildDeadLetter(string? deadLetterTopic) {
+        if (string.IsNullOrWhiteSpace(deadLetterTopic)) {
+            return string.Empty;
+        }
+
+        var subscriptionName = $"{deadLetterTopic}-subscription";
+
+        return $"{CREATION_DELIMITER}{BuildTopicSubscription(deadLetterTopic, subscriptionName)}";
     }
 
     /// <summary>
