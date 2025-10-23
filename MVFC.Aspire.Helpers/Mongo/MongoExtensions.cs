@@ -15,18 +15,28 @@ public static class MongoExtensions {
     /// <param name="builder">O construtor da aplicação distribuída (<see cref="IDistributedApplicationBuilder"/>).</param>
     /// <param name="name">Nome do recurso de MongoDB a ser criado.</param>
     /// <param name="tag">(Opcional) Tag da imagem do MongoDB a ser utilizada. Padrão: "latest".</param>
+    /// <param name="volumeName">
+    /// (Opcional) Nome do volume Docker a ser montado no container do MongoDB, permitindo persistência dos dados.
+    /// Se não informado, o volume não será configurado.
+    /// </param>
     /// <returns>
     /// Um <see cref="IResourceBuilder{ContainerResource}"/> representando o recurso de MongoDB configurado como Replica Set.
     /// </returns>
     /// <exception cref="ArgumentException">
     /// Lançada se o parâmetro <paramref name="name"/> ou <paramref name="tag"/> for nulo, vazio ou composto apenas por espaços em branco.
     /// </exception>
-    public static IResourceBuilder<ContainerResource> AddMongoReplicaSet(this IDistributedApplicationBuilder builder, string name, string tag = "latest") {
+    public static IResourceBuilder<ContainerResource> AddMongoReplicaSet(
+        this IDistributedApplicationBuilder builder,
+        string name,
+        string tag = "latest",
+        string? volumeName = null) {
+
         ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         ArgumentException.ThrowIfNullOrWhiteSpace(tag, nameof(tag));
 
         return builder.AddContainer(name, DEFAULT_MONGO_IMAGE, tag)
                       .WithArgs("--replSet", "rs0", "--bind_ip_all")
+                      .AddContainerVolume(volumeName)
                       .WithEndpoint(27017, 27017, "mongodb", isProxied: false, isExternal: true)
                       .WithContainerFiles("/docker-entrypoint-initdb.d", [
                           new ContainerFile
@@ -71,6 +81,13 @@ public static class MongoExtensions {
     /// <param name="builder">O construtor da aplicação distribuída.</param>
     /// <param name="name">Nome do recurso de MongoDB a ser criado.</param>
     /// <param name="tag">(Opcional) Tag da imagem do MongoDB a ser utilizada. Padrão: "latest".</param>
+    /// <param name="volumeName">
+    /// (Opcional) Nome do volume Docker a ser montado no container do MongoDB, permitindo persistência dos dados.
+    /// Se não informado, o volume não será configurado.
+    /// </param>
+    /// <param name="connectionStringSection">
+    /// (Opcional) Nome da variável de ambiente para a string de conexão. Padrão: "ConnectionStrings:mongo".
+    /// </param>
     /// <param name="dumps">(Opcional) Lista de configurações de coleções a serem inseridas no MongoDB após a inicialização.</param>
     /// <returns>
     /// O <see cref="IResourceBuilder{ProjectResource}"/> do projeto, configurado para utilizar o MongoDB.
@@ -80,10 +97,11 @@ public static class MongoExtensions {
         IDistributedApplicationBuilder builder,
         string name,
         string tag = "latest",
+        string? volumeName = null,
         string connectionStringSection = "ConnectionStrings:mongo",
         IList<IMongoClassDump>? dumps = null) {
 
-        var mongo = builder.AddMongoReplicaSet(name, tag);
+        var mongo = builder.AddMongoReplicaSet(name, tag, volumeName);
 
         return project.WaitForMongoReplicaSet(mongo, connectionStringSection, dumps);
     }
@@ -95,7 +113,11 @@ public static class MongoExtensions {
     /// <param name="dumps">Coleções e configurações a serem inseridas.</param>
     /// <param name="ct">Token de cancelamento.</param>
     /// <returns>Task representando a operação assíncrona.</returns>
-    public static async Task MongoDumpAsync(string connectionString, IEnumerable<IMongoClassDump>? dumps, CancellationToken ct) {
+    public static async Task MongoDumpAsync(
+        string connectionString,
+        IEnumerable<IMongoClassDump>? dumps,
+        CancellationToken ct) {
+
         if (dumps == null)
             return;
 
@@ -109,6 +131,27 @@ public static class MongoExtensions {
         foreach (var dump in dumps) {
             await ProcessMongoDumpConfig(mongo, dump, ct);
         }
+    }
+
+    /// <summary>
+    /// Adiciona um volume Docker ao recurso de container do MongoDB, permitindo persistência dos dados.
+    /// </summary>
+    /// <param name="resource">O recurso de container MongoDB ao qual o volume será adicionado.</param>
+    /// <param name="volumeName">
+    /// (Opcional) Nome do volume Docker a ser montado no container.
+    /// Se não informado ou vazio, nenhum volume será configurado.
+    /// </param>
+    /// <returns>
+    /// O <see cref="IResourceBuilder{ContainerResource}"/> atualizado, com o volume configurado se <paramref name="volumeName"/> for válido.
+    /// </returns>
+    private static IResourceBuilder<ContainerResource> AddContainerVolume(
+        this IResourceBuilder<ContainerResource> resource,
+        string? volumeName) {
+
+        if (!string.IsNullOrWhiteSpace(volumeName))
+            resource.WithVolume(volumeName, "/data/db");
+
+        return resource;
     }
 
     /// <summary>

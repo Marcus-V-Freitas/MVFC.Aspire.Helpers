@@ -8,14 +8,14 @@
 /// Nome do tópico Pub/Sub ao qual a mensagem será publicada.
 /// </param>
 /// <param name="SubscriptionName">
-/// Nome da assinatura associada ao tópico.
+/// (Opcional) Nome da assinatura associada ao tópico.
 /// </param>
 /// <param name="PushEndpoint">
 /// (Opcional) Endpoint HTTP para entrega de mensagens via push. Se não informado, a assinatura será do tipo pull.
 /// </param>
 public sealed record class MessageConfig(
     string TopicName,
-    string SubscriptionName,
+    string? SubscriptionName = null,
     string? PushEndpoint = null) {
 
     /// <summary>
@@ -26,7 +26,7 @@ public sealed record class MessageConfig(
     /// <summary>
     /// Nome da assinatura associada ao tópico.
     /// </summary>
-    public string SubscriptionName { get; init; } = SubscriptionName;
+    public string? SubscriptionName { get; init; } = SubscriptionName;
 
     /// <summary>
     /// (Opcional) Endpoint HTTP para entrega de mensagens via push. Se não informado, a assinatura será do tipo pull.

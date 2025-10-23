@@ -11,6 +11,7 @@ public static class PubSubExtensions {
     private const int MAX_DELIVERY_ATTEMPTS_DEFAULT = 5;
     private const int WAIT_TIMEOUT_SECONDS_DEFAULT = 15;
     private const char CREATION_DELIMITER = ',';
+    private const char SUBSCRIPTION_DELIMITER = ':';
     private const string EMULATOR_IMAGE = "thekevjames/gcloud-pubsub-emulator:latest";
     private const string UI_IMAGE = "echocode/gcp-pubsub-emulator-ui:latest";
 
@@ -358,8 +359,14 @@ public static class PubSubExtensions {
     /// <returns>
     /// String no formato "topicName:subscriptionName".
     /// </returns>
-    private static string BuildTopicSubscription(string topicName, string subscriptionName) =>
-        $"{topicName}:{subscriptionName}";
+    private static string BuildTopicSubscription(string topicName, string? subscriptionName) {
+        var sb = new StringBuilder(topicName);
+
+        if (!string.IsNullOrWhiteSpace(subscriptionName))
+            sb.Append(SUBSCRIPTION_DELIMITER).Append(subscriptionName);
+
+        return sb.ToString();
+    }
 
     /// <summary>
     /// Constrói a string de identificação de dead letter para um tópico, se especificado.
