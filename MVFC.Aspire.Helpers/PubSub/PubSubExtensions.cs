@@ -9,6 +9,7 @@ public static class PubSubExtensions {
     private const int UI_PORT = 8680;
     private const int ACK_DEADLINE_SECONDS_DEFAULT = 300;
     private const int MAX_DELIVERY_ATTEMPTS_DEFAULT = 5;
+    private const int WAIT_TIMEOUT_SECONDS_DEFAULT = 15;
     private const char CREATION_DELIMITER = ',';
     private const string EMULATOR_IMAGE = "thekevjames/gcloud-pubsub-emulator:latest";
     private const string UI_IMAGE = "echocode/gcp-pubsub-emulator-ui:latest";
@@ -19,12 +20,21 @@ public static class PubSubExtensions {
     /// <param name="builder">Construtor da aplicação distribuída (<see cref="IDistributedApplicationBuilder"/>).</param>
     /// <param name="name">Nome do recurso do emulador Pub/Sub.</param>
     /// <param name="pubSubConfigs">Lista de configurações do Pub/Sub, incluindo ProjectId, tópicos e assinaturas.</param>
+    /// <param name="waitTimeoutSeconds">
+    /// (Opcional) Tempo máximo de espera, em segundos, para a inicialização completa do emulador Pub/Sub.
+    /// O valor padrão é 15 segundos.
+    /// </param>
     /// <returns>Instância de <see cref="PubSubEmulatorResources"/> contendo os recursos do emulador e UI configurados.</returns>
     /// <exception cref="ArgumentException">Lançada se <paramref name="name"/> ou algum <c>ProjectId</c> em <paramref name="pubSubConfigs"/> for nulo ou vazio.</exception>
-    public static PubSubEmulatorResources AddGcpPubSub(this IDistributedApplicationBuilder builder, string name, IList<PubSubConfig> pubSubConfigs) {
+    public static PubSubEmulatorResources AddGcpPubSub(
+        this IDistributedApplicationBuilder builder,
+        string name,
+        IList<PubSubConfig> pubSubConfigs,
+        int waitTimeoutSeconds = WAIT_TIMEOUT_SECONDS_DEFAULT) {
+
         ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
 
-        var pubsubEmulator = builder.BuildPubSubEmulator(name, pubSubConfigs);
+        var pubsubEmulator = builder.BuildPubSubEmulator(name, pubSubConfigs, waitTimeoutSeconds);
         var pubsubUI = builder.BuildPubSubUI(pubsubEmulator, pubSubConfigs);
 
         return new PubSubEmulatorResources(pubsubEmulator, pubsubUI, pubSubConfigs);
@@ -36,10 +46,19 @@ public static class PubSubExtensions {
     /// <param name="builder">Construtor da aplicação distribuída (<see cref="IDistributedApplicationBuilder"/>).</param>
     /// <param name="name">Nome do recurso do emulador Pub/Sub.</param>
     /// <param name="pubSubConfig">Configuração do Pub/Sub, incluindo ProjectId, tópicos e assinaturas.</param>
+    /// <param name="waitTimeoutSeconds">
+    /// (Opcional) Tempo máximo de espera, em segundos, para a inicialização completa do emulador Pub/Sub.
+    /// O valor padrão é 15 segundos.
+    /// </param>
     /// <returns>Instância de <see cref="PubSubEmulatorResources"/> contendo os recursos do emulador e UI configurados.</returns>
     /// <exception cref="ArgumentException">Lançada se <paramref name="name"/> ou <paramref name="pubSubConfig.ProjectId"/> for nulo ou vazio.</exception>
-    public static PubSubEmulatorResources AddGcpPubSub(this IDistributedApplicationBuilder builder, string name, PubSubConfig pubSubConfig) =>
-        builder.AddGcpPubSub(name, [pubSubConfig]);
+    public static PubSubEmulatorResources AddGcpPubSub(
+        this IDistributedApplicationBuilder builder,
+        string name,
+        PubSubConfig pubSubConfig,
+        int waitTimeoutSeconds = WAIT_TIMEOUT_SECONDS_DEFAULT) =>
+
+        builder.AddGcpPubSub(name, [pubSubConfig], waitTimeoutSeconds);
 
     /// <summary>
     /// Configura o projeto para aguardar a inicialização do emulador Pub/Sub e da interface de administração,
@@ -48,7 +67,10 @@ public static class PubSubExtensions {
     /// <param name="project">Recurso do projeto que depende do Pub/Sub.</param>
     /// <param name="pubSubEmulatorResources">Recursos do emulador Pub/Sub e UI.</param>
     /// <returns><see cref="IResourceBuilder{ProjectResource}"/> configurado para aguardar o Pub/Sub.</returns>
-    public static IResourceBuilder<ProjectResource> WaitForGcpPubSub(this IResourceBuilder<ProjectResource> project, PubSubEmulatorResources pubSubEmulatorResources) {
+    public static IResourceBuilder<ProjectResource> WaitForGcpPubSub(
+        this IResourceBuilder<ProjectResource> project,
+        PubSubEmulatorResources pubSubEmulatorResources) {
+
         project.WaitFor(pubSubEmulatorResources.Emulator)
                .WaitFor(pubSubEmulatorResources.UI)
                .AddGCPProjectsIds(pubSubEmulatorResources.PubSubConfigs)
@@ -65,9 +87,19 @@ public static class PubSubExtensions {
     /// <param name="builder">Construtor da aplicação distribuída.</param>
     /// <param name="name">Nome do recurso do emulador Pub/Sub.</param>
     /// <param name="pubSubConfigs">Lista de configurações do Pub/Sub.</param>
+    /// <param name="waitTimeoutSeconds">
+    /// (Opcional) Tempo máximo de espera, em segundos, para a inicialização completa do emulador Pub/Sub.
+    /// O valor padrão é 15 segundos.
+    /// </param>
     /// <returns><see cref="IResourceBuilder{ProjectResource}"/> configurado para utilizar o Pub/Sub.</returns>
-    public static IResourceBuilder<ProjectResource> WithGcpPubSub(this IResourceBuilder<ProjectResource> project, IDistributedApplicationBuilder builder, string name, IList<PubSubConfig> pubSubConfigs) {
-        var pubSub = builder.AddGcpPubSub(name, pubSubConfigs);
+    public static IResourceBuilder<ProjectResource> WithGcpPubSub(
+        this IResourceBuilder<ProjectResource> project,
+        IDistributedApplicationBuilder builder,
+        string name,
+        IList<PubSubConfig> pubSubConfigs,
+        int waitTimeoutSeconds = WAIT_TIMEOUT_SECONDS_DEFAULT) {
+
+        var pubSub = builder.AddGcpPubSub(name, pubSubConfigs, waitTimeoutSeconds);
 
         return project.WaitForGcpPubSub(pubSub);
     }
@@ -79,14 +111,20 @@ public static class PubSubExtensions {
     /// <param name="builder">Construtor da aplicação distribuída.</param>
     /// <param name="name">Nome do recurso do emulador Pub/Sub.</param>
     /// <param name="pubSubConfig">Configuração do Pub/Sub, incluindo ProjectId, tópicos e assinaturas.</param>
+    /// <param name="waitTimeoutSeconds">
+    /// (Opcional) Tempo máximo de espera, em segundos, para a inicialização completa do emulador Pub/Sub.
+    /// O valor padrão é 15 segundos.
+    /// </param>
     /// <returns><see cref="IResourceBuilder{ProjectResource}"/> configurado para utilizar o Pub/Sub.</returns>
     /// <exception cref="ArgumentException">Lançada se <paramref name="name"/> ou <paramref name="pubSubConfig.ProjectId"/> for nulo ou vazio.</exception>
     public static IResourceBuilder<ProjectResource> WithGcpPubSub(
         this IResourceBuilder<ProjectResource> project,
         IDistributedApplicationBuilder builder,
         string name,
-        PubSubConfig pubSubConfig) {
-        var pubSub = builder.AddGcpPubSub(name, pubSubConfig);
+        PubSubConfig pubSubConfig,
+        int waitTimeoutSeconds = WAIT_TIMEOUT_SECONDS_DEFAULT) {
+
+        var pubSub = builder.AddGcpPubSub(name, pubSubConfig, waitTimeoutSeconds);
 
         return project.WaitForGcpPubSub(pubSub);
     }
@@ -98,7 +136,11 @@ public static class PubSubExtensions {
     /// <param name="pubSubEmulator">Recurso do container do emulador Pub/Sub.</param>
     /// <param name="pubSubConfigs">Lista de configurações do Pub/Sub.</param>
     /// <returns><see cref="IResourceBuilder{ContainerResource}"/> configurado para a interface de administração.</returns>
-    private static IResourceBuilder<ContainerResource> BuildPubSubUI(this IDistributedApplicationBuilder builder, IResourceBuilder<ContainerResource> pubSubEmulator, IList<PubSubConfig> pubSubConfigs) =>
+    private static IResourceBuilder<ContainerResource> BuildPubSubUI(
+        this IDistributedApplicationBuilder builder,
+        IResourceBuilder<ContainerResource> pubSubEmulator,
+        IList<PubSubConfig> pubSubConfigs) =>
+
         builder
             .AddContainer("pubsub-ui", UI_IMAGE)
             .WithEnvironment("PUBSUB_EMULATOR_HOST", $"host.docker.internal:{HOST_PORT.ToString()}")
@@ -115,8 +157,11 @@ public static class PubSubExtensions {
     /// <param name="resource">Builder do recurso ao qual será adicionada a variável de ambiente.</param>
     /// <param name="pubSubConfigs">Lista de configurações do Pub/Sub, cada uma contendo um <c>ProjectId</c>.</param>
     /// <returns>O builder do recurso atualizado com a variável de ambiente <c>GCP_PROJECT_IDS</c> configurada.</returns>
-    private static IResourceBuilder<T> AddGCPProjectsIds<T>(this IResourceBuilder<T> resource, IList<PubSubConfig> pubSubConfigs)
+    private static IResourceBuilder<T> AddGCPProjectsIds<T>(
+        this IResourceBuilder<T> resource,
+        IList<PubSubConfig> pubSubConfigs)
         where T : IResourceWithEnvironment =>
+
         resource.WithEnvironment("GCP_PROJECT_IDS", string.Join(CREATION_DELIMITER, pubSubConfigs.Select(c => c.ProjectId)));
 
     /// <summary>
@@ -125,11 +170,21 @@ public static class PubSubExtensions {
     /// <param name="builder">Construtor da aplicação distribuída.</param>
     /// <param name="name">Nome do recurso do emulador Pub/Sub.</param>
     /// <param name="pubSubConfigs">Lista de configurações do Pub/Sub.</param>
+    /// <param name="waitTimeoutSeconds">
+    /// Tempo máximo de espera, em segundos, para a inicialização completa do emulador Pub/Sub.
+    /// Recomenda-se utilizar o valor padrão de 15 segundos, exceto em cenários específicos.
+    /// </param>
     /// <returns><see cref="IResourceBuilder{ContainerResource}"/> configurado para o emulador Pub/Sub.</returns>
-    private static IResourceBuilder<ContainerResource> BuildPubSubEmulator(this IDistributedApplicationBuilder builder, string name, IList<PubSubConfig> pubSubConfigs) =>
+    private static IResourceBuilder<ContainerResource> BuildPubSubEmulator(
+        this IDistributedApplicationBuilder builder,
+        string name,
+        IList<PubSubConfig> pubSubConfigs,
+        int waitTimeoutSeconds) =>
+
         builder
             .AddContainer(name, EMULATOR_IMAGE)
             .AddProjects(pubSubConfigs)
+            .WithEnvironment("PUBSUB_EMULATOR_WAIT_TIMEOUT", waitTimeoutSeconds.ToString())
             .WithHttpEndpoint(HOST_PORT, HOST_PORT, "http", isProxied: false)
             .WithHttpHealthCheck("/");
 
@@ -139,7 +194,10 @@ public static class PubSubExtensions {
     /// <param name="container">Builder do container do emulador Pub/Sub.</param>
     /// <param name="pubSubConfigs">Lista de configurações do Pub/Sub.</param>
     /// <returns>O builder do container atualizado.</returns>
-    private static IResourceBuilder<ContainerResource> AddProjects(this IResourceBuilder<ContainerResource> container, IList<PubSubConfig> pubSubConfigs) {
+    private static IResourceBuilder<ContainerResource> AddProjects(
+        this IResourceBuilder<ContainerResource> container,
+        IList<PubSubConfig> pubSubConfigs) {
+
         var projectNumber = 0;
 
         foreach (var pubSubConfig in pubSubConfigs) {
@@ -155,7 +213,10 @@ public static class PubSubExtensions {
     /// <param name="project">Builder do recurso do projeto que depende do Pub/Sub.</param>
     /// <param name="pubSubEmulatorResources">Recursos do emulador Pub/Sub e UI.</param>
     /// <returns>O builder do projeto configurado para preparar o ambiente Pub/Sub.</returns>
-    private static IResourceBuilder<ProjectResource> PreparePubSubEnvironment(this IResourceBuilder<ProjectResource> project, PubSubEmulatorResources pubSubEmulatorResources) =>
+    private static IResourceBuilder<ProjectResource> PreparePubSubEnvironment(
+        this IResourceBuilder<ProjectResource> project,
+        PubSubEmulatorResources pubSubEmulatorResources) =>
+
         project.OnResourceReady(async (contexto, _, ct) => {
             Environment.SetEnvironmentVariable("PUBSUB_EMULATOR_HOST", $"localhost:{HOST_PORT}");
 
@@ -172,7 +233,11 @@ public static class PubSubExtensions {
     /// <param name="pubSubConfig">Configuração do Pub/Sub, incluindo ProjectId e lista de <see cref="MessageConfig"/>.</param>
     /// <param name="portEndpoint">Porta HTTP do emulador Pub/Sub.</param>
     /// <param name="ct">Token de cancelamento para operações assíncronas.</param>
-    private static async Task ConfigurePubSubAsync(this PubSubConfig pubSubConfig, int portEndpoint, CancellationToken ct) {
+    private static async Task ConfigurePubSubAsync(
+        this PubSubConfig pubSubConfig,
+        int portEndpoint,
+        CancellationToken ct) {
+
         var pushEndpoint = $"http://host.docker.internal:{portEndpoint}";
 
         foreach (var messageConfig in pubSubConfig.MessageConfigs) {
@@ -187,7 +252,12 @@ public static class PubSubExtensions {
     /// <param name="messageConfig">Configuração da mensagem, incluindo nome do tópico, assinatura e endpoint de push.</param>
     /// <param name="pushEndpoint">Endpoint HTTP para receber mensagens push.</param>
     /// <param name="ct">Token de cancelamento para operações assíncronas.</param>
-    public static async Task ModifyPushEndpoint(string projectId, MessageConfig messageConfig, string pushEndpoint, CancellationToken ct) {
+    public static async Task ModifyPushEndpoint(
+        string projectId,
+        MessageConfig messageConfig,
+        string pushEndpoint,
+        CancellationToken ct) {
+
         var subscriber = new SubscriberServiceApiClientBuilder() {
             EmulatorDetection = EmulatorDetection.EmulatorOnly
         }.Build();
@@ -216,6 +286,7 @@ public static class PubSubExtensions {
     /// Instância de <see cref="DeadLetterPolicy"/> configurada, ou <c>null</c> se não houver tópico de dead letter.
     /// </returns>
     private static DeadLetterPolicy? BuildDeadLetterPolicy(string projectId, MessageConfig messageConfig) {
+
         if (string.IsNullOrWhiteSpace(messageConfig.DeadLetterTopic)) {
             return null;
         }
@@ -298,6 +369,7 @@ public static class PubSubExtensions {
     /// String no formato ",deadLetterTopic:deadLetterTopic-subscription" ou string vazia se não houver dead letter.
     /// </returns>
     private static string BuildDeadLetter(string? deadLetterTopic) {
+
         if (string.IsNullOrWhiteSpace(deadLetterTopic)) {
             return string.Empty;
         }
@@ -314,6 +386,7 @@ public static class PubSubExtensions {
     /// <param name="pushEndpoint">Endpoint base para receber mensagens push.</param>
     /// <returns>Objeto <see cref="PushConfig"/> configurado ou null se não houver endpoint de push.</returns>
     private static PushConfig? BuildPushEndpoint(MessageConfig messageConfig, string pushEndpoint) {
+
         if (string.IsNullOrWhiteSpace(messageConfig.PushEndpoint)) {
             return null;
         }
