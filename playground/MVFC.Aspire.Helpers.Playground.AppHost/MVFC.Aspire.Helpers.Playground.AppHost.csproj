@@ -19,6 +19,7 @@
 		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.GcpPubSub\MVFC.Aspire.Helpers.GcpPubSub.csproj" IsAspireProjectResource="false" />
 		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.Mongo\MVFC.Aspire.Helpers.Mongo.csproj" IsAspireProjectResource="false" />
 		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.CloudStorage\MVFC.Aspire.Helpers.CloudStorage.csproj" IsAspireProjectResource="false" />
+		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.WireMock\MVFC.Aspire.Helpers.WireMock.csproj" IsAspireProjectResource="false" />
 		<ProjectReference Include="..\MVFC.Aspire.Helpers.Playground.Api\MVFC.Aspire.Helpers.Playground.Api.csproj" />
 	</ItemGroup>
 

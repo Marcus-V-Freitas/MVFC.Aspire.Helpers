@@ -121,3 +121,12 @@ builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
 ```csharp
 MongoExtensions.MongoDumpAsync(connectionString: "<Connection String>", dumps: dumps, ct: ct);
 ```
+
+## Requisitos
+- .NET 9+
+- Aspire.Hosting >= 9.5.0
+- Bogus >= 35.6.0
+- MongoDB.Driver >= 3.5.0
+
+## Licença
+MIT

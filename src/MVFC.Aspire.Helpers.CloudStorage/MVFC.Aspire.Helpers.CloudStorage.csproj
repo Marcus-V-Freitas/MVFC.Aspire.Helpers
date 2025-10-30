@@ -9,7 +9,7 @@
 		<Authors>Marcus Vinicius de Freitas Costa</Authors>
 		<Description>Helpers para integração com Google Cloud Storage (emulador GCS) em projetos .NET Aspire.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<RepositoryUrl>https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers</RepositoryUrl>
+		<RepositoryUrl>https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/tree/master/src/MVFC.Aspire.Helpers.CloudStorage</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageProjectUrl>https://www.nuget.org/packages/MVFC.Aspire.Helpers.CloudStorage</PackageProjectUrl>
 		<PackageTags>aspire;dotnet;helpers;google;csharp;cloud-storage;net;microservicos</PackageTags>

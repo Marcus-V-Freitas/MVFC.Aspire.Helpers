@@ -6,3 +6,6 @@ global using MVFC.Aspire.Helpers.GcpPubSub;
 global using MVFC.Aspire.Helpers.Mongo;
 global using Bogus.Extensions.Brazil;
 global using MVFC.Aspire.Helpers.Playground.AppHost.Models;
+global using System.Net;
+global using WireMock.Types;
+global using MVFC.Aspire.Helpers.WireMock;

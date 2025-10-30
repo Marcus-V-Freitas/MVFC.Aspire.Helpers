@@ -9,7 +9,7 @@
 		<Authors>Marcus Vinicius de Freitas Costa</Authors>
 		<Description>Helpers para integração com MongoDB em projetos .NET Aspire, incluindo suporte a Replica Set e inicialização automática.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<RepositoryUrl>https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers</RepositoryUrl>
+		<RepositoryUrl>https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/tree/master/src/MVFC.Aspire.Helpers.Mongo</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageProjectUrl>https://www.nuget.org/packages/MVFC.Aspire.Helpers.Mongo</PackageProjectUrl>
 		<PackageTags>aspire;dotnet;helpers;bogus;replica-set;mongo;csharp;net;microservicos</PackageTags>

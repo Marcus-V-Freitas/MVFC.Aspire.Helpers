@@ -171,3 +171,10 @@ builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
        .WithCloudStorage(builder, name: "cloud-storage", localBucketFolder: "./bucket-data");
 ```
+
+## Requisitos
+- .NET 9+
+- Aspire.Hosting >= 9.5.0
+
+## Licença
+MIT

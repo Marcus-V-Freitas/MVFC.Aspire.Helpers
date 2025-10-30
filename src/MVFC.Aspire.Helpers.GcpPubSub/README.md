@@ -157,3 +157,11 @@ builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
        .WithGcpPubSub(builder, name: "gcp-pubsub", pubSubConfig: pubSubConfig);
 ```
+
+## Requisitos
+- .NET 9+
+- Aspire.Hosting >= 9.5.0
+- Google.Cloud.PubSub.V1 >= 3.29.0
+
+## Licença
+MIT
