@@ -23,7 +23,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="icon.png" />
+		<None Include="icon.png" Pack="true" PackagePath="" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -33,7 +33,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\MVFC.Aspire.Helpers.CloudStorage\MVFC.Aspire.Helpers.CloudStorage.csproj" />
+		<ProjectReference Include="..\MVFC.Aspire.Helpers.CloudStorage\MVFC.Aspire.Helpers.CloudStorage.csproj" />
 	</ItemGroup>
 
 </Project>
