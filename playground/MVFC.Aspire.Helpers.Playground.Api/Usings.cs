@@ -1,0 +1,10 @@
+﻿global using MVFC.Aspire.Helpers.Playground.Api.PubSub;
+global using MVFC.Aspire.Helpers.Playground.Api.Storage;
+global using Google.Api.Gax;
+global using Google.Cloud.PubSub.V1;
+global using Google.Cloud.Storage.V1;
+global using MongoDB.Bson;
+global using MongoDB.Driver;
+global using MVFC.Aspire.Helpers.Playground.Api.Endpoints;
+global using System.Text.Json;
+global using Google.Protobuf;

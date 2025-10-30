@@ -1,63 +1,54 @@
 # MVFC.Aspire.Helpers
 
-Conjunto de helpers para projetos .NET Aspire, incluindo integrações com Google Pub/Sub, Cloud Storage (emulador GCS) e MongoDB (com Replica Sets).
-
-## Visão Geral
-
 Este projeto facilita a configuração e integração de recursos essenciais para aplicações distribuídas .NET Aspire, fornecendo métodos de extensão para:
 
-- **Google Cloud Storage (emulador GCS)**
-- **MongoDB com Replica Set**
-- **Google Pub/Sub (emulador e UI)**
+### [`Cloud Storage`](./src/MVFC.Aspire.Helpers.CloudStorage/README.md)
 
-Além disso, inclui uma API de exemplo ([MVFC.Aspire.Helpers.Api](MVFC.Aspire.Helpers.Api/MVFC.Aspire.Helpers.Api.csproj)) e um AppHost para orquestração ([MVFC.Aspire.Helpers.AppHost.AppHost](MVFC.Aspire.Helpers.AppHost/MVFC.Aspire.Helpers.AppHost.AppHost/MVFC.Aspire.Helpers.AppHost.AppHost.csproj)).
-
-## Estrutura do Projeto
-
-- [`MVFC.Aspire.Helpers`](MVFC.Aspire.Helpers/MVFC.Aspire.Helpers.csproj): Biblioteca de helpers e extensões.
-- [`MVFC.Aspire.Helpers.Api`](MVFC.Aspire.Helpers.Api/MVFC.Aspire.Helpers.Api.csproj): API de exemplo com endpoints para MongoDB, Cloud Storage e Pub/Sub.
-- [`MVFC.Aspire.Helpers.AppHost.AppHost`](MVFC.Aspire.Helpers.AppHost/MVFC.Aspire.Helpers.AppHost.AppHost/MVFC.Aspire.Helpers.AppHost.AppHost.csproj): Orquestração de teste dos recursos usando Aspire.
-- [`MVFC.Aspire.Helpers.AppHost.Tests`](MVFC.Aspire.Helpers.AppHost/MVFC.Aspire.Helpers.AppHost.Tests/MVFC.Aspire.Helpers.AppHost.Tests.csproj): Testes automatizados para os endpoints.
-
-## Funcionalidades
-
-### Cloud Storage
-
-- Adiciona e integra um emulador GCS usando a imagem `fsouza/fake-gcs-server`.
+- Adiciona e integra um emulador GCS.
 - Permite persistência opcional dos buckets via bind mount.
-- Exemplo de uso: [`CloudStorageExtensions`](MVFC.Aspire.Helpers/CloudStorage/CloudStorageExtensions.cs).
+- Adicione o pacote NuGet ao seu projeto AppHost:
 
-### MongoDB
+```sh
+dotnet add package MVFC.Aspire.Helpers.CloudStorage
+```
+
+---
+
+### [`Mongo`](./src/MVFC.Aspire.Helpers.Mongo/README.md)
 
 - Adiciona um container MongoDB configurado como Replica Set.
 - Inicializa automaticamente o Replica Set via script.
-- Exemplo de uso: [`MongoExtensions`](MVFC.Aspire.Helpers/Mongo/MongoExtensions.cs).
+- Adicione o pacote NuGet ao seu projeto AppHost:
 
-### Pub/Sub
+```sh
+dotnet add package MVFC.Aspire.Helpers.Mongo
+```
 
-- Adiciona o emulador do Google Pub/Sub e interface de administração (UI).
+---
+
+### [`GCP Pub/Sub`](./src/MVFC.Aspire.Helpers.GcpPubSub/README.md)
+
+- Adiciona o emulador do Google Pub/Sub e UI.
 - Cria tópicos e assinaturas automaticamente conforme configuração.
 - Suporte a assinaturas do tipo push e pull.
-- Exemplo de uso: [`PubSubExtensions`](MVFC.Aspire.Helpers/PubSub/PubSubExtensions.cs).
+- Adicione o pacote NuGet ao seu projeto AppHost:
 
-### API de Exemplo
+```sh
+dotnet add package MVFC.Aspire.Helpers.GcpPubSub
+```
+
+---
+
+## API de Exemplo (Playground)
 
 - Endpoints para testar integração com MongoDB, Cloud Storage e Pub/Sub:
   - `/api/mongo`
   - `/api/bucket/{bucketName}`
   - `/api/pub-sub-enter`
   - `/api/pub-sub-exit`
-- Implementações em [`Endpoints`](MVFC.Aspire.Helpers.Api/Endpoints/DefaultEndpoints.cs).
+- Implementações no projeto [`MVFC.Aspire.Helpers.Playground.Api`](./playground/MVFC.Aspire.Helpers.Playground.Api/).
 
-## Instalação
-
-Adicione o pacote NuGet ao seu projeto AppHost:
-
-```sh
-dotnet add package MVFC.Aspire.Helpers
-```
-
-## Exemplo de Uso no AppHost
+## Integração no Aspire no [`MVFC.Aspire.Helpers.Playground.AppHost`](./playground/MVFC.Aspire.Helpers.Playground.AppHost/AppHost.cs)
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
@@ -65,20 +56,24 @@ var builder = DistributedApplication.CreateBuilder(args);
 var messageConfig = new MessageConfig(
                             TopicName: "test-topic",
                             SubscriptionName: "test-subscription",
-                            PushEndpoint: "/api/pub-sub-exit");
+                            PushEndpoint: "/api/pub-sub-exit") {
+    DeadLetterTopic = "test-dead-letter-topic",
+    MaxDeliveryAttempts = 5,
+    AckDeadlineSeconds = 300,
+};
 
 var pubSubConfig = new PubSubConfig(
                             projectId: "test-project",
                             messageConfig: messageConfig);
 
 IList<IMongoClassDump> dumps = [
-    new MongoClassDump<TestDatabase>("TestDatabase", "TestCollection", 100,
-        new Faker<TestDatabase>()
+    new MongoClassDump<TestDatabase>(DatabaseName: "TestDatabase", CollectionName: "TestCollection", Quantity: 100,
+        Faker: new Faker<TestDatabase>()
               .CustomInstantiator(f => new TestDatabase(f.Person.FirstName, f.Person.Cpf())))
 ];
 
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Api>("api-exemplo")
-       .WithCloudStorage(builder, "cloud-storage", "./bucket-data")
+       .WithCloudStorage(builder, "cloud-storage", localBucketFolder: "./bucket-data")
        .WithMongoReplicaSet(builder, "mongo", dumps: dumps)
        .WithGcpPubSub(builder, "gcp-pubsub", pubSubConfig);
 
