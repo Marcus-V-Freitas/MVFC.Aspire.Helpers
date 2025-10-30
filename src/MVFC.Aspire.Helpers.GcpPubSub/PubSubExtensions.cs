@@ -357,7 +357,7 @@ public static class PubSubExtensions {
     /// <param name="messageConfig">Configuração da mensagem, incluindo nome do tópico, assinatura e endpoint de push.</param>
     /// <param name="pushEndpoint">Endpoint HTTP para receber mensagens push.</param>
     /// <param name="ct">Token de cancelamento para operações assíncronas.</param>
-    public static async Task ModifyPushEndpoint(
+    private static async Task ModifyPushEndpoint(
         string projectId,
         MessageConfig messageConfig,
         string pushEndpoint,

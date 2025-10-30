@@ -20,8 +20,8 @@ IList<IMongoClassDump> dumps = [
 ];
 
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
-       .WithCloudStorage(builder, "cloud-storage", localBucketFolder: "./bucket-data")
-       .WithMongoReplicaSet(builder, "mongo", dumps: dumps)
-       .WithGcpPubSub(builder, "gcp-pubsub", pubSubConfig);
+       .WithCloudStorage(builder, name: "cloud-storage", localBucketFolder: "./bucket-data")
+       .WithMongoReplicaSet(builder, name: "mongo", dumps: dumps)
+       .WithGcpPubSub(builder, name: "gcp-pubsub", pubSubConfig: pubSubConfig);
 
 await builder.Build().RunAsync();

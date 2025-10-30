@@ -37,7 +37,7 @@ dotnet add package MVFC.Aspire.Helpers.CloudStorage
 var builder = DistributedApplication.CreateBuilder(args);
 
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Api>("api-exemplo")
-       .WithCloudStorage(builder, "cloud-storage", localBucketFolder: "./bucket-data");
+       .WithCloudStorage(builder, name: "cloud-storage", localBucketFolder: "./bucket-data");
 
 await builder.Build().RunAsync();
 ```
@@ -144,4 +144,30 @@ Onde **bucket-teste** é o nome do bucket.
     }
   ]
 }
+```
+
+## Métodos Públicos
+
+- **AddCloudStorage**  
+  Adiciona um recurso de Cloud Storage (emulador GCS) à aplicação distribuída, com opção de persistência local dos buckets.
+
+```csharp
+var cloudStorage = builder.AddCloudStorage(name: "cloud-storage", localBucketFolder: "./bucket-data");
+```
+
+- **WaitForCloudStorage**  
+  Configura o projeto para aguardar a inicialização do emulador Cloud Storage e define a variável de ambiente necessária.
+
+```csharp
+builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+       .WaitForCloudStorage(cloudStorage);
+
+```
+
+- **WithCloudStorage**  
+  Integra o emulador Cloud Storage ao projeto, configurando dependências e persistência opcional dos dados.
+
+```csharp
+builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+       .WithCloudStorage(builder, name: "cloud-storage", localBucketFolder: "./bucket-data");
 ```

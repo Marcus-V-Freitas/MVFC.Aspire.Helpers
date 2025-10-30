@@ -68,7 +68,7 @@ var pubSubConfig = new PubSubConfig(
                             messageConfig: messageConfig);
 
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Api>("api-exemplo")
-       .WithGcpPubSub(builder, "gcp-pubsub", pubSubConfig);
+       .WithGcpPubSub(builder, name: "gcp-pubsub", pubSubConfig: pubSubConfig);
 
 await builder.Build().RunAsync();
 ```
@@ -131,4 +131,29 @@ B --> C
 B --> D
 C --> E
 E --> F
+```
+
+## Métodos Públicos
+
+- **AddGcpPubSub**  
+  Adiciona o emulador do Google Pub/Sub e sua interface de administração à aplicação distribuída, permitindo configuração automática de tópicos e assinaturas.
+
+```csharp
+var gcpPubSub = builder.AddGcpPubSub(name: "gcp-pubsub", pubSubConfig: pubSubConfig);
+```
+
+- **WaitForGcpPubSub**  
+  Configura o projeto para aguardar a inicialização do emulador Pub/Sub e define variáveis de ambiente necessárias.
+
+```csharp
+builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+       .WaitForGcpPubSub(gcpPubSub);
+```
+
+- **WithGcpPubSub**  
+  Integra o emulador Pub/Sub ao projeto, configurando dependências, ambiente e inicialização automática dos recursos.
+
+```csharp
+builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+       .WithGcpPubSub(builder, name: "gcp-pubsub", pubSubConfig: pubSubConfig);
 ```

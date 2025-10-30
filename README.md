@@ -67,15 +67,15 @@ var pubSubConfig = new PubSubConfig(
                             messageConfig: messageConfig);
 
 IList<IMongoClassDump> dumps = [
-    new MongoClassDump<TestDatabase>(DatabaseName: "TestDatabase", CollectionName: "TestCollection", Quantity: 100,
-        Faker: new Faker<TestDatabase>()
+    new MongoClassDump<TestDatabase>("TestDatabase", "TestCollection", 100,
+        new Faker<TestDatabase>()
               .CustomInstantiator(f => new TestDatabase(f.Person.FirstName, f.Person.Cpf())))
 ];
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Api>("api-exemplo")
-       .WithCloudStorage(builder, "cloud-storage", localBucketFolder: "./bucket-data")
-       .WithMongoReplicaSet(builder, "mongo", dumps: dumps)
-       .WithGcpPubSub(builder, "gcp-pubsub", pubSubConfig);
+builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+       .WithCloudStorage(builder, name: "cloud-storage", localBucketFolder: "./bucket-data")
+       .WithMongoReplicaSet(builder, name: "mongo", dumps: dumps)
+       .WithGcpPubSub(builder, name: "gcp-pubsub", pubSubConfig: pubSubConfig);
 
 await builder.Build().RunAsync();
 ```
