@@ -34,8 +34,6 @@ dotnet add package MVFC.Aspire.Helpers.Mailpit
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
 
-var mailpit = builder.AddMailpit(name: "mailpit", smtpPort: 1025, webPort: 8025);
-
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
        .WithMailpit(builder, name: "mailpit");
 
