@@ -7,5 +7,6 @@ public static class DefaultEndpoints {
         apiGroup.MapCloudStorageEndpoints();
         apiGroup.MapMongoEndpoints();
         apiGroup.MapPubSubEndpoints();
+        apiGroup.MapMailpitEndpoints();
     }
 }

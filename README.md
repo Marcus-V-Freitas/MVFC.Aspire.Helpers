@@ -2,7 +2,7 @@
 
 Este projeto facilita a configuração e integração de recursos essenciais para aplicações distribuídas .NET Aspire, fornecendo métodos de extensão para:
 
-### [`Cloud Storage`](./src/MVFC.Aspire.Helpers.CloudStorage/README.md)
+### [`Cloud Storage`](./src/MVFC.Aspire.Helpers.CloudStorage)
 
 - Adiciona e integra um emulador GCS.
 - Permite persistência opcional dos buckets via bind mount.
@@ -14,7 +14,7 @@ dotnet add package MVFC.Aspire.Helpers.CloudStorage
 
 ---
 
-### [`Mongo`](./src/MVFC.Aspire.Helpers.Mongo/README.md)
+### [`Mongo`](./src/MVFC.Aspire.Helpers.Mongo)
 
 - Adiciona um container MongoDB configurado como Replica Set.
 - Inicializa automaticamente o Replica Set via script.
@@ -26,7 +26,7 @@ dotnet add package MVFC.Aspire.Helpers.Mongo
 
 ---
 
-### [`GCP Pub/Sub`](./src/MVFC.Aspire.Helpers.GcpPubSub/README.md)
+### [`GCP Pub/Sub`](./src/MVFC.Aspire.Helpers.GcpPubSub)
 
 - Adiciona o emulador do Google Pub/Sub e UI.
 - Cria tópicos e assinaturas automaticamente conforme configuração.
@@ -37,7 +37,7 @@ dotnet add package MVFC.Aspire.Helpers.Mongo
 dotnet add package MVFC.Aspire.Helpers.GcpPubSub
 ```
 
-### [`WireMock`](./src/MVFC.Aspire.Helpers.WireMock/README.md)
+### [`WireMock`](./src/MVFC.Aspire.Helpers.WireMock)
 
 - Adiciona e integra um servidor WireMock.Net embutido para simular APIs HTTP.
 - Permite definir endpoints mockados, métodos, autenticação, headers e respostas customizadas.
@@ -46,6 +46,18 @@ dotnet add package MVFC.Aspire.Helpers.GcpPubSub
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.WireMock
+```
+
+### [`MailPit`](./src/MVFC.Aspire.Helpers.Mailpit)
+
+- Adiciona e integra o emulador SMTP MailPit.
+- Permite testes de envio de e-mails em ambientes de desenvolvimento.
+- Exposição da interface web para visualização dos e-mails recebidos.
+- Permite configuração de porta e persistência opcional dos dados.
+- Adicione o pacote NuGet ao seu projeto AppHost:
+
+```sh
+dotnet add package MVFC.Aspire.Helpers.Mailpit
 ```
 
 ---
@@ -154,7 +166,11 @@ var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: static (se
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
        .WithCloudStorage(builder, name: "cloud-storage", localBucketFolder: "./bucket-data")
        .WithMongoReplicaSet(builder, name: "mongo", dumps: dumps)
-       .WithGcpPubSub(builder, name: "gcp-pubsub", pubSubConfig: pubSubConfig);
+       .WithGcpPubSub(builder, name: "gcp-pubsub", pubSubConfig: pubSubConfig)
+       .WithMailPit(builder, name: "mailpit");;
 
 await builder.Build().RunAsync();
 ```
+
+## Licença
+Apache-2.0

@@ -1,3 +1,6 @@
+using System.Net.Http.Json;
+using Microsoft.AspNetCore.WebUtilities;
+
 namespace MVFC.Aspire.Helpers.Tests;
 
 public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHostFixture> {
@@ -40,6 +43,28 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
         // Act
         var httpClient = _fixture.DistributedApplication.CreateHttpClient("api-exemplo");
         var response = await httpClient.GetAsync("/api/pub-sub-enter");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    #endregion
+
+    #region MailPit
+
+    [Fact]
+    public async Task MailPitOkStatusCode() {
+
+        // Act
+        var body = JsonContent.Create(new {
+            From = "noreply@teste.com",
+            To = "teste@exemplo.com",
+            Subject = "Teste",
+            Body = "Mensagem de teste"
+        });
+
+        var httpClient = _fixture.DistributedApplication.CreateHttpClient("api-exemplo");
+        var response = await httpClient.PostAsync("/api/send-email", body);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

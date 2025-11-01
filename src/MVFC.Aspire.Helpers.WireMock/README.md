@@ -155,4 +155,4 @@ await builder.Build().RunAsync();
 - WireMock.Net.minimal >= 1.14.0
 
 ## Licença
-MIT
+Apache-2.0

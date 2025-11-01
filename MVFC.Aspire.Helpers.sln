@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVFC.Aspire.Helpers.Tests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVFC.Aspire.Helpers.WireMock", "src\MVFC.Aspire.Helpers.WireMock\MVFC.Aspire.Helpers.WireMock.csproj", "{AC0C03E7-8644-4CFF-C080-1DBF935437CE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVFC.Aspire.Helpers.Mailpit", "src\MVFC.Aspire.Helpers.Mailpit\MVFC.Aspire.Helpers.Mailpit.csproj", "{DF5E4703-3C13-516A-38E3-C50D2A34DA10}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{AC0C03E7-8644-4CFF-C080-1DBF935437CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC0C03E7-8644-4CFF-C080-1DBF935437CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC0C03E7-8644-4CFF-C080-1DBF935437CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF5E4703-3C13-516A-38E3-C50D2A34DA10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF5E4703-3C13-516A-38E3-C50D2A34DA10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF5E4703-3C13-516A-38E3-C50D2A34DA10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF5E4703-3C13-516A-38E3-C50D2A34DA10}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -69,6 +75,7 @@ Global
 		{1CFA1E71-7F75-8846-A7C6-A195485A8B10} = {4044F7DC-AEAA-4B22-A27C-D18A3461AACC}
 		{B0F3C852-AEAD-49BC-A11C-EA143186CF01} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{AC0C03E7-8644-4CFF-C080-1DBF935437CE} = {83A851B0-A522-4934-A3CA-FA16F2554BF9}
+		{DF5E4703-3C13-516A-38E3-C50D2A34DA10} = {83A851B0-A522-4934-A3CA-FA16F2554BF9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DDEED4FF-A94A-452C-8006-E33E13D921A7}

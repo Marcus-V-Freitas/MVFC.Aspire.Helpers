@@ -129,4 +129,4 @@ MongoExtensions.MongoDumpAsync(connectionString: "<Connection String>", dumps: d
 - MongoDB.Driver >= 3.5.0
 
 ## Licença
-MIT
+Apache-2.0

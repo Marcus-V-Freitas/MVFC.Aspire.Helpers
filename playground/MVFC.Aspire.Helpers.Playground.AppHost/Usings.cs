@@ -9,3 +9,4 @@ global using MVFC.Aspire.Helpers.Playground.AppHost.Models;
 global using System.Net;
 global using WireMock.Types;
 global using MVFC.Aspire.Helpers.WireMock;
+global using MVFC.Aspire.Helpers.Mailpit;

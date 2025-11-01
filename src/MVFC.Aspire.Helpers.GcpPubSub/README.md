@@ -164,4 +164,4 @@ builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
 - Google.Cloud.PubSub.V1 >= 3.29.0
 
 ## Licença
-MIT
+Apache-2.0

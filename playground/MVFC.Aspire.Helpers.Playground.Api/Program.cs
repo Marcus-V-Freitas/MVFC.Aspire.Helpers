@@ -11,6 +11,10 @@ builder.Services.AddSingleton(_ => {
 });
 builder.Services.AddSingleton<IStorageService, GoogleCloudStorageAdapter>();
 builder.Services.AddSingleton<IMessagePublisher, GooglePubSubMessagePublisher>();
+builder.Services.AddSingleton<SmtpClient>(_ => {
+    var smtpUri = new Uri(builder.Configuration.GetConnectionString("mailpit")!);
+    return new SmtpClient(smtpUri.Host, smtpUri.Port);
+});
 
 var app = builder.Build();
 app.MapAllEndpoints();

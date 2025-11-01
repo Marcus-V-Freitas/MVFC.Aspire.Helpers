@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsAspireSharedProject>true</IsAspireSharedProject>
+		<Version>0.0.0</Version>
+		<Authors>Marcus Vinicius de Freitas Costa</Authors>
+		<Description>Helpers para integração com o emulador de SMTP MailPit em projetos .NET Aspire, facilitando testes de envio de e-mails em ambientes de desenvolvimento.</Description>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<RepositoryUrl>https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/tree/master/src/MVFC.Aspire.Helpers.Mailpit</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageProjectUrl>https://www.nuget.org/packages/MVFC.Aspire.Helpers.Mailpit</PackageProjectUrl>
+		<PackageTags>aspire;dotnet;helpers;email;mailpit;csharp;net;microservicos</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<IsPackable>true</IsPackable>
+		<PackageIcon>icon.png</PackageIcon>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="icon.png" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Aspire.Hosting" Version="9.5.*" />
+	</ItemGroup>
+</Project>
