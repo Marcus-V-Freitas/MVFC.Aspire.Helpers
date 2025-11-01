@@ -7,7 +7,7 @@
 		<Version>0.0.0</Version>
 		<Authors>Marcus Vinicius de Freitas Costa</Authors>
 		<Description>Helpers para integração do WireMock em projetos .NET Aspire, permitindo criação e gerenciamento de mocks HTTP para testes locais.</Description>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<RepositoryUrl>https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/tree/master/src/MVFC.Aspire.Helpers.WireMock</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageProjectUrl>https://www.nuget.org/packages/MVFC.Aspire.Helpers.WireMock</PackageProjectUrl>
