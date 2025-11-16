@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFrameworks>net9.0;net10.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<Version>0.0.0</Version>
@@ -26,7 +26,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Aspire.Hosting" Version="9.5.*" />
-		<PackageReference Include="WireMock.Net.minimal" Version="1.14.*" />
+		<PackageReference Include="WireMock.Net.minimal" Version="1.15.*" />
 	</ItemGroup>
 
 	<ItemGroup>

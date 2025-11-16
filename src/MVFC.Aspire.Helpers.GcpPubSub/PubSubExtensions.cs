@@ -363,13 +363,13 @@ public static class PubSubExtensions {
         string pushEndpoint,
         CancellationToken ct) {
 
-        var subscriber = new SubscriberServiceApiClientBuilder() {
+        var subscriber = await new SubscriberServiceApiClientBuilder() {
             EmulatorDetection = EmulatorDetection.EmulatorOnly
-        }.Build();
+        }.BuildAsync(ct);
 
         try {
             var subscriptionName = SubscriptionName.FormatProjectSubscription(projectId, messageConfig.SubscriptionName);
-            var subscription = subscriber.GetSubscription(subscriptionName);
+            var subscription = await subscriber.GetSubscriptionAsync(subscriptionName);
 
             subscription.PushConfig = BuildPushEndpoint(messageConfig, pushEndpoint);
             subscription.AckDeadlineSeconds = DefineAckDeadline(messageConfig);
