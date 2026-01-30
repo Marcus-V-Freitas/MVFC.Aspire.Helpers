@@ -1,6 +1,3 @@
-using System.Net.Http.Json;
-using Microsoft.AspNetCore.WebUtilities;
-
 namespace MVFC.Aspire.Helpers.Tests;
 
 public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHostFixture> {
@@ -246,6 +243,14 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(responseModel);
         Assert.Equal("Aspire JSON", responseModel!.Message);
+    }
+
+    [Fact]
+    public async Task WireMockEndpoint_Webhook_ShouldAccept() {
+        
+        var response = await _fixture.HttpClient.GetAsync("/webhook/payment");
+
+        Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
     }
 
     #endregion

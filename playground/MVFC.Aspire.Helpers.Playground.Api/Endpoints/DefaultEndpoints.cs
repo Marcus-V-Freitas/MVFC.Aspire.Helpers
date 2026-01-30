@@ -8,5 +8,6 @@ public static class DefaultEndpoints {
         apiGroup.MapMongoEndpoints();
         apiGroup.MapPubSubEndpoints();
         apiGroup.MapMailpitEndpoints();
+        apiGroup.MapWireMockEndpoints();
     }
 }

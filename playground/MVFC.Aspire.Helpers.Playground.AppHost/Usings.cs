@@ -7,6 +7,7 @@ global using MVFC.Aspire.Helpers.Mongo;
 global using Bogus.Extensions.Brazil;
 global using MVFC.Aspire.Helpers.Playground.AppHost.Models;
 global using System.Net;
+global using System.Text.Json;
 global using WireMock.Types;
 global using MVFC.Aspire.Helpers.WireMock;
 global using MVFC.Aspire.Helpers.Mailpit;

@@ -1,6 +1,31 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: static (server) => {
+var messageConfig = new MessageConfig(
+                            TopicName: "test-topic",
+                            SubscriptionName: "test-subscription",
+                            PushEndpoint: "/api/pub-sub-exit") {
+    DeadLetterTopic = "test-dead-letter-topic",
+    MaxDeliveryAttempts = 5,
+    AckDeadlineSeconds = 300,
+};
+
+var pubSubConfig = new PubSubConfig(
+                            projectId: "test-project",
+                            messageConfig: messageConfig);
+
+IList<IMongoClassDump> dumps = [
+    new MongoClassDump<TestDatabase>("TestDatabase", "TestCollection", 100,
+        new Faker<TestDatabase>()
+              .CustomInstantiator(f => new TestDatabase(f.Person.FirstName, f.Person.Cpf())))
+];
+
+var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+                 .WithCloudStorage(builder, name: "cloud-storage", localBucketFolder: "./bucket-data")
+                 .WithMongoReplicaSet(builder, name: "mongo", dumps: dumps)
+                 .WithGcpPubSub(builder, name: "gcp-pubsub", pubSubConfig: pubSubConfig)
+                 .WithMailPit(builder, name: "mailpit");
+
+var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: (server) => {
     server.Endpoint("/api/echo")
           .WithDefaultBodyType(BodyType.String)
           .OnPost<string, string>(body => ($"Echo: {body}", HttpStatusCode.Created, null));
@@ -66,31 +91,22 @@ var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: static (se
     server.Endpoint("/api/json")
         .WithDefaultBodyType(BodyType.Json)
         .OnPost<JsonModel, JsonModel>(body => (body, HttpStatusCode.OK, BodyType.Json));
+
+    server.Endpoint("/webhook/payment")
+          .WithDefaultBodyType(BodyType.Json)
+          .OnGet<string>(() => {
+
+              var payload = new PaymentPayload(2000, "R$");
+
+              _ = Task.Run(async () => {
+                  using var client = new HttpClient();
+
+                  var callbackBaseUrl = $"http://localhost:{api.GetEndpoint("http").Port}";
+                  await client.PostAsync($"{callbackBaseUrl}/api/payment-callback", new StringContent(JsonSerializer.Serialize(payload)));
+              });
+
+              return (null!, HttpStatusCode.Accepted, BodyType.Json);
+          });
 });
-
-var messageConfig = new MessageConfig(
-                            TopicName: "test-topic",
-                            SubscriptionName: "test-subscription",
-                            PushEndpoint: "/api/pub-sub-exit") {
-    DeadLetterTopic = "test-dead-letter-topic",
-    MaxDeliveryAttempts = 5,
-    AckDeadlineSeconds = 300,
-};
-
-var pubSubConfig = new PubSubConfig(
-                            projectId: "test-project",
-                            messageConfig: messageConfig);
-
-IList<IMongoClassDump> dumps = [
-    new MongoClassDump<TestDatabase>("TestDatabase", "TestCollection", 100,
-        new Faker<TestDatabase>()
-              .CustomInstantiator(f => new TestDatabase(f.Person.FirstName, f.Person.Cpf())))
-];
-
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
-       .WithCloudStorage(builder, name: "cloud-storage", localBucketFolder: "./bucket-data")
-       .WithMongoReplicaSet(builder, name: "mongo", dumps: dumps)
-       .WithGcpPubSub(builder, name: "gcp-pubsub", pubSubConfig: pubSubConfig)
-       .WithMailPit(builder, name: "mailpit");
 
 await builder.Build().RunAsync();
