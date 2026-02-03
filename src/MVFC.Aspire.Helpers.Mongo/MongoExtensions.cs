@@ -104,7 +104,11 @@ public static class MongoExtensions {
         string connectionStringSection = "ConnectionStrings:mongo",
         IList<IMongoClassDump>? dumps = null) {
 
-        var mongo = builder.AddMongoReplicaSet(name, image, tag, volumeName);
+        IResourceBuilder<ContainerResource> mongo;
+
+        if (!builder.TryCreateResourceBuilder(name, out mongo!)) {
+            mongo = builder.AddMongoReplicaSet(name, image, tag, volumeName);
+        }
 
         return project.WaitForMongoReplicaSet(mongo, connectionStringSection, dumps);
     }

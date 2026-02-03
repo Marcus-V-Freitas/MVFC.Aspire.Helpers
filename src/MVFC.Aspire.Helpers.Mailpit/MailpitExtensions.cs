@@ -98,7 +98,11 @@ public static class MailpitExtensions {
     /// <param name="mailpitConfig">Configurações opcionais para o Mailpit.</param>
     /// <returns>O builder do recurso do projeto com a referência ao Mailpit.</returns>
     public static IResourceBuilder<ProjectResource> WithMailPit(this IResourceBuilder<ProjectResource> project, IDistributedApplicationBuilder builder, string name, MailpitConfig? mailpitConfig = null) {
-        var mailpit = builder.AddMailpit(name, mailpitConfig);
+        IResourceBuilder<MailpitResource> mailpit;
+
+        if (!builder.TryCreateResourceBuilder(name, out mailpit!)) {
+            mailpit = builder.AddMailpit(name, mailpitConfig);
+        }
 
         return project.WaitFor(mailpit)
                       .WithReference(mailpit);

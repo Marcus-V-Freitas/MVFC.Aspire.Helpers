@@ -99,12 +99,8 @@ public static class CloudStorageExtensions {
         var settings = new CloudStorageConfig(
             LocalBucketFolder: localBucketFolder
         );
-        var cloudStorage = builder.AddCloudStorage(name, settings);
 
-        return project
-            .WithReference(cloudStorage)
-            .WithEnvironment("STORAGE_EMULATOR_HOST", GetStorageEndpointUrl(cloudStorage.Resource))
-            .WaitFor(cloudStorage);
+        return WithCloudStorage(project, builder, name, settings);
     }
 
     /// <summary>
@@ -123,8 +119,12 @@ public static class CloudStorageExtensions {
         Func<CloudStorageConfig, CloudStorageConfig> configure,
         string name) {
 
-        var settings = configure(new CloudStorageConfig());
-        var cloudStorage = builder.AddCloudStorage(name, settings);
+        IResourceBuilder<CloudStorageResource> cloudStorage;
+
+        if (!builder.TryCreateResourceBuilder(name, out cloudStorage!)) {
+            var settings = configure(new CloudStorageConfig());
+            cloudStorage = builder.AddCloudStorage(name, settings);
+        }
 
         return project
             .WithReference(cloudStorage)

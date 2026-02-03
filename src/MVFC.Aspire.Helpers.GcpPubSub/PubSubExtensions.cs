@@ -14,29 +14,9 @@ public static class PubSubExtensions {
     private const char SUBSCRIPTION_DELIMITER = ':';
     private const char DOCKER_IMAGE_DELIMITER = ':';
 
-    /// <summary>
-    /// Adiciona o emulador do Google Pub/Sub e sua interface de administração à aplicação distribuída.
-    /// </summary>
-    /// <param name="builder">Construtor da aplicação distribuída (<see cref="IDistributedApplicationBuilder"/>).</param>
-    /// <param name="name">Nome do recurso do emulador Pub/Sub.</param>
-    /// <param name="pubSubConfigs">Lista de configurações do Pub/Sub, incluindo ProjectId, tópicos e assinaturas.</param>
-    /// <param name="waitTimeoutSeconds">
-    /// (Opcional) Tempo máximo de espera, em segundos, para a inicialização completa do emulador Pub/Sub.
-    /// O valor padrão é 15 segundos.
-    /// </param>
-    /// <returns>Instância de <see cref="PubSubEmulatorResources"/> contendo os recursos do emulador e UI configurados.</returns>
-    public static PubSubEmulatorResources AddGcpPubSub(
-        this IDistributedApplicationBuilder builder,
-        string name,
-        IList<PubSubConfig> pubSubConfigs,
-        int waitTimeoutSeconds = WAIT_TIMEOUT_SECONDS_DEFAULT) {
-
-        var emulatorConfig = new EmulatorConfig(name);
-        var pubsubEmulator = builder.BuildPubSubEmulator(emulatorConfig, pubSubConfigs, waitTimeoutSeconds);
-        var pubsubUI = builder.BuildPubSubUI(emulatorConfig, pubsubEmulator, pubSubConfigs);
-
-        return new PubSubEmulatorResources(pubsubEmulator, pubsubUI, pubSubConfigs);
-    }
+    private static SubscriberServiceApiClient _subscriberClient = new SubscriberServiceApiClientBuilder() {
+        EmulatorDetection = EmulatorDetection.EmulatorOnly
+    }.Build();
 
     /// <summary>
     /// Adiciona o emulador do Google Pub/Sub e sua interface de administração à aplicação distribuída.
@@ -81,25 +61,6 @@ public static class PubSubExtensions {
         builder.AddGcpPubSub(emulatorConfig, [pubSubConfig], waitTimeoutSeconds);
 
     /// <summary>
-    /// Adiciona o emulador do Google Pub/Sub e sua interface de administração à aplicação distribuída.
-    /// </summary>
-    /// <param name="builder">Construtor da aplicação distribuída (<see cref="IDistributedApplicationBuilder"/>).</param>
-    /// <param name="name">Nome do recurso do emulador Pub/Sub.</param>
-    /// <param name="pubSubConfig">Configuração do Pub/Sub, incluindo ProjectId, tópicos e assinaturas.</param>
-    /// <param name="waitTimeoutSeconds">
-    /// (Opcional) Tempo máximo de espera, em segundos, para a inicialização completa do emulador Pub/Sub.
-    /// O valor padrão é 15 segundos.
-    /// </param>
-    /// <returns>Instância de <see cref="PubSubEmulatorResources"/> contendo os recursos do emulador e UI configurados.</returns>
-    public static PubSubEmulatorResources AddGcpPubSub(
-        this IDistributedApplicationBuilder builder,
-        string name,
-        PubSubConfig pubSubConfig,
-        int waitTimeoutSeconds = WAIT_TIMEOUT_SECONDS_DEFAULT) =>
-
-        builder.AddGcpPubSub(new EmulatorConfig(name), [pubSubConfig], waitTimeoutSeconds);
-
-    /// <summary>
     /// Configura o projeto para aguardar a inicialização do emulador Pub/Sub e da interface de administração,
     /// define as variáveis de ambiente necessárias e prepara o ambiente Pub/Sub.
     /// </summary>
@@ -138,9 +99,13 @@ public static class PubSubExtensions {
         IList<PubSubConfig> pubSubConfigs,
         int waitTimeoutSeconds = WAIT_TIMEOUT_SECONDS_DEFAULT) {
 
-        var pubSub = builder.AddGcpPubSub(name, pubSubConfigs, waitTimeoutSeconds);
+        var emulatorConfig = new EmulatorConfig(name);
 
-        return project.WaitForGcpPubSub(pubSub);
+        if (!builder.TryGetPubSubResources(emulatorConfig, pubSubConfigs, out var pubSub)) {
+            pubSub = builder.AddGcpPubSub(emulatorConfig, pubSubConfigs, waitTimeoutSeconds);
+        }
+
+        return project.WaitForGcpPubSub(pubSub!);
     }
 
     /// <summary>
@@ -162,9 +127,11 @@ public static class PubSubExtensions {
         IList<PubSubConfig> pubSubConfigs,
         int waitTimeoutSeconds = WAIT_TIMEOUT_SECONDS_DEFAULT) {
 
-        var pubSub = builder.AddGcpPubSub(emulatorConfig, pubSubConfigs, waitTimeoutSeconds);
+        if (!builder.TryGetPubSubResources(emulatorConfig, pubSubConfigs, out var pubSub)) {
+            pubSub = builder.AddGcpPubSub(emulatorConfig, pubSubConfigs, waitTimeoutSeconds);
+        }
 
-        return project.WaitForGcpPubSub(pubSub);
+        return project.WaitForGcpPubSub(pubSub!);
     }
 
     /// <summary>
@@ -186,9 +153,13 @@ public static class PubSubExtensions {
         PubSubConfig pubSubConfig,
         int waitTimeoutSeconds = WAIT_TIMEOUT_SECONDS_DEFAULT) {
 
-        var pubSub = builder.AddGcpPubSub(name, pubSubConfig, waitTimeoutSeconds);
+        var emulatorConfig = new EmulatorConfig(name);
 
-        return project.WaitForGcpPubSub(pubSub);
+        if (!builder.TryGetPubSubResources(emulatorConfig, [pubSubConfig], out var pubSub)) {
+            pubSub = builder.AddGcpPubSub(emulatorConfig, pubSubConfig, waitTimeoutSeconds);
+        }
+
+        return project.WaitForGcpPubSub(pubSub!);
     }
 
     /// <summary>
@@ -210,9 +181,39 @@ public static class PubSubExtensions {
         PubSubConfig pubSubConfig,
         int waitTimeoutSeconds = WAIT_TIMEOUT_SECONDS_DEFAULT) {
 
-        var pubSub = builder.AddGcpPubSub(emulatorConfig, pubSubConfig, waitTimeoutSeconds);
+        if (!builder.TryGetPubSubResources(emulatorConfig, [pubSubConfig], out var pubSub)) {
+            pubSub = builder.AddGcpPubSub(emulatorConfig, pubSubConfig, waitTimeoutSeconds);
+        }
 
-        return project.WaitForGcpPubSub(pubSub);
+        return project.WaitForGcpPubSub(pubSub!);
+    }
+
+    /// <summary>
+    /// Tenta obter e reutilizar os recursos do emulador Pub/Sub e sua interface de administração já existentes no builder.
+    /// Caso não existam, retorna <c>false</c> e <c>resources</c> será <c>null</c>.
+    /// </summary>
+    /// <param name="builder">Construtor da aplicação distribuída (<see cref="IDistributedApplicationBuilder"/>).</param>
+    /// <param name="emulatorConfig">Configuração do emulador Pub/Sub.</param>
+    /// <param name="pubSubConfigs">Lista de configurações do Pub/Sub, incluindo ProjectId, tópicos e assinaturas.</param>
+    /// <param name="resources">
+    /// Quando o método retorna <c>true</c>, contém os recursos do emulador e UI já existentes; caso contrário, <c>null</c>.
+    /// </param>
+    /// <returns><see cref="bool"/> indica se os recursos do emulador Pub/Sub e UI já existirem e forem reutilizados.</returns>
+    private static bool TryGetPubSubResources(
+        this IDistributedApplicationBuilder builder,
+        EmulatorConfig emulatorConfig,
+        IList<PubSubConfig> pubSubConfigs,
+        out PubSubEmulatorResources? resources) {
+        var emulatorExists = builder.TryCreateResourceBuilder<ContainerResource>(emulatorConfig.EmulatorName, out var emulator);
+        var uiExists = builder.TryCreateResourceBuilder<ContainerResource>(emulatorConfig.UiName, out var ui);
+
+        if (emulatorExists && uiExists) {
+            resources = new PubSubEmulatorResources(emulator!, ui!, pubSubConfigs);
+            return true;
+        }
+
+        resources = null;
+        return false;
     }
 
     /// <summary>
@@ -346,8 +347,11 @@ public static class PubSubExtensions {
 
         var pushEndpoint = $"http://host.docker.internal:{portEndpoint}";
 
-        foreach (var messageConfig in pubSubConfig.MessageConfigs)
-            await ModifyPushEndpoint(pubSubConfig.ProjectId, messageConfig, pushEndpoint, ct);
+        var tasks = pubSubConfig.MessageConfigs
+                                    .Select(mc => ModifyPushEndpoint(pubSubConfig.ProjectId, mc, pushEndpoint, ct))
+                                    .ToList();
+
+        await Task.WhenAll(tasks);
     }
 
     /// <summary>
@@ -363,19 +367,15 @@ public static class PubSubExtensions {
         string pushEndpoint,
         CancellationToken ct) {
 
-        var subscriber = await new SubscriberServiceApiClientBuilder() {
-            EmulatorDetection = EmulatorDetection.EmulatorOnly
-        }.BuildAsync(ct);
-
         try {
             var subscriptionName = SubscriptionName.FormatProjectSubscription(projectId, messageConfig.SubscriptionName);
-            var subscription = await subscriber.GetSubscriptionAsync(subscriptionName);
+            var subscription = await _subscriberClient.GetSubscriptionAsync(subscriptionName);
 
             subscription.PushConfig = BuildPushEndpoint(messageConfig, pushEndpoint);
             subscription.AckDeadlineSeconds = DefineAckDeadline(messageConfig);
             subscription.DeadLetterPolicy = BuildDeadLetterPolicy(projectId, messageConfig);
 
-            await subscriber.UpdateSubscriptionAsync(subscription, BuildFieldMaskUpdate(messageConfig), ct);
+            await _subscriberClient.UpdateSubscriptionAsync(subscription, BuildFieldMaskUpdate(messageConfig), ct);
         }
         catch (Exception ex) {
             Console.WriteLine(ex.Message);
