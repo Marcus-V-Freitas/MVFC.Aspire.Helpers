@@ -13,7 +13,7 @@ var pubSubConfig = new PubSubConfig(
                             projectId: "test-project",
                             messageConfig: messageConfig);
 
-IList<IMongoClassDump> dumps = [
+IReadOnlyCollection<IMongoClassDump> dumps = [
     new MongoClassDump<TestDatabase>("TestDatabase", "TestCollection", 100,
         new Faker<TestDatabase>()
               .CustomInstantiator(f => new TestDatabase(f.Person.FirstName, f.Person.Cpf())))

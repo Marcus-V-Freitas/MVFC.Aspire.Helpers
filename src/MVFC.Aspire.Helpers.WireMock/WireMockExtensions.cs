@@ -29,8 +29,8 @@ public static class WireMockExtensions {
         Action<WireMockServer>? configure = null) {
         var resource = new WireMockResource(name, port, configure);
 
-        // Registrar lifecycle hook
-        builder.Services.TryAddLifecycleHook<WireMockLifecycleHook>();
+        // Registrar eventing subscriber
+        builder.Services.TryAddEventingSubscriber<WireMockLifecycleHook>();
 
         return builder.AddResource(resource)
                       .WithInitialState(new CustomResourceSnapshot {

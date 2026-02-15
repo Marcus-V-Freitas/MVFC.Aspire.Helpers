@@ -1,7 +1,12 @@
 ﻿global using Bogus;
 global using System.Reflection;
+global using System.Diagnostics.CodeAnalysis;
 global using Aspire.Hosting;
-global using System.Text;
 global using Aspire.Hosting.ApplicationModel;
 global using MongoDB.Driver;
+global using Microsoft.Extensions.Logging;
 global using MVFC.Aspire.Helpers.Mongo.Models;
+global using MVFC.Aspire.Helpers.Mongo.Factories;
+global using MVFC.Aspire.Helpers.Mongo.Processors;
+global using MVFC.Aspire.Helpers.Mongo.Helpers;
+global using MVFC.Aspire.Helpers.Mongo.Extensions;

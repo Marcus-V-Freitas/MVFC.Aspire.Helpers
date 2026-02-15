@@ -19,6 +19,7 @@ public sealed class AppHostFixture : IAsyncLifetime {
     }
 
     public async ValueTask DisposeAsync() {
+        HttpClient?.Dispose();
         await DistributedApplication.DisposeAsync();
         await AppHost.DisposeAsync();
     }

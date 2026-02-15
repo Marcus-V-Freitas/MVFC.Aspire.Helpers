@@ -1,9 +1,6 @@
 <Project>
 	<PropertyGroup>
 		<LangVersion>13.0</LangVersion>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<AdditionalFiles Include=".editorconfig" />
-	</ItemGroup>
 </Project>

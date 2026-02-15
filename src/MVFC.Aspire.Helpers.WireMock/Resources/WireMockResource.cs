@@ -3,11 +3,11 @@
 /// <summary>
 /// Representa um recurso WireMock gerenciado pelo Aspire, com inicialização explícita e tratamento de erro.
 /// </summary>
-public sealed class WireMockResource : Resource, IResourceWithEndpoints {
+public sealed class WireMockResource : Resource, IResourceWithEndpoints, IDisposable {
     /// <summary>
     /// Instância do servidor WireMock associado ao recurso.
     /// </summary>
-    public readonly WireMockServer _server;
+    private readonly WireMockServer _server;
 
     /// <summary>
     /// Porta TCP utilizada pelo servidor WireMock.
@@ -32,4 +32,12 @@ public sealed class WireMockResource : Resource, IResourceWithEndpoints {
     /// Obtém a instância do servidor WireMock.
     /// </summary>
     public WireMockServer Server => _server;
+
+    /// <summary>
+    /// Libera os recursos do servidor WireMock, parando o servidor se estiver em execução.
+    /// </summary>
+    public void Dispose() {
+        if (_server.IsStarted)
+            _server.Stop();
+    }
 }

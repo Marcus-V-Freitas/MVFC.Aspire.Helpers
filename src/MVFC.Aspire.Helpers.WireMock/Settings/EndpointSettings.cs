@@ -9,14 +9,14 @@ public sealed class EndpointSettings {
     /// Delegate responsável por serializar um objeto para string.
     /// Pode ser sobrescrito para utilizar qualquer serializador desejado.
     /// </summary>
-    public Func<object, string> Serializar { get; set; } =
+    public Func<object, string> Serialize { get; set; } =
         obj => JsonSerializer.Serialize(obj);
 
     /// <summary>
     /// Delegate responsável por deserializar uma string para um objeto do tipo especificado.
     /// Pode ser sobrescrito para utilizar qualquer desserializador desejado.
     /// </summary>
-    public Func<string, Type, object?> Desserializar { get; set; } =
+    public Func<string, Type, object?> Deserialize { get; set; } =
         (json, type) => JsonSerializer.Deserialize(json, type);
 
     /// <summary>
@@ -25,8 +25,8 @@ public sealed class EndpointSettings {
     /// <typeparam name="T">Tipo do objeto a ser serializado.</typeparam>
     /// <param name="obj">Objeto a ser serializado.</param>
     /// <returns>Representação em string do objeto serializado.</returns>
-    public string SerializarGenerico<T>(T obj) =>
-        Serializar(obj!);
+    public string SerializeGeneric<T>(T obj) =>
+        Serialize(obj!);
 
     /// <summary>
     /// Desserializa uma string para um objeto do tipo <typeparamref name="T"/> usando o delegate <see cref="Desserializar"/>.
@@ -34,6 +34,6 @@ public sealed class EndpointSettings {
     /// <typeparam name="T">Tipo de destino da desserialização.</typeparam>
     /// <param name="json">String contendo o objeto serializado.</param>
     /// <returns>Objeto desserializado do tipo <typeparamref name="T"/>.</returns>
-    public T? DesserializarGenerico<T>(string json) =>
-        (T?)Desserializar(json, typeof(T));
+    public T? DeserializeGeneric<T>(string json) =>
+        (T?)Deserialize(json, typeof(T));
 }

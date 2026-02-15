@@ -16,4 +16,4 @@
 public sealed record class PubSubEmulatorResources(
     IResourceBuilder<ContainerResource> Emulator,
     IResourceBuilder<ContainerResource> UI,
-    IList<PubSubConfig> PubSubConfigs);
+    IReadOnlyList<PubSubConfig> PubSubConfigs);

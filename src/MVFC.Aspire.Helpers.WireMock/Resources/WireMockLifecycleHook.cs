@@ -1,41 +1,57 @@
-﻿namespace MVFC.Aspire.Helpers.WireMock.Resources;
+namespace MVFC.Aspire.Helpers.WireMock.Resources;
 
 /// <summary>
-/// Hook de ciclo de vida para recursos WireMock no Aspire.
-/// Responsável por publicar eventos e atualizar o estado dos recursos WireMock durante a alocação de endpoints.
+/// Subscriber de eventos do ciclo de vida para recursos WireMock no Aspire.
+/// Responsável por publicar eventos e atualizar o estado dos recursos WireMock durante a inicialização.
 /// </summary>
-[ExcludeFromCodeCoverage]
 internal sealed class WireMockLifecycleHook(
     ResourceNotificationService resourceNotificationService,
     IDistributedApplicationEventing eventing,
     ResourceLoggerService resourceLoggerService,
-    IServiceProvider serviceProvider) : IDistributedApplicationLifecycleHook {
+    IServiceProvider serviceProvider) : IDistributedApplicationEventingSubscriber {
     private readonly ResourceNotificationService _resourceNotificationService = resourceNotificationService;
     private readonly IDistributedApplicationEventing _eventing = eventing;
     private readonly ResourceLoggerService _resourceLoggerService = resourceLoggerService;
     private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     /// <summary>
-    /// Executa ações após a alocação dos endpoints dos recursos WireMock,
-    /// publicando eventos de início e pronto, além de atualizar o estado conforme o resultado da inicialização.
+    /// Registra a assinatura do evento <see cref="BeforeStartEvent"/> no pipeline de eventos do Aspire.
     /// </summary>
-    /// <param name="appModel">Modelo da aplicação distribuída contendo os recursos.</param>
+    /// <param name="eventing">Instância do sistema de eventos da aplicação distribuída.</param>
+    /// <param name="executionContext">Contexto de execução da aplicação distribuída.</param>
     /// <param name="cancellationToken">Token para cancelamento da operação assíncrona.</param>
     /// <returns>Uma tarefa que representa a operação assíncrona.</returns>
-    public async Task BeforeStartAsync(
-        DistributedApplicationModel appModel,
+    public Task SubscribeAsync(
+        IDistributedApplicationEventing eventing,
+        DistributedApplicationExecutionContext executionContext,
         CancellationToken cancellationToken = default) {
+
+        eventing.Subscribe<BeforeStartEvent>(OnBeforeStartAsync);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Manipula o evento BeforeStartEvent, executando ações de inicialização dos recursos WireMock,
+    /// publicando eventos de início e pronto, além de atualizar o estado conforme o resultado da inicialização.
+    /// </summary>
+    /// <param name="event">Evento disparado antes do início da aplicação distribuída.</param>
+    /// <param name="cancellationToken">Token para cancelamento da operação assíncrona.</param>
+    /// <returns>Uma tarefa que representa a operação assíncrona.</returns>
+    private async Task OnBeforeStartAsync(
+        BeforeStartEvent @event,
+        CancellationToken cancellationToken = default) {
+        var appModel = @event.Model;
         foreach (var wireMockResource in appModel.Resources.OfType<WireMockResource>()) {
             var logger = _resourceLoggerService.GetLogger(wireMockResource);
 
-            await PublicarEventoInicioAsync(wireMockResource, logger, cancellationToken);
-            await PublicarEventoProntoAsync(wireMockResource, cancellationToken);
+            await PublishStartEventAsync(wireMockResource, logger, cancellationToken);
+            await PublishReadyEventAsync(wireMockResource, cancellationToken);
 
             if (wireMockResource.Server.IsStarted) {
-                await NotificarWireMockIniciadoAsync(wireMockResource, logger);
+                await NotifyWireMockStartedAsync(wireMockResource, logger);
             }
             else {
-                await NotificarWireMockErroAsync(wireMockResource, logger);
+                await NotifyWireMockErrorAsync(wireMockResource, logger);
             }
         }
     }
@@ -47,7 +63,7 @@ internal sealed class WireMockLifecycleHook(
     /// <param name="logger">Logger associado ao recurso.</param>
     /// <param name="cancellationToken">Token de cancelamento.</param>
     /// <returns>Uma tarefa que representa a operação assíncrona.</returns>
-    private async Task PublicarEventoInicioAsync(
+    private async Task PublishStartEventAsync(
         WireMockResource resource,
         ILogger logger,
         CancellationToken cancellationToken) {
@@ -63,7 +79,7 @@ internal sealed class WireMockLifecycleHook(
     /// <param name="resource">Recurso WireMock.</param>
     /// <param name="cancellationToken">Token de cancelamento.</param>
     /// <returns>Uma tarefa que representa a operação assíncrona.</returns>
-    private async Task PublicarEventoProntoAsync(
+    private async Task PublishReadyEventAsync(
         WireMockResource resource,
         CancellationToken cancellationToken) {
 
@@ -77,11 +93,11 @@ internal sealed class WireMockLifecycleHook(
     /// <param name="resource">Recurso WireMock.</param>
     /// <param name="logger">Logger associado ao recurso.</param>
     /// <returns>Uma tarefa que representa a operação assíncrona.</returns>
-    private async Task NotificarWireMockIniciadoAsync(
+    private async Task NotifyWireMockStartedAsync(
         WireMockResource resource,
         ILogger logger) {
 
-        logger.logReadyAspireWireMock(resource.Name, resource.Port);
+        logger.LogReadyAspireWireMock(resource.Name, resource.Port);
 
         await _resourceNotificationService.PublishUpdateAsync(
             resource,
@@ -98,7 +114,7 @@ internal sealed class WireMockLifecycleHook(
     /// <param name="resource">Recurso WireMock.</param>
     /// <param name="logger">Logger associado ao recurso.</param>
     /// <returns>Uma tarefa que representa a operação assíncrona.</returns>
-    private async Task NotificarWireMockErroAsync(
+    private async Task NotifyWireMockErrorAsync(
         WireMockResource resource,
         ILogger logger) {
 

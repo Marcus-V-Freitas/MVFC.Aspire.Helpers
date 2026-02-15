@@ -9,7 +9,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     public async Task MongoOkStatusCode() {
         // Act
         var httpClient = _fixture.DistributedApplication.CreateHttpClient("api-exemplo");
-        var response = await httpClient.GetAsync("/api/mongo");
+        var response = await httpClient.GetAsync("/api/mongo", TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -24,7 +24,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
 
         // Act
         var httpClient = _fixture.DistributedApplication.CreateHttpClient("api-exemplo");
-        var response = await httpClient.GetAsync("/api/bucket/bucket-teste");
+        var response = await httpClient.GetAsync("/api/bucket/bucket-teste", TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -39,7 +39,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
 
         // Act
         var httpClient = _fixture.DistributedApplication.CreateHttpClient("api-exemplo");
-        var response = await httpClient.GetAsync("/api/pub-sub-enter");
+        var response = await httpClient.GetAsync("/api/pub-sub-enter", TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -61,7 +61,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
         });
 
         var httpClient = _fixture.DistributedApplication.CreateHttpClient("api-exemplo");
-        var response = await httpClient.PostAsync("/api/send-email", body);
+        var response = await httpClient.PostAsync("/api/send-email", body, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -73,8 +73,8 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
 
     [Fact]
     public async Task WireMockEndpoint_Get_ShouldReturnMockedResponse() {
-        var response = await _fixture.HttpClient.GetAsync("/api/test");
-        var content = await response.Content.ReadAsStringAsync();
+        var response = await _fixture.HttpClient.GetAsync("/api/test", TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("Aspire GET OK", content);
@@ -83,8 +83,8 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     [Fact]
     public async Task WireMockEndpoint_Post_ShouldReturnPostedData() {
         var httpContent = new StringContent("Aspire", Encoding.UTF8, "text/plain");
-        var response = await _fixture.HttpClient.PostAsync("/api/echo", httpContent);
-        var content = await response.Content.ReadAsStringAsync();
+        var response = await _fixture.HttpClient.PostAsync("/api/echo", httpContent, TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.Equal("Echo: Aspire", content);
@@ -92,8 +92,8 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
 
     [Fact]
     public async Task WireMockEndpoint_Post_ShouldReturnBadRequest() {
-        var response = await _fixture.HttpClient.PostAsync("/api/echo", null);
-        var content = await response.Content.ReadAsStringAsync();
+        var response = await _fixture.HttpClient.PostAsync("/api/echo", null, TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Empty(content);
@@ -101,8 +101,8 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
 
     [Fact]
     public async Task WireMockEndpoint_Auth_ShouldReturnUnauthorized_WhenTokenMissing() {
-        var response = await _fixture.HttpClient.GetAsync("/api/secure");
-        var content = await response.Content.ReadAsStringAsync();
+        var response = await _fixture.HttpClient.GetAsync("/api/secure", TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         Assert.Equal("Unauthorized", content);
@@ -114,8 +114,8 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
             Headers = { { "Authorization", "Bearer mytoken" } }
         };
 
-        var response = await _fixture.HttpClient.SendAsync(message);
-        var content = await response.Content.ReadAsStringAsync();
+        var response = await _fixture.HttpClient.SendAsync(message, TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("Secret Data", content);
@@ -123,16 +123,16 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
 
     [Fact]
     public async Task PutEndpoint_ShouldReturnAccepted() {
-        var response = await _fixture.HttpClient.PutAsync("/api/put", new StringContent("Aspire", Encoding.UTF8, "text/plain"));
-        var content = await response.Content.ReadAsStringAsync();
+        var response = await _fixture.HttpClient.PutAsync("/api/put", new StringContent("Aspire", Encoding.UTF8, "text/plain"), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
         Assert.Equal("Echo: Aspire", content);
     }
 
     [Fact]
     public async Task CustomAuth_ShouldReturnForbidden_WhenInvalid() {
-        var response = await _fixture.HttpClient.GetAsync("/api/customauth");
-        var content = await response.Content.ReadAsStringAsync();
+        var response = await _fixture.HttpClient.GetAsync("/api/customauth", TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         Assert.Equal("Forbidden", content);
     }
@@ -146,40 +146,40 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
         if (useHeader)
             request.Headers.Add("X-Test", "ok");
 
-        var response = await _fixture.HttpClient.SendAsync(request);
-        var content = await response.Content.ReadAsStringAsync();
+        var response = await _fixture.HttpClient.SendAsync(request, TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Equal(expectedStatusCode, response.StatusCode);
         Assert.Equal(expectedContent, content);
     }
 
     [Fact]
     public async Task ResponseHeaders_ShouldReturnAllHeaders() {
-        var response = await _fixture.HttpClient.GetAsync("/api/headers");
+        var response = await _fixture.HttpClient.GetAsync("/api/headers", TestContext.Current.CancellationToken);
         Assert.Equal("v1,v2", string.Join(',', response.Headers.GetValues("X-Test")));
         Assert.Equal("v3", string.Join(',', response.Headers.GetValues("X-Other")));
-        var content = await response.Content.ReadAsStringAsync();
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Equal("Headers OK", content);
     }
 
     [Fact]
     public async Task ErrorStatusCode_ShouldReturnCustomStatus() {
-        var response = await _fixture.HttpClient.GetAsync("/api/error");
-        var content = await response.Content.ReadAsStringAsync();
+        var response = await _fixture.HttpClient.GetAsync("/api/error", TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Equal((HttpStatusCode)418, response.StatusCode);
         Assert.Equal("I am a teapot", content);
     }
 
     [Fact]
     public async Task WireMockEndpoint_Delete_ShouldReturnNoContent() {
-        var response = await _fixture.HttpClient.DeleteAsync("/api/delete");
+        var response = await _fixture.HttpClient.DeleteAsync("/api/delete", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
     [Fact]
     public async Task WireMockEndpoint_FormUrlEncoded_ShouldParseFormData() {
         var formContent = new FormUrlEncodedContent([new KeyValuePair<string, string>("key", "value")]);
-        var response = await _fixture.HttpClient.PostAsync("/api/form", formContent);
-        var content = await response.Content.ReadAsStringAsync();
+        var response = await _fixture.HttpClient.PostAsync("/api/form", formContent, TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("key=value", content);
     }
@@ -188,8 +188,8 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     public async Task WireMockEndpoint_Patch_ShouldReturnPatched() {
         var patchContent = new StringContent("patch-data", Encoding.UTF8, "text/plain");
         var request = new HttpRequestMessage(HttpMethod.Patch, "/api/patch") { Content = patchContent };
-        var response = await _fixture.HttpClient.SendAsync(request);
-        var content = await response.Content.ReadAsStringAsync();
+        var response = await _fixture.HttpClient.SendAsync(request, TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("Patched: patch-data", content);
     }
@@ -199,8 +199,8 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
         var bytes = Encoding.UTF8.GetBytes("AspireBytes");
         var content = new ByteArrayContent(bytes);
         content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
-        var response = await _fixture.HttpClient.PostAsync("/api/bytes", content);
-        var responseBytes = await response.Content.ReadAsByteArrayAsync();
+        var response = await _fixture.HttpClient.PostAsync("/api/bytes", content, TestContext.Current.CancellationToken);
+        var responseBytes = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(bytes, responseBytes);
@@ -209,13 +209,13 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     [Fact]
     public async Task WireMockEndpoint_FormUrlEncoded_ShouldReturnBadRequest_WhenNotDictionary() {
         var content = new StringContent("not-a-dictionary", Encoding.UTF8, "application/x-www-form-urlencoded");
-        var response = await _fixture.HttpClient.PostAsync("/api/form-wrong", content);
+        var response = await _fixture.HttpClient.PostAsync("/api/form-wrong", content, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
     [Fact]
     public async Task WireMockEndpoint_Headers_ShouldOverwriteAndReturnAll() {
-        var response = await _fixture.HttpClient.DeleteAsync("/api/delete");
+        var response = await _fixture.HttpClient.DeleteAsync("/api/delete", TestContext.Current.CancellationToken);
         var headers = response.Headers.GetValues("v1").ToArray();
         Assert.Contains("v2", headers);
         Assert.Contains("v3", headers);
@@ -226,7 +226,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     [Fact]
     public async Task WireMockEndpoint_UnsupportedBodyType_ShouldReturnError() {
         var content = new StringContent("unsupported", Encoding.UTF8, "application/unsupported");
-        var response = await _fixture.HttpClient.PostAsync("/api/unsupported", content);
+        var response = await _fixture.HttpClient.PostAsync("/api/unsupported", content, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
@@ -236,8 +236,8 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
         var json = JsonSerializer.Serialize(model);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await _fixture.HttpClient.PostAsync("/api/json", content);
-        var responseJson = await response.Content.ReadAsStringAsync();
+        var response = await _fixture.HttpClient.PostAsync("/api/json", content, TestContext.Current.CancellationToken);
+        var responseJson = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         var responseModel = JsonSerializer.Deserialize<JsonModel>(responseJson);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -247,8 +247,8 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
 
     [Fact]
     public async Task WireMockEndpoint_Webhook_ShouldAccept() {
-        
-        var response = await _fixture.HttpClient.GetAsync("/webhook/payment");
+
+        var response = await _fixture.HttpClient.GetAsync("/webhook/payment", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
     }

@@ -1,0 +1,22 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/playground/">
+    <Project Path="playground/MVFC.Aspire.Helpers.Playground.Api/MVFC.Aspire.Helpers.Playground.Api.csproj" />
+    <Project Path="playground/MVFC.Aspire.Helpers.Playground.AppHost/MVFC.Aspire.Helpers.Playground.AppHost.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/MVFC.Aspire.Helpers.CloudStorage/MVFC.Aspire.Helpers.CloudStorage.csproj" />
+    <Project Path="src/MVFC.Aspire.Helpers.GcpPubSub/MVFC.Aspire.Helpers.GcpPubSub.csproj" />
+    <Project Path="src/MVFC.Aspire.Helpers.Mailpit/MVFC.Aspire.Helpers.Mailpit.csproj" />
+    <Project Path="src/MVFC.Aspire.Helpers.Mongo/MVFC.Aspire.Helpers.Mongo.csproj" />
+    <Project Path="src/MVFC.Aspire.Helpers.WireMock/MVFC.Aspire.Helpers.WireMock.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/MVFC.Aspire.Helpers.UnitTests/MVFC.Aspire.Helpers.UnitTests.csproj" />
+    <Project Path="test/MVFC.Aspire.Helpers.Tests/MVFC.Aspire.Helpers.Tests.csproj" />
+  </Folder>
+</Solution>

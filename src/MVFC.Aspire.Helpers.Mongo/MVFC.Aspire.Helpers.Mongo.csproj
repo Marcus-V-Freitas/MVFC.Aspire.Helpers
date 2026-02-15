@@ -19,6 +19,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="MVFC.Aspire.Helpers.UnitTests" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Include="README.md" Pack="true" PackagePath="" />
 	</ItemGroup>
 
@@ -27,7 +31,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Aspire.Hosting" Version="13.1.0" />
+		<PackageReference Include="Aspire.Hosting" Version="13.1.1" />
 		<PackageReference Include="Bogus" Version="35.6.*" />
 		<PackageReference Include="MongoDB.Driver" Version="3.5.*" />
 	</ItemGroup>

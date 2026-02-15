@@ -25,7 +25,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Aspire.Hosting" Version="13.1.0" />
+		<PackageReference Include="Aspire.Hosting" Version="13.1.1" />
 		<PackageReference Include="WireMock.Net.minimal" Version="1.15.*" />
 	</ItemGroup>
 

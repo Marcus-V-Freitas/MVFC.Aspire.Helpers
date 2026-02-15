@@ -5,8 +5,8 @@
 /// permitindo customização de imagem, persistência de buckets e integração com projetos dependentes.
 /// </summary>
 public static class CloudStorageExtensions {
-    private const int HOST_PORT = 4443;
-    private const string STORAGE_PATH_SUFFIX = "/storage/v1/";
+    private const int HostPort = 4443;
+    private const string StoragePathSuffix = "/storage/v1/";
 
     /// <summary>
     /// Adiciona um recurso de Cloud Storage (emulador GCS) à aplicação distribuída, utilizando um container baseado na imagem "fsouza/fake-gcs-server".
@@ -31,8 +31,8 @@ public static class CloudStorageExtensions {
             .WithImage(storageConfig.EmulatorImage)
             .WithImageTag(storageConfig.EmulatorTag)
             .WithHttpEndpoint(
-                port: HOST_PORT,
-                targetPort: HOST_PORT,
+                port: HostPort,
+                targetPort: HostPort,
                 name: CloudStorageResource.HttpEndpointName,
                 isProxied: false)
             .WithArgs("--scheme", CloudStorageResource.HttpEndpointName);
@@ -142,7 +142,7 @@ public static class CloudStorageExtensions {
     private static ReferenceExpression GetStorageEndpointUrl(CloudStorageResource resource) {
         var endpoint = resource.HttpEndpoint;
         return ReferenceExpression.Create(
-            $"{endpoint.Property(EndpointProperty.Scheme)}://{endpoint.Property(EndpointProperty.Host)}:{endpoint.Property(EndpointProperty.Port)}{STORAGE_PATH_SUFFIX}"
+            $"{endpoint.Property(EndpointProperty.Scheme)}://{endpoint.Property(EndpointProperty.Host)}:{endpoint.Property(EndpointProperty.Port)}{StoragePathSuffix}"
         );
     }
 }

@@ -1,10 +1,17 @@
-﻿namespace MVFC.Aspire.Helpers.WireMock.Builders;
+namespace MVFC.Aspire.Helpers.WireMock.Builders;
 
 /// <summary>
 /// Builder para configuração de endpoints WireMock integrados ao Aspire.
 /// Permite definir autenticação, tipos de corpo, headers e handlers para métodos HTTP.
 /// </summary>
-public sealed class EndpointBuilder(WireMockServer server, string path) {
+/// <remarks>
+/// Inicializa uma nova instância de <see cref="EndpointBuilder"/>.
+/// </remarks>
+/// <param name="server">Instância do servidor WireMock.</param>
+/// <param name="path">Caminho do endpoint.</param>
+/// <param name="settings">Configurações opcionais de serialização/deserialização. Se nulo, utiliza valores padrão.</param>
+public sealed class EndpointBuilder(WireMockServer server, string path, EndpointSettings? settings = null)
+{
     private readonly WireMockServer _server = server;
     private readonly string _path = path;
     private Encoding _encoding = Encoding.UTF8;
@@ -13,15 +20,7 @@ public sealed class EndpointBuilder(WireMockServer server, string path) {
     private Func<IRequestMessage, (bool, object?, BodyType)>? _authValidator;
     private readonly Dictionary<string, WireMockList<string>> _customHeaders = [];
     private HttpStatusCode _defaultErrorStatusCode = HttpStatusCode.Unauthorized;
-    private static EndpointSettings _settings = new();
-
-    /// <summary>
-    /// Define as configurações globais de serialização e deserialização utilizadas pelos endpoints.
-    /// Permite customizar o comportamento de conversão de objetos para string e vice-versa.
-    /// </summary>
-    /// <param name="settings">Instância de <see cref="EndpointSettings"/> com os delegates customizados.</param>
-    public static void SetEndpointSettings(EndpointSettings settings) =>
-        _settings = settings;
+    private readonly EndpointSettings _settings = settings ?? new EndpointSettings();
 
     /// <summary>
     /// Define o tipo de body esperado na requisição.
@@ -153,7 +152,7 @@ public sealed class EndpointBuilder(WireMockServer server, string path) {
                 .WithCallback(request =>
                     HandleRequest(
                         request,
-                        () => ThreatResponse(request, handler)
+                        () => ProcessResponse(request, handler)
                     )
                 )
         );
@@ -204,7 +203,7 @@ public sealed class EndpointBuilder(WireMockServer server, string path) {
                 .WithCallback(request =>
                     HandleRequest(
                         request,
-                        () => ThreatResponse(request, handler)
+                        () => ProcessResponse(request, handler)
                     )
                 )
         );
@@ -255,7 +254,7 @@ public sealed class EndpointBuilder(WireMockServer server, string path) {
                 .WithCallback(request =>
                     HandleRequest(
                         request,
-                        () => ThreatResponse(request, handler)
+                        () => ProcessResponse(request, handler)
                     )
                 )
         );
@@ -271,7 +270,7 @@ public sealed class EndpointBuilder(WireMockServer server, string path) {
     /// <param name="request">Mensagem da requisição recebida.</param>
     /// <param name="handler">Função que processa o objeto da requisição e retorna resposta, status e tipo de body.</param>
     /// <returns>Tupla contendo resposta, status HTTP e tipo de body.</returns>
-    private (TResponse, HttpStatusCode, BodyType) ThreatResponse<TRequest, TResponse>(IRequestMessage request, Func<TRequest, (TResponse, HttpStatusCode, BodyType?)> handler) {
+    private (TResponse, HttpStatusCode, BodyType) ProcessResponse<TRequest, TResponse>(IRequestMessage request, Func<TRequest, (TResponse, HttpStatusCode, BodyType?)> handler) {
         if (string.IsNullOrWhiteSpace(request.Body))
             return (default!, HttpStatusCode.BadRequest, _responseBodyType);
 
@@ -289,7 +288,7 @@ public sealed class EndpointBuilder(WireMockServer server, string path) {
     /// <returns>Objeto desserializado ou null.</returns>
     private TRequest? DeserializeBody<TRequest>(string body, BodyType bodyType)
         => bodyType switch {
-            BodyType.Json => _settings.DesserializarGenerico<TRequest>(body),
+            BodyType.Json => _settings.DeserializeGeneric<TRequest>(body),
             BodyType.String => (TRequest)(object)body,
             BodyType.Bytes => (TRequest)(object)_encoding.GetBytes(body),
             BodyType.FormUrlEncoded => ParseFormUrlEncoded<TRequest>(body),
@@ -366,7 +365,7 @@ public sealed class EndpointBuilder(WireMockServer server, string path) {
 
         switch (contentType) {
             case BodyType.Json:
-                response.BodyData.BodyAsString = _settings.SerializarGenerico(obj);
+                response.BodyData.BodyAsString = _settings.SerializeGeneric(obj);
                 response.Headers["Content-Type"] = ["application/json"];
                 response.BodyData.DetectedBodyType = BodyType.String;
                 break;
