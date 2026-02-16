@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsAspireSharedProject>true</IsAspireSharedProject>
+		<Version>0.0.0</Version>
+		<Authors>Marcus Vinicius de Freitas Costa</Authors>
+		<Description>Helpers para integração com RabbitMQ em projetos .NET Aspire, incluindo criação automática de exchanges, queues e dead letter queues.</Description>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<RepositoryUrl>https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/tree/master/src/MVFC.Aspire.Helpers.RabbitMQ</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageProjectUrl>https://www.nuget.org/packages/MVFC.Aspire.Helpers.RabbitMQ</PackageProjectUrl>
+		<PackageTags>aspire;dotnet;helpers;rabbitmq;messaging;csharp;net;microservicos</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<IsPackable>true</IsPackable>
+		<PackageIcon>icon.png</PackageIcon>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="MVFC.Aspire.Helpers.UnitTests" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="icon.png" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Aspire.Hosting" Version="13.1.1" />
+	</ItemGroup>
+</Project>

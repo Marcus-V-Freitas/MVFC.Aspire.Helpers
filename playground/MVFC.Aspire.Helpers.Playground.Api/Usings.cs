@@ -10,3 +10,5 @@ global using System.Text.Json;
 global using Google.Protobuf;
 global using System.Net.Mail;
 global using MVFC.Aspire.Helpers.Playground.Api.Requests;
+global using StackExchange.Redis;
+global using RabbitMQ.Client;

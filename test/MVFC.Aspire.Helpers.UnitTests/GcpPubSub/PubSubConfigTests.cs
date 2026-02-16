@@ -1,8 +1,6 @@
-using MVFC.Aspire.Helpers.GcpPubSub.Models;
-
 namespace MVFC.Aspire.Helpers.UnitTests.GcpPubSub;
 
-public class PubSubConfigTests
+public sealed class PubSubConfigTests
 {
     [Fact]
     public void Constructor_WithSingleMessage_ShouldSetProperties()

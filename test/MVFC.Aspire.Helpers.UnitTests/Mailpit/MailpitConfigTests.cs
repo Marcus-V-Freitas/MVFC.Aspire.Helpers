@@ -1,8 +1,6 @@
-using MVFC.Aspire.Helpers.Mailpit.Models;
-
 namespace MVFC.Aspire.Helpers.UnitTests.Mailpit;
 
-public class MailpitConfigTests {
+public sealed class MailpitConfigTests {
     [Fact]
     public void DefaultValues_ShouldBeCorrect() {
         var config = new MailpitConfig();

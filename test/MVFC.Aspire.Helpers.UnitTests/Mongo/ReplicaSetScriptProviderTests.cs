@@ -1,8 +1,6 @@
-using MVFC.Aspire.Helpers.Mongo.Helpers;
-
 namespace MVFC.Aspire.Helpers.UnitTests.Mongo;
 
-public class ReplicaSetScriptProviderTests {
+public sealed class ReplicaSetScriptProviderTests {
     [Fact]
     public void GetInitScript_ShouldReturnNonEmptyString() {
         var script = ReplicaSetScriptProvider.GetInitScript();

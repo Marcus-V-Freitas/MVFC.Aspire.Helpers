@@ -21,6 +21,8 @@
 		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.CloudStorage\MVFC.Aspire.Helpers.CloudStorage.csproj" IsAspireProjectResource="false" />
 		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.WireMock\MVFC.Aspire.Helpers.WireMock.csproj" IsAspireProjectResource="false" />
 		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.Mailpit\MVFC.Aspire.Helpers.Mailpit.csproj" IsAspireProjectResource="false" />
+		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.Redis\MVFC.Aspire.Helpers.Redis.csproj" IsAspireProjectResource="false" />
+		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.RabbitMQ\MVFC.Aspire.Helpers.RabbitMQ.csproj" IsAspireProjectResource="false" />
 		<ProjectReference Include="..\MVFC.Aspire.Helpers.Playground.Api\MVFC.Aspire.Helpers.Playground.Api.csproj" />
 	</ItemGroup>
 

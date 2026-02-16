@@ -1,8 +1,6 @@
-using MVFC.Aspire.Helpers.WireMock.Resources;
-
 namespace MVFC.Aspire.Helpers.UnitTests.WireMock;
 
-public class WireMockResourceTests {
+public sealed class WireMockResourceTests {
     [Fact]
     public void Constructor_ShouldSetNameAndPort() {
         using var resource = new WireMockResource("wiremock-test", 0);

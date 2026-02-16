@@ -1,8 +1,6 @@
-using MVFC.Aspire.Helpers.Mongo.Helpers;
-
 namespace MVFC.Aspire.Helpers.UnitTests.Mongo;
 
-public class DockerImageHelperTests {
+public sealed class DockerImageHelperTests {
     [Fact]
     public void Build_WithValidValues_ShouldReturnCorrectFormat() {
         var result = DockerImageHelper.Build("mongo", "latest");

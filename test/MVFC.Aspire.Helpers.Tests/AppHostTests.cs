@@ -254,4 +254,70 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     #endregion
+
+    #region Redis
+
+    [Fact]
+    public async Task Redis_Get_ShouldReturnValue() {
+        // Arrange
+        var httpClient = _fixture.DistributedApplication.CreateHttpClient("api-exemplo");
+        await httpClient.GetAsync("/api/redis/set/integration-key/integration-value", TestContext.Current.CancellationToken);
+
+        // Act
+        var response = await httpClient.GetAsync("/api/redis/get/integration-key", TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("integration-value", content);
+    }
+
+    [Fact]
+    public async Task Redis_GetNonExistent_ShouldReturnNotFound() {
+        // Act
+        var httpClient = _fixture.DistributedApplication.CreateHttpClient("api-exemplo");
+        var response = await httpClient.GetAsync("/api/redis/get/non-existent-key", TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    #endregion
+
+    #region RabbitMQ
+
+    [Fact]
+    public async Task RabbitMQ_PublishAndConsume_ShouldReturnMessage() {
+        // Arrange
+        await Task.Delay(500, TestContext.Current.CancellationToken);
+        var httpClient = _fixture.DistributedApplication.CreateHttpClient("api-exemplo");
+        var message = "integration-test-message";
+
+        // Act - Publish
+        await httpClient.PostAsync($"/api/rabbitmq/publish/test-exchange/test.key/{message}", null, TestContext.Current.CancellationToken);
+
+        // Wait a bit for message to be processed
+        await Task.Delay(1000, TestContext.Current.CancellationToken);
+
+        // Act - Consume
+        var response = await httpClient.GetAsync("/api/rabbitmq/consume/test-queue", TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains(message, content);
+    }
+
+    [Fact]
+    public async Task RabbitMQ_ConsumeEmpty_ShouldReturnNoContent() {
+        // Act
+        await Task.Delay(500, TestContext.Current.CancellationToken);
+        var httpClient = _fixture.DistributedApplication.CreateHttpClient("api-exemplo");
+        var response = await httpClient.GetAsync("/api/rabbitmq/consume/empty-queue", TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    #endregion
 }

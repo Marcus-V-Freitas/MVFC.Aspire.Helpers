@@ -1,9 +1,6 @@
-using Bogus;
-using MVFC.Aspire.Helpers.Mongo.Models;
-
 namespace MVFC.Aspire.Helpers.UnitTests.Mongo;
 
-public class MongoClassDumpTests {
+public sealed class MongoClassDumpTests {
     private class TestDocument {
         public string Name { get; set; } = string.Empty;
         public int Age { get; set; }

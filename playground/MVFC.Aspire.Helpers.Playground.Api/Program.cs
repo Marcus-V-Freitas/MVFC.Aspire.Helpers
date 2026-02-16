@@ -16,6 +16,16 @@ builder.Services.AddSingleton<SmtpClient>(_ => {
     return new SmtpClient(smtpUri.Host, smtpUri.Port);
 });
 
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("redis")!));
+
+builder.Services.AddSingleton<IConnection>(_ => {
+    var factory = new ConnectionFactory {
+        Uri = new Uri(builder.Configuration.GetConnectionString("rabbitmq")!)
+    };
+    return factory.CreateConnection();
+});
+
 var app = builder.Build();
 app.MapAllEndpoints();
 

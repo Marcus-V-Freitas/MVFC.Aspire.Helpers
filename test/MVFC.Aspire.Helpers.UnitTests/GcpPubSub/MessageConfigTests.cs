@@ -1,8 +1,6 @@
-using MVFC.Aspire.Helpers.GcpPubSub.Models;
-
 namespace MVFC.Aspire.Helpers.UnitTests.GcpPubSub;
 
-public class MessageConfigTests
+public sealed class MessageConfigTests
 {
     [Fact]
     public void DefaultValues_ShouldBeCorrect()

@@ -1,8 +1,6 @@
-using MVFC.Aspire.Helpers.Mailpit.Resources;
-
 namespace MVFC.Aspire.Helpers.UnitTests.Mailpit;
 
-public class MailpitResourceTests {
+public sealed class MailpitResourceTests {
     [Fact]
     public void Constructor_ShouldSetName() {
         var resource = new MailpitResource("mailpit-test");

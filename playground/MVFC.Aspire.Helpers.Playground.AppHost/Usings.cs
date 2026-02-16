@@ -11,3 +11,7 @@ global using System.Text.Json;
 global using WireMock.Types;
 global using MVFC.Aspire.Helpers.WireMock;
 global using MVFC.Aspire.Helpers.Mailpit;
+global using MVFC.Aspire.Helpers.Redis;
+global using MVFC.Aspire.Helpers.Redis.Models;
+global using MVFC.Aspire.Helpers.RabbitMQ;
+global using MVFC.Aspire.Helpers.RabbitMQ.Models;

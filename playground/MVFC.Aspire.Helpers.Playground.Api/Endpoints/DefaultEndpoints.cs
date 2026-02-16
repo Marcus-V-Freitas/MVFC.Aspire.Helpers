@@ -9,5 +9,7 @@ public static class DefaultEndpoints {
         apiGroup.MapPubSubEndpoints();
         apiGroup.MapMailpitEndpoints();
         apiGroup.MapWireMockEndpoints();
+        apiGroup.MapRedisEndpoints();
+        apiGroup.MapRabbitMQEndpoints();
     }
 }

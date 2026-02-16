@@ -1,8 +1,6 @@
-using MVFC.Aspire.Helpers.GcpPubSub.Models;
-
 namespace MVFC.Aspire.Helpers.UnitTests.GcpPubSub;
 
-public class EmulatorConfigTests
+public sealed class EmulatorConfigTests
 {
     [Fact]
     public void DefaultValues_ShouldBeCorrect()

@@ -13,10 +13,12 @@
     <Project Path="src/MVFC.Aspire.Helpers.GcpPubSub/MVFC.Aspire.Helpers.GcpPubSub.csproj" />
     <Project Path="src/MVFC.Aspire.Helpers.Mailpit/MVFC.Aspire.Helpers.Mailpit.csproj" />
     <Project Path="src/MVFC.Aspire.Helpers.Mongo/MVFC.Aspire.Helpers.Mongo.csproj" />
+    <Project Path="src/MVFC.Aspire.Helpers.RabbitMQ/MVFC.Aspire.Helpers.RabbitMQ.csproj" />
+    <Project Path="src/MVFC.Aspire.Helpers.Redis/MVFC.Aspire.Helpers.Redis.csproj" />
     <Project Path="src/MVFC.Aspire.Helpers.WireMock/MVFC.Aspire.Helpers.WireMock.csproj" />
   </Folder>
   <Folder Name="/test/">
-    <Project Path="test/MVFC.Aspire.Helpers.UnitTests/MVFC.Aspire.Helpers.UnitTests.csproj" />
     <Project Path="test/MVFC.Aspire.Helpers.Tests/MVFC.Aspire.Helpers.Tests.csproj" />
+    <Project Path="test/MVFC.Aspire.Helpers.UnitTests/MVFC.Aspire.Helpers.UnitTests.csproj" />
   </Folder>
 </Solution>

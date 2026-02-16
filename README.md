@@ -60,6 +60,28 @@ dotnet add package MVFC.Aspire.Helpers.WireMock
 dotnet add package MVFC.Aspire.Helpers.Mailpit
 ```
 
+### [`RabbitMQ`](./src/MVFC.Aspire.Helpers.RabbitMQ)
+
+- Adiciona um container RabbitMQ.
+- Permite configuração de exchanges e queues.
+- Permite configuração de dead-letter exchanges.
+- Permite configuração de volume de persistência.
+- Adicione o pacote NuGet ao seu projeto AppHost:
+
+```sh
+dotnet add package MVFC.Aspire.Helpers.RabbitMQ
+```
+
+### [`Redis`](./src/MVFC.Aspire.Helpers.Redis)
+
+- Adiciona um container Redis.
+- Permite configuração de volume de persistência.
+- Adicione o pacote NuGet ao seu projeto AppHost:
+
+```sh
+dotnet add package MVFC.Aspire.Helpers.Redis
+```
+
 ---
 
 ## API de Exemplo (Playground)
@@ -69,6 +91,10 @@ dotnet add package MVFC.Aspire.Helpers.Mailpit
   - `/api/bucket/{bucketName}`
   - `/api/pub-sub-enter`
   - `/api/pub-sub-exit`
+  - `/rabbitmq/publish/{exchange}/{routingKey}/{message}`
+  - `/rabbitmq/consume/{queue}`
+  - `/redis/set/{key}/{value}`
+  - `/redis/get/{key}`
 - Implementações no projeto [`MVFC.Aspire.Helpers.Playground.Api`](./playground/MVFC.Aspire.Helpers.Playground.Api/).
 
 ## Integração no Aspire no [`MVFC.Aspire.Helpers.Playground.AppHost`](./playground/MVFC.Aspire.Helpers.Playground.AppHost/AppHost.cs)
@@ -85,17 +111,39 @@ var messageConfig = new MessageConfig(
     AckDeadlineSeconds = 300,
 };
 
+var rabbitConfig = new RabbitMQConfig(
+    Exchanges: [
+        new ExchangeConfig("test-exchange", "topic"), 
+        new ExchangeConfig("dead-letter", "fanout")], 
+    Queues: [
+        new QueueConfig(Name: "test-queue", ExchangeName: "test-exchange", RoutingKey: "test.*", DeadLetterExchange: "dead-letter"), 
+        new QueueConfig(Name: "empty-queue", ExchangeName: "test-exchange", RoutingKey: "empty.*"), 
+        new QueueConfig(Name: "dlq", ExchangeName: "dead-letter")],
+    VolumeName: "rabbit-mq");
+
 var pubSubConfig = new PubSubConfig(
                             projectId: "test-project",
                             messageConfig: messageConfig);
 
-IList<IMongoClassDump> dumps = [
+var redisConfig = new RedisConfig(
+    WithCommander: true, 
+    VolumeName: "redis-data");
+
+IReadOnlyCollection<IMongoClassDump> dumps = [
     new MongoClassDump<TestDatabase>("TestDatabase", "TestCollection", 100,
         new Faker<TestDatabase>()
               .CustomInstantiator(f => new TestDatabase(f.Person.FirstName, f.Person.Cpf())))
 ];
 
-var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: static (server) => {
+var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+                 .WithCloudStorage(builder, name: "cloud-storage", localBucketFolder: "./bucket-data")
+                 .WithMongoReplicaSet(builder, name: "mongo", dumps: dumps)
+                 .WithGcpPubSub(builder, name: "gcp-pubsub", pubSubConfig: pubSubConfig)
+                 .WithMailPit(builder, name: "mailpit")
+                 .WithRabbitMQ(builder, name: "rabbitmq", rabbitMQConfig: rabbitConfig)
+                 .WithRedis(builder, name: "redis", redisConfig: redisConfig);
+
+var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: (server) => {
     server.Endpoint("/api/echo")
           .WithDefaultBodyType(BodyType.String)
           .OnPost<string, string>(body => ($"Echo: {body}", HttpStatusCode.Created, null));
@@ -155,21 +203,32 @@ var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: static (se
         .OnPost<byte[], byte[]>(body => (body, HttpStatusCode.OK, BodyType.Bytes));
 
     server.Endpoint("/api/unsupported")
-        .WithDefaultBodyType((BodyType)999) // BodyType não suportado
+        .WithDefaultBodyType((BodyType)999) // BodyType n�o suportado
         .OnPost<string, string>(_ => ("Not Supported", HttpStatusCode.NotImplemented, null));
 
     server.Endpoint("/api/json")
         .WithDefaultBodyType(BodyType.Json)
         .OnPost<JsonModel, JsonModel>(body => (body, HttpStatusCode.OK, BodyType.Json));
+
+    server.Endpoint("/webhook/payment")
+          .WithDefaultBodyType(BodyType.Json)
+          .OnGet<string>(() => {
+
+              var payload = new PaymentPayload(2000, "R$");
+
+              _ = Task.Run(async () => {
+                  using var client = new HttpClient();
+
+                  var callbackBaseUrl = $"http://localhost:{api.GetEndpoint("http").Port}";
+                  await client.PostAsync($"{callbackBaseUrl}/api/payment-callback", new StringContent(JsonSerializer.Serialize(payload)));
+              });
+
+              return (null!, HttpStatusCode.Accepted, BodyType.Json);
+          });
 });
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
-       .WithCloudStorage(builder, name: "cloud-storage", localBucketFolder: "./bucket-data")
-       .WithMongoReplicaSet(builder, name: "mongo", dumps: dumps)
-       .WithGcpPubSub(builder, name: "gcp-pubsub", pubSubConfig: pubSubConfig)
-       .WithMailPit(builder, name: "mailpit");;
-
 await builder.Build().RunAsync();
+
 ```
 
 ## Licença

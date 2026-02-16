@@ -9,9 +9,23 @@ var messageConfig = new MessageConfig(
     AckDeadlineSeconds = 300,
 };
 
+var rabbitConfig = new RabbitMQConfig(
+    Exchanges: [
+        new ExchangeConfig("test-exchange", "topic"), 
+        new ExchangeConfig("dead-letter", "fanout")], 
+    Queues: [
+        new QueueConfig(Name: "test-queue", ExchangeName: "test-exchange", RoutingKey: "test.*", DeadLetterExchange: "dead-letter"), 
+        new QueueConfig(Name: "empty-queue", ExchangeName: "test-exchange", RoutingKey: "empty.*"), 
+        new QueueConfig(Name: "dlq", ExchangeName: "dead-letter")],
+    VolumeName: "rabbit-mq");
+
 var pubSubConfig = new PubSubConfig(
                             projectId: "test-project",
                             messageConfig: messageConfig);
+
+var redisConfig = new RedisConfig(
+    WithCommander: true, 
+    VolumeName: "redis-data");
 
 IReadOnlyCollection<IMongoClassDump> dumps = [
     new MongoClassDump<TestDatabase>("TestDatabase", "TestCollection", 100,
@@ -23,7 +37,9 @@ var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-e
                  .WithCloudStorage(builder, name: "cloud-storage", localBucketFolder: "./bucket-data")
                  .WithMongoReplicaSet(builder, name: "mongo", dumps: dumps)
                  .WithGcpPubSub(builder, name: "gcp-pubsub", pubSubConfig: pubSubConfig)
-                 .WithMailPit(builder, name: "mailpit");
+                 .WithMailPit(builder, name: "mailpit")
+                 .WithRabbitMQ(builder, name: "rabbitmq", rabbitMQConfig: rabbitConfig)
+                 .WithRedis(builder, name: "redis", redisConfig: redisConfig);
 
 var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: (server) => {
     server.Endpoint("/api/echo")
@@ -85,7 +101,7 @@ var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: (server) =
         .OnPost<byte[], byte[]>(body => (body, HttpStatusCode.OK, BodyType.Bytes));
 
     server.Endpoint("/api/unsupported")
-        .WithDefaultBodyType((BodyType)999) // BodyType não suportado
+        .WithDefaultBodyType((BodyType)999) // BodyType nï¿½o suportado
         .OnPost<string, string>(_ => ("Not Supported", HttpStatusCode.NotImplemented, null));
 
     server.Endpoint("/api/json")

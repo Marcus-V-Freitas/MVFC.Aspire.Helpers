@@ -1,8 +1,6 @@
-using MVFC.Aspire.Helpers.CloudStorage.Models;
-
 namespace MVFC.Aspire.Helpers.UnitTests.CloudStorage;
 
-public class CloudStorageConfigTests {
+public sealed class CloudStorageConfigTests {
     [Fact]
     public void DefaultValues_ShouldBeCorrect() {
         var config = new CloudStorageConfig();

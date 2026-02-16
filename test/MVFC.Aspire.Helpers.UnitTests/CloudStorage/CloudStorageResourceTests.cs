@@ -1,8 +1,6 @@
-using MVFC.Aspire.Helpers.CloudStorage.Resources;
-
 namespace MVFC.Aspire.Helpers.UnitTests.CloudStorage;
 
-public class CloudStorageResourceTests {
+public sealed class CloudStorageResourceTests {
     [Fact]
     public void Constructor_ShouldSetName() {
         var resource = new CloudStorageResource("gcs-test");
