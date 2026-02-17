@@ -26,7 +26,22 @@ builder.Services.AddSingleton<IConnection>(_ => {
     return factory.CreateConnection();
 });
 
+builder.Services.AddOpenApi(options => {
+    options.AddDocumentTransformer((document, context, cancellationToken) => {
+        document.Servers = [];
+        return Task.CompletedTask;
+    });
+});
+
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment()) {
+    app.MapOpenApi();
+    app.MapScalarApiReference(options => {
+        options.Servers = [];
+    });
+}
+
 app.MapAllEndpoints();
 
 await app.RunAsync();

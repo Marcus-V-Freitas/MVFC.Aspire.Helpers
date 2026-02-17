@@ -8,6 +8,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.*" />
+		<PackageReference Include="Scalar.AspNetCore" Version="2.12.*" />
 		<PackageReference Include="StackExchange.Redis" Version="2.*" />
 		<PackageReference Include="RabbitMQ.Client" Version="6.*" />
 		<PackageReference Include="Google.Cloud.PubSub.V1" Version="3.30.*" />

@@ -112,28 +112,27 @@ public static class RabbitMQExtensions
     /// <summary>
     /// Constrói o objeto de definições do RabbitMQ com usuário, vhosts, permissões, exchanges, queues e bindings.
     /// </summary>
-    private static Dictionary<string, object> BuildDefinitionsJson(RabbitMQConfig config)
+    private static RabbitMQDefinitions BuildDefinitionsJson(RabbitMQConfig config)
     {
 
-        var exchanges = new List<Dictionary<string, object>>();
-        var queues = new List<Dictionary<string, object>>();
-        var bindings = new List<Dictionary<string, object>>();
+        var exchanges = new List<RabbitMQExchange>();
+        var queues = new List<RabbitMQQueue>();
+        var bindings = new List<RabbitMQBinding>();
 
         // Exchanges
         if (config.Exchanges is not null)
         {
             foreach (var exchange in config.Exchanges)
             {
-                exchanges.Add(new Dictionary<string, object>
-                {
-                    ["name"] = exchange.Name,
-                    ["vhost"] = "/",
-                    ["type"] = exchange.Type,
-                    ["durable"] = exchange.Durable,
-                    ["auto_delete"] = exchange.AutoDelete,
-                    ["internal"] = false,
-                    ["arguments"] = new Dictionary<string, object>()
-                });
+                exchanges.Add(new RabbitMQExchange(
+                    Name: exchange.Name,
+                    Vhost: "/",
+                    Type: exchange.Type,
+                    Durable: exchange.Durable,
+                    AutoDelete: exchange.AutoDelete,
+                    Internal: false,
+                    Arguments: []
+                ));
             }
         }
 
@@ -150,56 +149,55 @@ public static class RabbitMQExtensions
                 if (queue.MessageTTL.HasValue)
                     arguments["x-message-ttl"] = queue.MessageTTL.Value;
 
-                queues.Add(new Dictionary<string, object>
-                {
-                    ["name"] = queue.Name,
-                    ["vhost"] = "/",
-                    ["durable"] = queue.Durable,
-                    ["auto_delete"] = queue.AutoDelete,
-                    ["arguments"] = arguments
-                });
+                queues.Add(new RabbitMQQueue(
+                    Name: queue.Name,
+                    Vhost: "/",
+                    Durable: queue.Durable,
+                    AutoDelete: queue.AutoDelete,
+                    Arguments: arguments
+                ));
 
                 // Criar binding se ExchangeName fornecido
                 if (!string.IsNullOrWhiteSpace(queue.ExchangeName))
                 {
-                    bindings.Add(new Dictionary<string, object>
-                    {
-                        ["source"] = queue.ExchangeName,
-                        ["vhost"] = "/",
-                        ["destination"] = queue.Name,
-                        ["destination_type"] = "queue",
-                        ["routing_key"] = queue.RoutingKey ?? queue.Name,
-                        ["arguments"] = new Dictionary<string, object>()
-                    });
+                    bindings.Add(new RabbitMQBinding(
+                        Source: queue.ExchangeName,
+                        Vhost: "/",
+                        Destination: queue.Name,
+                        DestinationType: "queue",
+                        RoutingKey: queue.RoutingKey ?? queue.Name,
+                        Arguments: []
+                    ));
                 }
             }
         }
 
-        return new Dictionary<string, object>
-        {
-            ["users"] = new List<Dictionary<string, object>> {
-                new() {
-                    ["name"] = config.Username,
-                    ["password_hash"] = HashPassword(config.Password),
-                    ["hashing_algorithm"] = "rabbit_password_hashing_sha256",
-                    ["tags"] = _roleAdmin }
-            },
-            ["vhosts"] = new List<Dictionary<string, object>> {
-                new() { ["name"] = "/" }
-            },
-            ["permissions"] = new List<Dictionary<string, object>> {
-                new() {
-                    ["user"] = config.Username,
-                    ["vhost"] = "/",
-                    ["configure"] = ".*",
-                    ["write"] = ".*",
-                    ["read"] = ".*"
-                }
-            },
-            ["exchanges"] = exchanges,
-            ["queues"] = queues,
-            ["bindings"] = bindings
-        };
+        return new RabbitMQDefinitions(
+            Users:
+            [
+                new RabbitMQUser(
+                    Name: config.Username,
+                    PasswordHash: HashPassword(config.Password),
+                    HashingAlgorithm: "rabbit_password_hashing_sha256",
+                    Tags: _roleAdmin)
+            ],
+            Vhosts:
+            [
+                new RabbitMQVhost(Name: "/")
+            ],
+            Permissions:
+            [
+                new RabbitMQPermission(
+                    User: config.Username,
+                    Vhost: "/",
+                    Configure: ".*",
+                    Write: ".*",
+                    Read: ".*")
+            ],
+            Exchanges: exchanges,
+            Queues: queues,
+            Bindings: bindings
+        );
     }
 
     /// <summary>

@@ -21,4 +21,12 @@ public interface IMongoClassDump
     /// Quantidade de documentos incluídos no dump.
     /// </summary>
     int Quantity { get; }
+
+    /// <summary>
+    /// Executa a inserção dos documentos na coleção especificada.
+    /// </summary>
+    /// <param name="client">O cliente MongoDB.</param>
+    /// <param name="cancellationToken">Token de cancelamento.</param>
+    /// <returns>Uma tarefa que representa a operação assíncrona.</returns>
+    Task ExecuteDumpAsync(IMongoClient client, CancellationToken cancellationToken);
 }

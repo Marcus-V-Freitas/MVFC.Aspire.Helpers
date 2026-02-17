@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Mailpit;
+namespace MVFC.Aspire.Helpers.Mailpit;
 
 /// <summary>
 /// Fornece métodos de extensão para facilitar a configuração e integração do recurso Mailpit
@@ -73,7 +73,6 @@ public static class MailpitExtensions {
 
         return resourceBuilder;
     }
-
 
     /// <summary>
     /// Aguarda até que o recurso Mailpit esteja disponível antes de iniciar o projeto Aspire.

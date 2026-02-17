@@ -15,4 +15,18 @@ public record class MongoClassDump<T>(
     string DatabaseName,
     string CollectionName,
     int Quantity,
-    Faker<T> Faker) : IMongoClassDump where T : class;
+    Faker<T> Faker) : IMongoClassDump where T : class
+{
+    /// <inheritdoc />
+    public async Task ExecuteDumpAsync(IMongoClient client, CancellationToken cancellationToken)
+    {
+        var database = client.GetDatabase(DatabaseName);
+        var collection = database.GetCollection<T>(CollectionName);
+        var items = Faker.Generate(Quantity);
+
+        if (items.Count > 0)
+        {
+            await collection.InsertManyAsync(items, cancellationToken: cancellationToken);
+        }
+    }
+}

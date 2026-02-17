@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.CloudStorage;
+namespace MVFC.Aspire.Helpers.CloudStorage;
 
 /// <summary>
 /// Fornece métodos de extensão para facilitar a configuração, integração e uso de um recurso de Cloud Storage (emulador GCS) em aplicações distribuídas,
@@ -47,6 +47,12 @@ public static class CloudStorageExtensions {
     /// <summary>
     /// Sobrecarga simplificada com porta customizada
     /// </summary>
+    /// <param name="builder">O construtor da aplicação distribuída.</param>
+    /// <param name="name">Nome do recurso de Cloud Storage.</param>
+    /// <param name="localBucketFolder">Caminho local para persistência dos buckets (opcional).</param>
+    /// <returns>
+    /// O <see cref="IResourceBuilder{ProjectResource}"/> do projeto, configurado para utilizar o Cloud Storage.
+    /// </returns>
     public static IResourceBuilder<CloudStorageResource> AddCloudStorage(
         this IDistributedApplicationBuilder builder,
         string name,
@@ -55,6 +61,22 @@ public static class CloudStorageExtensions {
         builder.AddCloudStorage(name, new CloudStorageConfig(
             LocalBucketFolder: localBucketFolder
         ));
+
+    /// <summary>
+    /// Configura o projeto para aguardar a inicialização do recurso de Cloud Storage, adicionando referência, variável de ambiente com a URL do endpoint e dependência de inicialização.
+    /// </summary>
+    /// <param name="project">O recurso do projeto que irá depender do Cloud Storage.</param>
+    /// <param name="cloudStorage">O recurso de Cloud Storage a ser aguardado.</param>
+    /// <returns>
+    /// O <see cref="IResourceBuilder{ProjectResource}"/> do projeto, configurado para aguardar e utilizar o Cloud Storage.
+    /// </returns>
+    public static IResourceBuilder<ProjectResource> WaitForCloudStorage(
+        this IResourceBuilder<ProjectResource> project,
+        IResourceBuilder<CloudStorageResource> cloudStorage) =>
+
+        project.WithReference(cloudStorage)
+               .WithEnvironment("STORAGE_EMULATOR_HOST", GetStorageEndpointUrl(cloudStorage.Resource))
+               .WaitFor(cloudStorage);
 
     /// <summary>
     /// Adiciona e integra o recurso de Cloud Storage ao projeto, configurando dependências e persistência opcional.
@@ -72,12 +94,14 @@ public static class CloudStorageExtensions {
         string name,
         CloudStorageConfig? storageConfig = null) {
 
-        var cloudStorage = builder.AddCloudStorage(name, storageConfig);
+        IResourceBuilder<CloudStorageResource> cloudStorage;
 
-        return project
-            .WithReference(cloudStorage)
-            .WithEnvironment("STORAGE_EMULATOR_HOST", GetStorageEndpointUrl(cloudStorage.Resource))
-            .WaitFor(cloudStorage);
+        if (!builder.TryCreateResourceBuilder(name, out cloudStorage!))
+        {
+            cloudStorage = builder.AddCloudStorage(name, storageConfig);
+        }
+
+        return project.WaitForCloudStorage(cloudStorage);
     }
 
     /// <summary>
@@ -100,7 +124,7 @@ public static class CloudStorageExtensions {
             LocalBucketFolder: localBucketFolder
         );
 
-        return WithCloudStorage(project, builder, name, settings);
+        return project.WithCloudStorage(builder, name, settings);
     }
 
     /// <summary>
@@ -119,17 +143,9 @@ public static class CloudStorageExtensions {
         Func<CloudStorageConfig, CloudStorageConfig> configure,
         string name) {
 
-        IResourceBuilder<CloudStorageResource> cloudStorage;
+        var settings = configure(new CloudStorageConfig());
 
-        if (!builder.TryCreateResourceBuilder(name, out cloudStorage!)) {
-            var settings = configure(new CloudStorageConfig());
-            cloudStorage = builder.AddCloudStorage(name, settings);
-        }
-
-        return project
-            .WithReference(cloudStorage)
-            .WithEnvironment("STORAGE_EMULATOR_HOST", GetStorageEndpointUrl(cloudStorage.Resource))
-            .WaitFor(cloudStorage);
+        return project.WithCloudStorage(builder, name, settings);
     }
 
     /// <summary>
