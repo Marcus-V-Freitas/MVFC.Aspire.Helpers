@@ -13,3 +13,4 @@ global using MVFC.Aspire.Helpers.Playground.Api.Requests;
 global using StackExchange.Redis;
 global using RabbitMQ.Client;
 global using Scalar.AspNetCore;
+global using MVFC.Aspire.Helpers.Playground.Api.Helpers;

@@ -17,16 +17,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Include="icon.png" Pack="true" PackagePath="" />
 		<None Include="README.md" Pack="true" PackagePath="" />
 	</ItemGroup>
-
+	
 	<ItemGroup>
-		<None Include="icon.png" Pack="true" PackagePath="" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Aspire.Hosting" Version="13.1.*" />
-		<PackageReference Include="WireMock.Net.minimal" Version="1.15.*" />
+		<PackageReference Include="Aspire.Hosting" />
+		<PackageReference Include="WireMock.Net.minimal" />
 	</ItemGroup>
 
 	<ItemGroup>

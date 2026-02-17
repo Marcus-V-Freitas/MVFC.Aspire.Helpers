@@ -4,16 +4,16 @@ public static class RabbitMQEndpoints {
 
     public static void MapRabbitMQEndpoints(this IEndpointRouteBuilder apiGroup) {
 
-        apiGroup.MapPost("/rabbitmq/publish/{exchange}/{routingKey}/{message}", (IConnection connection, string exchange, string routingKey, string message) => {
-            using var channel = connection.CreateModel();
+        apiGroup.MapPost("/rabbitmq/publish/{exchange}/{routingKey}/{message}", async (IConnection connection, string exchange, string routingKey, string message) => {
+            using var channel = await connection.CreateChannelAsync();
             var body = System.Text.Encoding.UTF8.GetBytes(message);
-            channel.BasicPublish(exchange: exchange, routingKey: routingKey, basicProperties: null, body: body);
+            await channel.BasicPublishAsync(exchange, routingKey, mandatory: true, body: body, cancellationToken: CancellationToken.None);
             return Results.Ok($"Mensagem publicada em '{exchange}' com routing key '{routingKey}'");
         });
 
-        apiGroup.MapGet("/rabbitmq/consume/{queue}", (IConnection connection, string queue) => {
-            using var channel = connection.CreateModel();
-            var result = channel.BasicGet(queue, autoAck: true);
+        apiGroup.MapGet("/rabbitmq/consume/{queue}", async (IConnection connection, string queue) => {
+            using var channel = await connection.CreateChannelAsync();
+            var result = await channel.BasicGetAsync(queue, autoAck: true, CancellationToken.None);
 
             if (result == null)
                 return Results.NoContent();
