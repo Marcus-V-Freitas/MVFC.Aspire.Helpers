@@ -111,14 +111,12 @@ var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: (server) =
     server.Endpoint("/webhook/payment")
           .WithDefaultBodyType(BodyType.Json)
           .OnGet<string>(() => {
-
               var payload = new PaymentPayload(2000, "R$");
 
               _ = Task.Run(async () => {
-                  using var client = new HttpClient();
+                  ApiHelper helper = new(api.GetEndpoint("http").Port);
 
-                  var callbackBaseUrl = $"http://localhost:{api.GetEndpoint("http").Port}";
-                  await client.PostAsync($"{callbackBaseUrl}/api/payment-callback", new StringContent(JsonSerializer.Serialize(payload)));
+                  await helper.SendPayloadAsync(payload);
               });
 
               return (null!, HttpStatusCode.Accepted, BodyType.Json);

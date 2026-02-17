@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net9.0;net10.0</TargetFrameworks>
@@ -9,20 +9,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="coverlet.collector" Version="6.0.*">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="FluentAssertions" Version="8.*" />
+		<PackageReference Include="coverlet.collector" Version="6.0.*" />
+		<PackageReference Include="FluentAssertions" Version="7.*" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.*" />
 		<PackageReference Include="NSubstitute" Version="5.*" />
 		<PackageReference Include="xunit.v3" Version="3.2.*" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.*">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
+		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.*" />
 	</ItemGroup>
-
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.CloudStorage\MVFC.Aspire.Helpers.CloudStorage.csproj" />
@@ -32,11 +25,6 @@
 		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.RabbitMQ\MVFC.Aspire.Helpers.RabbitMQ.csproj" />
 		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.Redis\MVFC.Aspire.Helpers.Redis.csproj" />
 		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.WireMock\MVFC.Aspire.Helpers.WireMock.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Using Include="Xunit" />
-		<Using Include="FluentAssertions" />
 	</ItemGroup>
 
 </Project>

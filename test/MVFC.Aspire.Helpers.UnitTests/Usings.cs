@@ -1,3 +1,5 @@
+global using FluentAssertions;
+global using Xunit;
 global using MVFC.Aspire.Helpers.Redis.Resources;
 global using MVFC.Aspire.Helpers.CloudStorage.Models;
 global using MVFC.Aspire.Helpers.CloudStorage.Resources;

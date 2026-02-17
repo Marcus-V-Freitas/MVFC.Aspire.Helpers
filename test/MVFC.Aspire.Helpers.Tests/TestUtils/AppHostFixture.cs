@@ -1,26 +1,29 @@
 ﻿namespace MVFC.Aspire.Helpers.Tests.TestUtils;
 
 public sealed class AppHostFixture : IAsyncLifetime {
-    public IDistributedApplicationTestingBuilder AppHost { get; private set; } = default!;
 
-    public DistributedApplication DistributedApplication { get; private set; } = default!;
+    private IDistributedApplicationTestingBuilder _appHost = default!;
+    private DistributedApplication _distributedApplication = default!;
 
     public HttpClient HttpClient { get; private set; } = default!;
+    public HttpClient AppHttpClient { get; private set; } = default!;
 
     public async ValueTask InitializeAsync() {
-        AppHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.MVFC_Aspire_Helpers_Playground_AppHost>();
+        _appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.MVFC_Aspire_Helpers_Playground_AppHost>();
 
-        DistributedApplication = await AppHost.BuildAsync();
-        await DistributedApplication.StartAsync();
+        _distributedApplication = await _appHost.BuildAsync();
+        await _distributedApplication.StartAsync();
 
+        AppHttpClient = _distributedApplication.CreateHttpClient("api-exemplo");
         HttpClient = new HttpClient() {
             BaseAddress = new Uri("http://localhost:8080")
         };
     }
 
     public async ValueTask DisposeAsync() {
+        AppHttpClient?.Dispose();
         HttpClient?.Dispose();
-        await DistributedApplication.DisposeAsync();
-        await AppHost.DisposeAsync();
+        await _distributedApplication.DisposeAsync();
+        await _appHost.DisposeAsync();
     }
 }

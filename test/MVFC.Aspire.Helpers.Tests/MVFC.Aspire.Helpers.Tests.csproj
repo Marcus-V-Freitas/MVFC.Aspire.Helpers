@@ -9,29 +9,16 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Aspire.Hosting.Testing" Version="13.1.1" />
-		<PackageReference Include="coverlet.collector" Version="6.0.*">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
+		<PackageReference Include="Aspire.Hosting.Testing" Version="13.*" />
+		<PackageReference Include="coverlet.collector" Version="6.0.*" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.*" />
 		<PackageReference Include="xunit.v3" Version="3.2.*" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.*">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
+		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.*" />
+		<PackageReference Include="FluentAssertions" Version="7.*" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\playground\MVFC.Aspire.Helpers.Playground.AppHost\MVFC.Aspire.Helpers.Playground.AppHost.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Using Include="System.Net" />
-		<Using Include="Microsoft.Extensions.DependencyInjection" />
-		<Using Include="Aspire.Hosting.ApplicationModel" />
-		<Using Include="Aspire.Hosting.Testing" />
-		<Using Include="Xunit" />
 	</ItemGroup>
 
 </Project>

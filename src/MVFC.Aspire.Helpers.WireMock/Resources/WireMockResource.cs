@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.WireMock.Resources;
+namespace MVFC.Aspire.Helpers.WireMock.Resources;
 
 /// <summary>
 /// Representa um recurso WireMock gerenciado pelo Aspire, com inicialização explícita e tratamento de erro.
@@ -8,6 +8,11 @@ public sealed class WireMockResource : Resource, IResourceWithEndpoints, IDispos
     /// Instância do servidor WireMock associado ao recurso.
     /// </summary>
     private readonly WireMockServer _server;
+
+    /// <summary>
+    /// Indica se os recursos do servidor WireMock foram liberados, para evitar múltiplas chamadas de Dispose.
+    /// </summary>
+    private bool _disposed;
 
     /// <summary>
     /// Porta TCP utilizada pelo servidor WireMock.
@@ -36,8 +41,24 @@ public sealed class WireMockResource : Resource, IResourceWithEndpoints, IDispos
     /// <summary>
     /// Libera os recursos do servidor WireMock, parando o servidor se estiver em execução.
     /// </summary>
-    public void Dispose() {
-        if (_server.IsStarted)
-            _server.Stop();
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        try
+        {
+            if (_server?.IsStarted == true)
+            {
+                _server.Stop();
+                Thread.Sleep(100);
+            }
+
+            (_server as IDisposable)?.Dispose();
+        }
+        finally
+        {
+            _disposed = true;
+        }
     }
 }
