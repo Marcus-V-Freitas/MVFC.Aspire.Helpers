@@ -35,7 +35,7 @@ IReadOnlyCollection<IMongoClassDump> dumps = [
 
 var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
                  .WithCloudStorage(builder, name: "cloud-storage", localBucketFolder: "./bucket-data")
-                 .WithMongoReplicaSet(builder, name: "mongo", dumps: dumps)
+                 .WithMongoReplicaSet(builder, name: "mongo", dumps: dumps, port: 8282)
                  .WithGcpPubSub(builder, name: "gcp-pubsub", pubSubConfig: pubSubConfig)
                  .WithMailPit(builder, name: "mailpit")
                  .WithRabbitMQ(builder, name: "rabbitmq", rabbitMQConfig: rabbitConfig)

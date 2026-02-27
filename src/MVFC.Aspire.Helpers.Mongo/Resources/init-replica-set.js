@@ -16,12 +16,7 @@ try {
     if (e.message.includes("already initialized")) {
         print("Replica set already initialized.");
     } else {
-        try {
-            rs.initiate();
-            print("Replica set initiated with default configuration.");
-        } catch (ex) {
-            print("Error initiating replica set: " + ex.message);
-        }
+        print("Error initiating replica set: " + e.message);
     }
 }
 
