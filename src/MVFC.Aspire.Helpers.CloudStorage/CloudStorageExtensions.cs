@@ -5,9 +5,7 @@ namespace MVFC.Aspire.Helpers.CloudStorage;
 /// permitindo customização de imagem, persistência de buckets e integração com projetos dependentes.
 /// </summary>
 public static class CloudStorageExtensions {
-    private const int HostPort = 4443;
-    private const string StoragePathSuffix = "/storage/v1/";
-
+    
     /// <summary>
     /// Adiciona um recurso de Cloud Storage (emulador GCS) à aplicação distribuída, utilizando um container baseado na imagem "fsouza/fake-gcs-server".
     /// Permite customizar configurações como tag da imagem, host público e persistência dos buckets.
@@ -31,8 +29,8 @@ public static class CloudStorageExtensions {
             .WithImage(storageConfig.EmulatorImage)
             .WithImageTag(storageConfig.EmulatorTag)
             .WithHttpEndpoint(
-                port: HostPort,
-                targetPort: HostPort,
+                port: storageConfig.Port ?? CloudStorageDefaults.HostPort,
+                targetPort: CloudStorageDefaults.HostPort,
                 name: CloudStorageResource.HttpEndpointName,
                 isProxied: false)
             .WithArgs("--scheme", CloudStorageResource.HttpEndpointName);
@@ -75,7 +73,7 @@ public static class CloudStorageExtensions {
         IResourceBuilder<CloudStorageResource> cloudStorage) =>
 
         project.WithReference(cloudStorage)
-               .WithEnvironment("STORAGE_EMULATOR_HOST", GetStorageEndpointUrl(cloudStorage.Resource))
+               .WithEnvironment(CloudStorageDefaults.StorageEmulatorVariableName, GetStorageEndpointUrl(cloudStorage.Resource))
                .WaitFor(cloudStorage);
 
     /// <summary>
@@ -158,7 +156,7 @@ public static class CloudStorageExtensions {
     private static ReferenceExpression GetStorageEndpointUrl(CloudStorageResource resource) {
         var endpoint = resource.HttpEndpoint;
         return ReferenceExpression.Create(
-            $"{endpoint.Property(EndpointProperty.Scheme)}://{endpoint.Property(EndpointProperty.Host)}:{endpoint.Property(EndpointProperty.Port)}{StoragePathSuffix}"
+            $"{endpoint.Property(EndpointProperty.Scheme)}://{endpoint.Property(EndpointProperty.Host)}:{endpoint.Property(EndpointProperty.Port)}{CloudStorageDefaults.StoragePathSuffix}"
         );
     }
 }

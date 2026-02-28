@@ -2,25 +2,33 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageVersion Include="Aspire.Hosting" Version="13.1.1" />
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.1.1" />
-    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.1.1" />
-    <PackageVersion Include="Bogus" Version="35.6.5" />
-    <PackageVersion Include="coverlet.collector" Version="8.0.0" />
-    <PackageVersion Include="FluentAssertions" Version="7.0.0" />
-    <PackageVersion Include="Google.Cloud.PubSub.V1" Version="3.32.0" />
-    <PackageVersion Include="Google.Cloud.Storage.V1" Version="4.14.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
-    <PackageVersion Include="MongoDB.Driver" Version="3.6.0" />
-    <PackageVersion Include="NSubstitute" Version="5.3.0" />
-    <PackageVersion Include="RabbitMQ.Client" Version="7.2.0" />
-    <PackageVersion Include="Refit" Version="10.0.1" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.12.41" />
-    <PackageVersion Include="StackExchange.Redis" Version="2.11.0" />
-    <PackageVersion Include="WireMock.Net.minimal" Version="1.25.0" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
-    <PackageVersion Include="xunit.v3" Version="3.2.2" />
-  </ItemGroup>
+    <ItemGroup>
+      <PackageVersion Include="Aspire.Hosting" Version="13.1.2" />
+      <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.1.2" />
+      <PackageVersion Include="Aspire.Hosting.Testing" Version="13.1.2" />
+      <PackageVersion Include="Bogus" Version="35.6.5" />
+      <PackageVersion Include="coverlet.collector" Version="8.0.0" />
+      <PackageVersion Include="FluentAssertions" Version="[7.0.0]" />
+      <PackageVersion Include="Google.Cloud.PubSub.V1" Version="3.32.0" />
+      <PackageVersion Include="Google.Cloud.Storage.V1" Version="4.14.0" />
+      <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
+      <PackageVersion Include="MongoDB.Driver" Version="3.6.0" />
+      <PackageVersion Include="NSubstitute" Version="5.3.0" />
+      <PackageVersion Include="RabbitMQ.Client" Version="7.2.1" />
+      <PackageVersion Include="Refit" Version="10.0.1" />
+      <PackageVersion Include="Scalar.AspNetCore" Version="2.12.50" />
+      <PackageVersion Include="StackExchange.Redis" Version="2.11.8" />
+      <PackageVersion Include="WireMock.Net.minimal" Version="1.25.0" />
+      <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+      <PackageVersion Include="xunit.v3" Version="3.2.2" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+      <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+      <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+    </ItemGroup>
+  
 </Project>

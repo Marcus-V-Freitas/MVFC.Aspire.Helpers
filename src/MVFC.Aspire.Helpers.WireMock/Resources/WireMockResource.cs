@@ -3,7 +3,7 @@ namespace MVFC.Aspire.Helpers.WireMock.Resources;
 /// <summary>
 /// Representa um recurso WireMock gerenciado pelo Aspire, com inicialização explícita e tratamento de erro.
 /// </summary>
-public sealed class WireMockResource : Resource, IResourceWithEndpoints, IDisposable {
+public sealed class WireMockResource : Resource, IResourceWithEndpoints, IResourceWithConnectionString, IDisposable {
     /// <summary>
     /// Instância do servidor WireMock associado ao recurso.
     /// </summary>
@@ -25,10 +25,11 @@ public sealed class WireMockResource : Resource, IResourceWithEndpoints, IDispos
     /// <param name="name">Nome do recurso.</param>
     /// <param name="port">Porta TCP para o servidor WireMock.</param>
     /// <param name="configure">Ação opcional para configuração adicional do servidor.</param>
-    public WireMockResource(string name, int port, Action<WireMockServer>? configure = null)
+    public WireMockResource(string name, int? port, Action<WireMockServer>? configure = null)
         : base(name) {
-        Port = port;
+        
         _server = WireMockServer.Start(port);
+        Port = _server.Port;
 
         configure?.Invoke(_server);
     }
@@ -37,6 +38,9 @@ public sealed class WireMockResource : Resource, IResourceWithEndpoints, IDispos
     /// Obtém a instância do servidor WireMock.
     /// </summary>
     public WireMockServer Server => _server;
+
+    public ReferenceExpression ConnectionStringExpression =>
+        ReferenceExpression.Create($"http://localhost:{Port.ToString()}");
 
     /// <summary>
     /// Libera os recursos do servidor WireMock, parando o servidor se estiver em execução.

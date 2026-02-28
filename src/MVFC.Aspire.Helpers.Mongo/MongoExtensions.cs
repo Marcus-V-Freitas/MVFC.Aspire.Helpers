@@ -6,8 +6,6 @@ namespace MVFC.Aspire.Helpers.Mongo;
 /// </summary>
 public static class MongoExtensions
 {
-    private static readonly IMongoClientFactory _clientFactory = new MongoClientFactory();
-
     /// <summary>
     /// Adiciona um recurso de MongoDB configurado como Replica Set à aplicação distribuída.
     /// </summary>
@@ -59,7 +57,7 @@ public static class MongoExtensions
             project.OnResourceReady(async (_, _, ct) =>
             {
                 var endpoint = mongoDbResource.Resource.GetEndpoint(MongoDefaults.EndpointName);
-                await _clientFactory.ExecuteDumpsAsync(BuildConnectionString(endpoint.Port), dumps, ct);
+                await MongoClientFactory.ExecuteDumpsAsync(BuildConnectionString(endpoint.Port), dumps, ct);
             });
         }
 
@@ -92,8 +90,20 @@ public static class MongoExtensions
     /// garantindo que o driver não tente resolver o hostname interno do Replica Set.
     /// </summary>
     private static string BuildConnectionString(int port) =>
-        $"mongodb://localhost:{port}/?directConnection=true&replicaSet={MongoDefaults.ReplicaSetName}";
+        $"mongodb://localhost:{port}/?directConnection=true";
 
+    /// <summary>
+    /// Obtém um recurso de MongoDB Replica Set existente pelo nome ou adiciona um novo recurso se não existir.
+    /// </summary>
+    /// <param name="builder">O construtor da aplicação distribuída.</param>
+    /// <param name="name">Nome do recurso de MongoDB.</param>
+    /// <param name="port">Porta do host. Se null, será utilizada a porta padrão do container.</param>
+    /// <param name="image">Nome da imagem Docker do MongoDB.</param>
+    /// <param name="tag">Tag da imagem Docker.</param>
+    /// <param name="volumeName">Nome do volume Docker para persistência de dados (opcional).</param>
+    /// <returns>
+    /// Um <see cref="IResourceBuilder{ContainerResource}"/> representando o recurso de MongoDB configurado.
+    /// </returns>
     private static IResourceBuilder<ContainerResource> GetOrAddMongoReplicaSet(
         this IDistributedApplicationBuilder builder,
         string name,
@@ -108,10 +118,25 @@ public static class MongoExtensions
         return builder.AddMongoReplicaSet(name, port, image, tag, volumeName);
     }
 
+    /// <summary>
+    /// Adiciona os argumentos necessários para habilitar o Replica Set no container do MongoDB.
+    /// </summary>
+    /// <param name="resource">O recurso do container MongoDB.</param>
+    /// <returns>
+    /// O <see cref="IResourceBuilder{ContainerResource}"/> com os argumentos de Replica Set configurados.
+    /// </returns>
     private static IResourceBuilder<ContainerResource> WithReplicaSetArgs(
         this IResourceBuilder<ContainerResource> resource) =>
         resource.WithArgs("--replSet", MongoDefaults.ReplicaSetName, "--bind_ip_all");
 
+    /// <summary>
+    /// Adiciona o volume de persistência ao container do MongoDB, se um nome de volume for especificado.
+    /// </summary>
+    /// <param name="resource">O recurso do container MongoDB.</param>
+    /// <param name="volumeName">Nome do volume Docker para persistência de dados (opcional).</param>
+    /// <returns>
+    /// O <see cref="IResourceBuilder{ContainerResource}"/> com o volume configurado, se aplicável.
+    /// </returns>
     private static IResourceBuilder<ContainerResource> WithVolumeIfSpecified(
         this IResourceBuilder<ContainerResource> resource,
         string? volumeName)
@@ -122,17 +147,32 @@ public static class MongoExtensions
         return resource;
     }
 
+    /// <summary>
+    /// Configura o endpoint do MongoDB no container, expondo a porta especificada ou a porta padrão.
+    /// </summary>
+    /// <param name="resource">O recurso do container MongoDB.</param>
+    /// <param name="port">Porta do host a ser exposta (opcional).</param>
+    /// <returns>
+    /// O <see cref="IResourceBuilder{ContainerResource}"/> com o endpoint configurado.
+    /// </returns>
     private static IResourceBuilder<ContainerResource> WithMongoEndpoint(
         this IResourceBuilder<ContainerResource> resource,
         int? port = null) =>
         resource.WithEndpoint(
-            port: port,
+            port: port ?? MongoDefaults.ContainerPort,
             targetPort: MongoDefaults.ContainerPort,
             scheme: MongoDefaults.EndpointName,
             name: MongoDefaults.EndpointName,
             isProxied: false,
             isExternal: true);
 
+    /// <summary>
+    /// Adiciona o script de inicialização do Replica Set ao container do MongoDB.
+    /// </summary>
+    /// <param name="resource">O recurso do container MongoDB.</param>
+    /// <returns>
+    /// O <see cref="IResourceBuilder{ContainerResource}"/> com o script de inicialização configurado.
+    /// </returns>
     private static IResourceBuilder<ContainerResource> WithReplicaSetInitScript(
         this IResourceBuilder<ContainerResource> resource)
     {

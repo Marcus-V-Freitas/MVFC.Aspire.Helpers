@@ -19,6 +19,5 @@
   </Folder>
   <Folder Name="/test/">
     <Project Path="test/MVFC.Aspire.Helpers.Tests/MVFC.Aspire.Helpers.Tests.csproj" />
-    <Project Path="test/MVFC.Aspire.Helpers.UnitTests/MVFC.Aspire.Helpers.UnitTests.csproj" />
   </Folder>
 </Solution>

@@ -8,3 +8,6 @@ global using Aspire.Hosting.Testing;
 global using MVFC.Aspire.Helpers.Playground.AppHost.Models;
 global using MVFC.Aspire.Helpers.Tests.TestUtils;
 global using FluentAssertions;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Hosting;
+global using Projects;

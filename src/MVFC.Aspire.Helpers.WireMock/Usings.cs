@@ -1,4 +1,4 @@
-﻿global using Aspire.Hosting.ApplicationModel;
+global using Aspire.Hosting.ApplicationModel;
 global using Aspire.Hosting.Eventing;
 global using Aspire.Hosting.Lifecycle;
 global using Microsoft.Extensions.Logging;
@@ -17,3 +17,4 @@ global using MVFC.Aspire.Helpers.WireMock.Extensions;
 global using MVFC.Aspire.Helpers.WireMock.Builders;
 global using MVFC.Aspire.Helpers.WireMock.Resources;
 global using MVFC.Aspire.Helpers.WireMock.Settings;
+global using System.Collections.Immutable;

@@ -46,13 +46,7 @@ internal sealed class WireMockLifecycleHook(
 
             await PublishStartEventAsync(wireMockResource, logger, cancellationToken);
             await PublishReadyEventAsync(wireMockResource, cancellationToken);
-
-            if (wireMockResource.Server.IsStarted) {
-                await NotifyWireMockStartedAsync(wireMockResource, logger);
-            }
-            else {
-                await NotifyWireMockErrorAsync(wireMockResource, logger);
-            }
+            await NotifyWireMockAsync(wireMockResource, logger);
         }
     }
 
@@ -88,43 +82,44 @@ internal sealed class WireMockLifecycleHook(
     }
 
     /// <summary>
-    /// Atualiza o estado do recurso WireMock para "Running" e registra no log.
+    /// Atualiza o estado do recurso WireMock para "Running" ou "Error" e registra no log.
     /// </summary>
     /// <param name="resource">Recurso WireMock.</param>
     /// <param name="logger">Logger associado ao recurso.</param>
     /// <returns>Uma tarefa que representa a operação assíncrona.</returns>
-    private async Task NotifyWireMockStartedAsync(
+    private async Task NotifyWireMockAsync(
         WireMockResource resource,
         ILogger logger) {
 
-        logger.LogReadyAspireWireMock(resource.Name, resource.Port);
+        var started = resource.Server.IsStarted;
+
+        LogarMensagem(logger, resource, started);
 
         await _resourceNotificationService.PublishUpdateAsync(
             resource,
-            s => s with {
-                StartTimeStamp = DateTime.UtcNow,
-                Urls = [new UrlSnapshot("http", resource.Server.Url!, false)],
-                State = new ResourceStateSnapshot("Running", KnownResourceStateStyles.Success)
+            s => s with
+            {
+                StartTimeStamp = started ? DateTime.UtcNow : null,
+                StopTimeStamp = started ? null : DateTime.UtcNow,
+                Urls = DefinirUrls(resource, started),
+                State = DefinirResourceState(started),
             });
     }
 
-    /// <summary>
-    /// Atualiza o estado do recurso WireMock para "Error" e registra no log.
-    /// </summary>
-    /// <param name="resource">Recurso WireMock.</param>
-    /// <param name="logger">Logger associado ao recurso.</param>
-    /// <returns>Uma tarefa que representa a operação assíncrona.</returns>
-    private async Task NotifyWireMockErrorAsync(
-        WireMockResource resource,
-        ILogger logger) {
+    private static ImmutableArray<UrlSnapshot> DefinirUrls(WireMockResource resource, bool started) =>
+        started ?
+        [new UrlSnapshot("http", resource.Server.Url!, false)] :
+        [];
 
-        logger.LogErrorAspireWireMock(resource.Name, resource.Port);
+    private static ResourceStateSnapshot DefinirResourceState(bool started) =>
+        started ?
+        new ResourceStateSnapshot("Running", KnownResourceStateStyles.Success) :
+        new ResourceStateSnapshot("Error", KnownResourceStateStyles.Error);
 
-        await _resourceNotificationService.PublishUpdateAsync(
-            resource,
-            s => s with {
-                StopTimeStamp = DateTime.UtcNow,
-                State = new ResourceStateSnapshot("Error", KnownResourceStateStyles.Error)
-            });
+    private static void LogarMensagem(ILogger logger, WireMockResource resource, bool started)
+    {
+        Action<string, int> logMessage = started ? logger.LogReadyAspireWireMock : logger.LogErrorAspireWireMock;
+
+        logMessage(resource.Name, resource.Port);
     }
 }

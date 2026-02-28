@@ -16,3 +16,4 @@ global using MVFC.Aspire.Helpers.Redis.Models;
 global using MVFC.Aspire.Helpers.RabbitMQ;
 global using MVFC.Aspire.Helpers.RabbitMQ.Models;
 global using Refit;
+global using MVFC.Aspire.Helpers.CloudStorage.Models;

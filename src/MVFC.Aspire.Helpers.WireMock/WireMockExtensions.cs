@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.WireMock;
+namespace MVFC.Aspire.Helpers.WireMock;
 
 /// <summary>
 /// Métodos de extensão para facilitar a integração do WireMock com Aspire,
@@ -25,7 +25,7 @@ public static class WireMockExtensions {
     public static IResourceBuilder<WireMockResource> AddWireMock(
         this IDistributedApplicationBuilder builder,
         string name,
-        int port = 8080,
+        int? port = null,
         Action<WireMockServer>? configure = null) {
         var resource = new WireMockResource(name, port, configure);
 

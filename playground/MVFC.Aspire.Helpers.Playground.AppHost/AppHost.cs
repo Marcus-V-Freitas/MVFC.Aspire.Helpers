@@ -33,15 +33,19 @@ IReadOnlyCollection<IMongoClassDump> dumps = [
               .CustomInstantiator(f => new TestDatabase(f.Person.FirstName, f.Person.Cpf())))
 ];
 
+var storageConfig = new CloudStorageConfig(
+    Port: 4443,
+    LocalBucketFolder: "./bucket-data");
+
 var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
-                 .WithCloudStorage(builder, name: "cloud-storage", localBucketFolder: "./bucket-data")
-                 .WithMongoReplicaSet(builder, name: "mongo", dumps: dumps, port: 8282)
+                 .WithCloudStorage(builder, name: "cloud-storage", storageConfig: storageConfig)
+                 .WithMongoReplicaSet(builder, name: "mongo", dumps: dumps, port: 27017)
                  .WithGcpPubSub(builder, name: "gcp-pubsub", pubSubConfig: pubSubConfig)
                  .WithMailPit(builder, name: "mailpit")
                  .WithRabbitMQ(builder, name: "rabbitmq", rabbitMQConfig: rabbitConfig)
                  .WithRedis(builder, name: "redis", redisConfig: redisConfig);
 
-var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: (server) => {
+var wireMock = builder.AddWireMock("wireMock", port: 9090, configure: (server) => {
     server.Endpoint("/api/echo")
           .WithDefaultBodyType(BodyType.String)
           .OnPost<string, string>(body => ($"Echo: {body}", HttpStatusCode.Created, null));
