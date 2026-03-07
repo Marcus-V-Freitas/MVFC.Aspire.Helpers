@@ -5,6 +5,7 @@ var pubSubClient = await InstanceHelpers.CreatePubSubClientAsync();
 var redis = await builder.CreateRedisAsync();
 var rabbit = await builder.CreateRabbitAsync();
 
+builder.Services.AddGotenbergClient();
 builder.Services.AddSingleton(pubSubClient);
 builder.Services.AddSingleton(storageClient);
 builder.Services.AddSingleton(builder.CreateSmtp());
@@ -12,9 +13,12 @@ builder.Services.AddSingleton(redis);
 builder.Services.AddSingleton(rabbit);
 builder.Services.AddSingleton<IStorageService, GoogleCloudStorageAdapter>();
 builder.Services.AddSingleton<IMessagePublisher, GooglePubSubMessagePublisher>();
+builder.Services.AddSingleton<IGotenbergService, GotenbergService>();
 
-builder.Services.AddOpenApi(options => {
-    options.AddDocumentTransformer((document, context, cancellationToken) => {
+builder.Services.AddOpenApi(options => 
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) => 
+    {
         document.Servers = [];
         return Task.CompletedTask;
     });
@@ -22,9 +26,11 @@ builder.Services.AddOpenApi(options => {
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment()) {
+if (app.Environment.IsDevelopment()) 
+{
     app.MapOpenApi();
-    app.MapScalarApiReference(options => {
+    app.MapScalarApiReference(options => 
+    {
         options.Servers = [];
     });
 }

@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers
+﻿# MVFC.Aspire.Helpers
 
 Coleção de helpers para integrar serviços comuns com o .NET Aspire de forma rápida e padronizada.
 
@@ -11,6 +11,7 @@ Este repositório fornece extensões de configuração do Aspire para os seguint
 | [MVFC.Aspire.Helpers.CloudStorage](src/MVFC.Aspire.Helpers.CloudStorage/README.md) | Google Cloud Storage (emulador GCS) | `MVFC.Aspire.Helpers.CloudStorage` |
 | [MVFC.Aspire.Helpers.Mongo](src/MVFC.Aspire.Helpers.Mongo/README.md) | MongoDB com Replica Set | `MVFC.Aspire.Helpers.Mongo` |
 | [MVFC.Aspire.Helpers.GcpPubSub](src/MVFC.Aspire.Helpers.GcpPubSub/README.md) | Google Pub/Sub (emulador + UI) | `MVFC.Aspire.Helpers.GcpPubSub` |
+| [MVFC.Aspire.Helpers.Gotenberg](src/MVFC.Aspire.Helpers.Gotenberg/README.md) | Gotenberg (conversão de PDF) | `MVFC.Aspire.Helpers.Gotenberg` |
 | [MVFC.Aspire.Helpers.WireMock](src/MVFC.Aspire.Helpers.WireMock/README.md) | WireMock.Net (mock de APIs) | `MVFC.Aspire.Helpers.WireMock` |
 | [MVFC.Aspire.Helpers.Mailpit](src/MVFC.Aspire.Helpers.Mailpit/README.md) | Mailpit (emulador SMTP) | `MVFC.Aspire.Helpers.Mailpit` |
 | [MVFC.Aspire.Helpers.RabbitMQ](src/MVFC.Aspire.Helpers.RabbitMQ/README.md) | RabbitMQ | `MVFC.Aspire.Helpers.RabbitMQ` |
@@ -24,6 +25,7 @@ Este repositório fornece extensões de configuração do Aspire para os seguint
 dotnet add package MVFC.Aspire.Helpers.CloudStorage
 dotnet add package MVFC.Aspire.Helpers.Mongo
 dotnet add package MVFC.Aspire.Helpers.GcpPubSub
+dotnet add package MVFC.Aspire.Helpers.Gotenberg
 dotnet add package MVFC.Aspire.Helpers.WireMock
 dotnet add package MVFC.Aspire.Helpers.Mailpit
 dotnet add package MVFC.Aspire.Helpers.RabbitMQ
@@ -61,6 +63,9 @@ var pubSubUI = builder.AddGcpPubSubUI("pubsub-ui")
     .WithReference(gcpPubSub)
     .WaitFor(gcpPubSub);
 
+// --- Gotenberg ---
+var gotenberg = builder.AddGotenberg("gotenberg", port: 3000);
+
 // --- WireMock ---
 var wireMock = builder.AddWireMock("wire-mock", port: 8090, configure: server =>
 {
@@ -94,6 +99,8 @@ builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api")
        .WaitFor(mongo)
        .WithReference(gcpPubSub)
        .WaitFor(gcpPubSub)
+       .WithReference(gotenberg)
+       .WaitFor(gotenberg)
        .WithReference(rabbitMQ)
        .WaitFor(rabbitMQ)
        .WithReference(redis)
@@ -110,6 +117,7 @@ await builder.Build().RunAsync();
 src/
   MVFC.Aspire.Helpers.CloudStorage/
   MVFC.Aspire.Helpers.GcpPubSub/
+  MVFC.Aspire.Helpers.Gotenberg/
   MVFC.Aspire.Helpers.Mailpit/
   MVFC.Aspire.Helpers.Mongo/
   MVFC.Aspire.Helpers.RabbitMQ/

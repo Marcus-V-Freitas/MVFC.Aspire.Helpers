@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsAspireSharedProject>true</IsAspireSharedProject>
+    <Version>0.0.0</Version>
+    <Authors>Marcus Vinicius de Freitas Costa</Authors>
+    <Description>Helpers para integração com o Gotenberg (conversão de documentos em PDF) em projetos .NET Aspire, facilitando o uso de um serviço de PDF em ambientes de desenvolvimento.</Description>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/tree/master/src/MVFC.Aspire.Helpers.Gotenberg</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://www.nuget.org/packages/MVFC.Aspire.Helpers.Gotenberg</PackageProjectUrl>
+    <PackageTags>aspire;dotnet;helpers;pdf;gotenberg;csharp;net;microservicos</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IsPackable>true</IsPackable>
+    <PackageIcon>icon.png</PackageIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="MVFC.Aspire.Helpers.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="icon.png" Pack="true" PackagePath="" />
+    <None Include="README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting" />
+  </ItemGroup>
+</Project>

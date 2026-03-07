@@ -165,7 +165,7 @@ csharp_style_prefer_readonly_struct_member = true:suggestion
 # ──────────────────────────────────────────────────────────
 # 6. FORMATAÇÃO — NOVA LINHA
 # ──────────────────────────────────────────────────────────
-csharp_new_line_before_open_brace                         = all
+csharp_new_line_before_open_brace                         = accessors, anonymous_methods, anonymous_types, control_blocks, events, indexers, lambdas, local_functions, methods, object_collection_array_initializers, properties, types
 csharp_new_line_before_else                               = true
 csharp_new_line_before_catch                              = true
 csharp_new_line_before_finally                            = true
@@ -211,7 +211,6 @@ csharp_space_between_square_brackets                            = false
 
 # ──────────────────────────────────────────────────────────
 # 9. FORMATAÇÃO — WRAPPING
-# ──────────────────────────────────────────────────────────
 csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks     = true
 

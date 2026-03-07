@@ -48,6 +48,9 @@ var redis = builder.AddRedis("redis")
     .WithCommander()
     .WithDataVolume("redis-data");
 
+// --- Gotenberg ---
+var gotenberg = builder.AddGotenberg("gotenberg", port: 3000);
+
 // Referenciar recursos no projeto
 var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
                  .WithReference(cloudStorage)
@@ -63,7 +66,9 @@ var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-e
                  .WithReference(redis)
                  .WaitFor(redis)
                  .WithReference(pubSubUI)
-                 .WaitFor(pubSubUI);
+                 .WaitFor(pubSubUI)
+                 .WithReference(gotenberg)
+                 .WaitFor(gotenberg);
 
 var wireMock = builder.AddWireMock("wireMock", port: 9090, configure: (server) => {
     server.Endpoint("/api/echo")

@@ -13,5 +13,6 @@ global using MVFC.Aspire.Helpers.RabbitMQ;
 global using MVFC.Aspire.Helpers.RabbitMQ.Models;
 global using MVFC.Aspire.Helpers.Redis;
 global using MVFC.Aspire.Helpers.WireMock;
+global using MVFC.Aspire.Helpers.Gotenberg;
 global using Refit;
 global using WireMock.Types;

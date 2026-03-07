@@ -29,4 +29,15 @@ public static class InstanceHelpers
         };
         return await factory.CreateConnectionAsync();
     }
+
+    public static IServiceCollection AddGotenbergClient(this IServiceCollection services) {
+        services.AddRefitClient<IGotenbergApi>()
+                .ConfigureHttpClient((sp, client) => 
+                {
+                    var url = sp.GetRequiredService<IConfiguration>()["GOTENBERG:BASE_URL"]!;
+                    client.BaseAddress = new Uri(url);
+                });
+
+        return services;
+    }
 }

@@ -13,5 +13,6 @@ public static class DefaultEndpoints
         apiGroup.MapWireMockEndpoints();
         apiGroup.MapRedisEndpoints();
         apiGroup.MapRabbitMQEndpoints();
+        apiGroup.MapGotenbergEndpoints();
     }
 }

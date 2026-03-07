@@ -18,6 +18,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Include="Templates\Relatorio.html" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <ProjectReference Include="..\..\playground\MVFC.Aspire.Helpers.Playground.AppHost\MVFC.Aspire.Helpers.Playground.AppHost.csproj" />
 	</ItemGroup>
 

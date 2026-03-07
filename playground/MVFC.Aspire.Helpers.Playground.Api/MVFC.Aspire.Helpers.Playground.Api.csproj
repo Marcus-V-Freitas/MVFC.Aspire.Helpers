@@ -8,6 +8,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Refit" />
+		<PackageReference Include="Refit.HttpClientFactory" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 		<PackageReference Include="Scalar.AspNetCore" />
 		<PackageReference Include="StackExchange.Redis" />
