@@ -1,108 +1,128 @@
-namespace MVFC.Aspire.Helpers.Redis;
+﻿namespace MVFC.Aspire.Helpers.Redis;
 
 /// <summary>
-/// Fornece métodos de extensão para facilitar a configuração e integração do recurso Redis
-/// em aplicações distribuídas utilizando o Aspire.
+/// Provides extension methods to simplify the configuration and integration of the Redis resource
+/// in distributed applications using Aspire.
 /// </summary>
 public static class RedisExtensions
 {
     /// <summary>
-    /// Adiciona um recurso Redis à aplicação distribuída.
-    /// Permite configurar opções como imagem, porta, senha, Redis Commander e persistência de dados.
+    /// Adds a Redis resource to the distributed application with default settings.
+    /// Use fluent methods such as WithPassword, WithCommander, WithDataVolume to customize.
     /// </summary>
-    /// <param name="builder">O construtor da aplicação distribuída.</param>
-    /// <param name="name">O nome do recurso Redis.</param>
-    /// <param name="redisConfig">Configurações opcionais para o Redis. Se nulo, utiliza valores padrão.</param>
-    /// <returns>Um <see cref="IResourceBuilder{RedisResource}"/> configurado.</returns>
     public static IResourceBuilder<RedisResource> AddRedis(
         this IDistributedApplicationBuilder builder,
         string name,
-        RedisConfig? redisConfig = null)
+        int port = RedisDefaults.DEFAULT_REDIS_PORT)
     {
-
-        redisConfig ??= new RedisConfig();
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentNullException.ThrowIfNull(builder);
 
         var resource = new RedisResource(name);
 
-        var resourceBuilder = builder.AddResource(resource)
-            .WithImage(redisConfig.ImageName)
-            .WithImageTag(redisConfig.ImageTag)
-            .WithEndpoint(
-                port: redisConfig.Port,
-                targetPort: RedisDefaults.DefaultRedisPort,
-                name: RedisResource.RedisEndpointName);
-
-        // Configurar senha se fornecida
-        if (!string.IsNullOrWhiteSpace(redisConfig.Password))
-        {
-            resourceBuilder.WithEnvironment("REDIS_PASSWORD", redisConfig.Password);
-            resourceBuilder.WithArgs("--requirepass", redisConfig.Password);
-        }
-
-        // Configurar persistência se volume especificado
-        if (!string.IsNullOrWhiteSpace(redisConfig.VolumeName))
-        {
-            resourceBuilder
-                .WithVolume(redisConfig.VolumeName, "/data")
-                .WithArgs("--appendonly", "yes");
-        }
-
-        // Adicionar Redis Commander se solicitado
-        if (redisConfig.WithCommander)
-        {
-            var commanderName = $"{name}-commander";
-            builder.AddContainer(commanderName, redisConfig.CommanderImageName, redisConfig.CommanderImageTag)
-                .WithHttpEndpoint(
-                    port: redisConfig.CommanderPort,
-                    targetPort: RedisDefaults.DefaultCommanderPort,
-                    name: "http")
-                .WithEnvironment("REDIS_HOST", name)
-                .WithEnvironment("REDIS_PORT", RedisDefaults.DefaultRedisPort.ToString())
-                .WithReference(resourceBuilder);
-        }
-
-        return resourceBuilder;
+        return builder.AddResource(resource)
+            .WithDockerImage(
+                image: RedisDefaults.DEFAULT_REDIS_IMAGE,
+                tag: RedisDefaults.DEFAULT_REDIS_TAG)
+            .WithRedisEndpoint(port);
     }
 
     /// <summary>
-    /// Aguarda até que o recurso Redis esteja disponível antes de iniciar o projeto Aspire.
-    /// Adiciona uma referência ao recurso Redis, garantindo que o projeto só será iniciado após o Redis estar pronto.
+    /// Replaces the Docker image used by the Redis resource.
     /// </summary>
-    /// <param name="project">O builder do recurso do projeto Aspire.</param>
-    /// <param name="redis">O builder do recurso Redis.</param>
-    /// <returns>O builder do recurso do projeto Aspire com dependência do Redis.</returns>
-    public static IResourceBuilder<ProjectResource> WaitForRedis(
-        this IResourceBuilder<ProjectResource> project,
-        IResourceBuilder<RedisResource> redis) =>
+    public static IResourceBuilder<RedisResource> WithDockerImage(
+        this IResourceBuilder<RedisResource> builder,
+        string image,
+        string tag)
+    {
+        ArgumentNullException.ThrowIfNullOrEmpty(image);
+        ArgumentNullException.ThrowIfNullOrEmpty(tag);
+        ArgumentNullException.ThrowIfNull(builder);
 
-        project.WaitFor(redis)
-               .WithReference(redis);
+        return builder.WithImage(image).WithImageTag(tag);
+    }
 
     /// <summary>
-    /// Adiciona uma referência ao recurso Redis em um projeto Aspire.
+    /// Configures authentication password for Redis.
     /// </summary>
-    /// <param name="project">O builder do recurso do projeto.</param>
-    /// <param name="builder">O construtor da aplicação distribuída.</param>
-    /// <param name="name">O nome do recurso Redis.</param>
-    /// <param name="redisConfig">Configurações opcionais para o Redis.</param>
-    /// <param name="connectionStringSection">Seção da connection string na configuração da aplicação.</param>
-    /// <returns>O builder do recurso do projeto com a referência ao Redis.</returns>
-    public static IResourceBuilder<ProjectResource> WithRedis(
-        this IResourceBuilder<ProjectResource> project,
-        IDistributedApplicationBuilder builder,
-        string name,
-        RedisConfig? redisConfig = null,
-        string connectionStringSection = RedisDefaults.DefaultConnectionStringSection)
+    public static IResourceBuilder<RedisResource> WithPassword(
+        this IResourceBuilder<RedisResource> builder,
+        string password)
     {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(password);
+        ArgumentNullException.ThrowIfNull(builder);
 
-        IResourceBuilder<RedisResource> redis;
+        return builder.WithEnvironment(RedisDefaults.PASSWORD_ENV_VAR, password)
+                      .WithArgs(RedisDefaults.REQUIRE_PASS_ARG, password);
+    }
 
-        if (!builder.TryCreateResourceBuilder(name, out redis!))
-        {
-            redis = builder.AddRedis(name, redisConfig);
-        }
+    /// <summary>
+    /// Adds Redis Commander UI as an associated container.
+    /// </summary>
+    public static IResourceBuilder<RedisResource> WithCommander(
+        this IResourceBuilder<RedisResource> builder,
+        int? port = null,
+        string image = RedisDefaults.DEFAULT_COMMANDER_IMAGE,
+        string tag = RedisDefaults.DEFAULT_COMMANDER_TAG)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(image);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(tag);
+        ArgumentNullException.ThrowIfNull(builder);
 
-        return project.WaitForRedis(redis)
-                      .WithEnvironment(connectionStringSection, redis.Resource.ConnectionStringExpression);
+        var commanderName = $"{builder.Resource.Name}-commander";
+        builder.ApplicationBuilder.AddContainer(commanderName, image, tag)
+            .WithHttpEndpoint(
+                port: port,
+                targetPort: RedisDefaults.DEFAULT_COMMANDER_PORT,
+                name: RedisDefaults.COMMANDER_HTTP_ENDPOINT_NAME)
+            .WithEnvironment(RedisDefaults.HOST_ENV_VAR, builder.Resource.Name)
+            .WithEnvironment(RedisDefaults.PORT_ENV_VAR, RedisDefaults.DEFAULT_REDIS_PORT.ToString())
+            .WithReference(builder);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Configures a Docker volume for Redis data persistence with AOF enabled.
+    /// </summary>
+    public static IResourceBuilder<RedisResource> WithDataVolume(
+        this IResourceBuilder<RedisResource> builder,
+        string volumeName)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(volumeName);
+        ArgumentNullException.ThrowIfNull(builder);
+
+        return builder.WithVolume(volumeName, RedisDefaults.DATA_VOLUME_PATH)
+                      .WithArgs(RedisDefaults.APPEND_ONLY_ARG, RedisDefaults.YES_ARG);
+    }
+
+    /// <summary>
+    /// Adds a reference to the Redis resource in the project, configuring WaitFor
+    /// and the connection string via native WithReference.
+    /// </summary>
+    public static IResourceBuilder<ProjectResource> WithReference(
+        this IResourceBuilder<ProjectResource> project,
+        IResourceBuilder<RedisResource> redis)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+        ArgumentNullException.ThrowIfNull(redis);
+
+        return project.WithReference(source: redis);
+    }
+
+    /// <summary>
+    /// Configures the Redis endpoint on the container, without proxy.
+    /// </summary>
+    private static IResourceBuilder<RedisResource> WithRedisEndpoint(
+        this IResourceBuilder<RedisResource> resource,
+        int port)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(port, IPEndPoint.MinPort);
+
+        return resource.WithEndpoint(
+                port: port,
+                targetPort: RedisDefaults.DEFAULT_REDIS_PORT,
+                name: RedisDefaults.ENDPOINT_NAME,
+                isProxied: false);
     }
 }

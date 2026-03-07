@@ -47,80 +47,63 @@ dotnet add package MVFC.Aspire.Helpers.Mongo
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
 
-IList<IMongoClassDump> dumps = [
-    new MongoClassDump<TestDatabase>(DatabaseName: "TestDatabase", CollectionName: "TestCollection", Quantity: 100,
+IReadOnlyCollection<IMongoClassDump> dumps = [
+    new MongoClassDump<TestDatabase>(
+        DatabaseName: "TestDatabase",
+        CollectionName: "TestCollection",
+        Quantity: 100,
         Faker: new Faker<TestDatabase>()
               .CustomInstantiator(f => new TestDatabase(f.Person.FirstName, f.Person.Cpf())))
 ];
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Api>("api-exemplo")
-       .WithMongoReplicaSet(builder, name: "mongo", dumps: dumps);
+var mongo = builder.AddMongoReplicaSet("mongo")
+    .WithDumps(dumps)
+    .WithDataVolume("mongo-data");
+
+builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+       .WithReference(mongo)
+       .WaitFor(mongo);
 
 await builder.Build().RunAsync();
 ```
 
-## Popular dados de exemplo:
-  O `MongoClassDump` é uma classe utilizada para facilitar a inserção automática de dados de exemplo em coleções do MongoDB durante a inicialização do ambiente. Ela serve como um "template" para popular o banco com documentos fictícios, útil para testes e desenvolvimento local.
+## Métodos Fluentes
 
-* **Parâmetros principais**:
-    - `DatabaseName`: Nome do banco de dados
-    - `CollectionName`: Nome da coleção
-    - `Quantity`: Quantidade de documentos
-    - `Faker`: Gerador de dados (ex: usando a biblioteca **Bogus** com a classe **Faker**)
+| Método | Descrição |
+|---|---|
+| `WithDockerImage(image, tag)` | Substitui a imagem Docker utilizada. |
+| `WithDumps(dumps)` | Configura dumps de dados a executar na inicialização. |
+| `WithDataVolume(volumeName)` | Habilita persistência com volume Docker. |
+
+## Popular dados de exemplo
+
+O `MongoClassDump<T>` é uma classe utilizada para facilitar a inserção automática de dados de exemplo em coleções do MongoDB durante a inicialização do ambiente. Ela serve como um "template" para popular o banco com documentos fictícios, útil para testes e desenvolvimento local.
+
+**Parâmetros principais:**
+- `DatabaseName`: Nome do banco de dados.
+- `CollectionName`: Nome da coleção.
+- `Quantity`: Quantidade de documentos.
+- `Faker`: Gerador de dados (ex: usando a biblioteca **Bogus** com a classe **Faker**).
 
 ## Outros parâmetros Opcionais importantes:
-  - **volumeName** (Opcional): Representa o nome do volume docker local caso queria persistir entre as depurações. O default é nulo, ou seja, o volume não é mantdo entre cada teste. 
-  - **connectionStringSection** (Opcional): Define o caminho da variável de ambiente ou configuração que contém a string de conexão do MongoDB. O padrão é "ConnectionStrings:mongo". Cada `:` indica um nível/seção dentro do arquivo `appsettings.json`, permitindo acessar configurações aninhadas, por exemplo:
 
-  ```json
-  {
-    "ConnectionStrings": {
-      "mongo": "mongodb://localhost:27017/"
-    }
+- **volumeName** (Opcional): Representa o nome do volume docker local para persistir dados entre as depurações. O default é nulo (volume descartado entre execuções).
+- **connectionStringSection** (Opcional): Define o caminho da variável de ambiente ou configuração que contém a string de conexão do MongoDB. O padrão é `"ConnectionStrings:mongo"`. Cada `:` indica um nível/seção dentro do arquivo `appsettings.json`:
+
+```json
+{
+  "ConnectionStrings": {
+    "mongo": "mongodb://localhost:27017/"
   }
-  ```
+}
+```
 
 ## Detalhes de Visualização e Porta do MongoDB
 
-- **Porta utilizada:** `27017` (padrão do MongoDB)
+- **Porta utilizada:** `27017` (padrão do MongoDB).
 - **Visualizar bancos de dados:**  
   Conecte-se via cliente MongoDB (ex: MongoDB Compass, Robo 3T, mongosh) usando:  
   `mongodb://localhost:27017/`
-
-
-## Métodos Públicos
-
-- **AddMongoReplicaSet**  
-  Adiciona um container MongoDB configurado como Replica Set à aplicação distribuída.
-
-```csharp
-var mongoDb = builder.AddMongoReplicaSet(name: "mongo");
-```
-
-- **WaitForMongoReplicaSet**  
-  Configura o projeto para aguardar a inicialização do MongoDB e define a variável de ambiente de conexão.
-
-```csharp
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
-       .WaitForMongoReplicaSet(mongoDb);
-```
-
-- **WithMongoReplicaSet**  
-  Integra o recurso MongoDB ao projeto, configurando dependências, conexão e inserção de dados de exemplo.
-
-```csharp
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
-       .WithMongoReplicaSet(builder, name: "mongo", dumps: dumps);
-```
-
-- **MongoDumpAsync**  
-  Realiza a inserção automática de dados de exemplo nas coleções do MongoDB após a inicialização.  
-  Este método executa o "dump" dos documentos fictícios definidos nas configurações (`IMongoClassDump`) para cada coleção e banco de dados especificados.  
-  Ele pode ser chamado manualmente, mas normalmente é executado automaticamente pelos métodos `WithMongoReplicaSet` e `WaitForMongoReplicaSet` quando o parâmetro `dumps` é informado, facilitando a preparação do ambiente de testes e desenvolvimento.
-
-```csharp
-MongoExtensions.MongoDumpAsync(connectionString: "<Connection String>", dumps: dumps, ct: ct);
-```
 
 ## Requisitos
 - .NET 9+

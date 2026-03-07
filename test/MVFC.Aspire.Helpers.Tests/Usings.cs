@@ -1,13 +1,13 @@
 ﻿global using System.Net;
-global using Xunit;
+global using System.Net.Http.Json;
 global using System.Text;
 global using System.Text.Json;
-global using System.Net.Http.Json;
 global using Aspire.Hosting;
 global using Aspire.Hosting.Testing;
-global using MVFC.Aspire.Helpers.Playground.AppHost.Models;
-global using MVFC.Aspire.Helpers.Tests.TestUtils;
 global using FluentAssertions;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;
+global using MVFC.Aspire.Helpers.Playground.AppHost.Models;
+global using MVFC.Aspire.Helpers.Tests.TestUtils;
 global using Projects;
+global using Xunit;

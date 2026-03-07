@@ -1,7 +1,7 @@
 ﻿namespace MVFC.Aspire.Helpers.Playground.Api.Helpers;
 
-public static class InstanceHelpers {
-
+public static class InstanceHelpers 
+{
     public static async Task<PublisherServiceApiClient> CreatePubSubClientAsync() =>
         await new PublisherServiceApiClientBuilder {
             EmulatorDetection = EmulatorDetection.EmulatorOrProduction,
@@ -12,15 +12,18 @@ public static class InstanceHelpers {
             EmulatorDetection = EmulatorDetection.EmulatorOrProduction,
         }.BuildAsync();
 
-    public static SmtpClient CreateSmtp(this WebApplicationBuilder builder) {
+    public static SmtpClient CreateSmtp(this WebApplicationBuilder builder) 
+    {
         var smtpUri = new Uri(builder.Configuration.GetConnectionString("mailpit")!);
         return new SmtpClient(smtpUri.Host, smtpUri.Port);
     }
 
-    public static async Task<IConnectionMultiplexer> CreateRedisAsync(this WebApplicationBuilder builder) => 
+    public static async Task<IConnectionMultiplexer> CreateRedisAsync(this WebApplicationBuilder builder) =>
         await ConnectionMultiplexer.ConnectAsync(builder.Configuration.GetConnectionString("redis")!);
 
-    public static async Task<IConnection> CreateRabbitAsync(this WebApplicationBuilder builder) {
+    public static async Task<IConnection> CreateRabbitAsync(this WebApplicationBuilder builder) 
+    {
+        await Task.Delay(TimeSpan.FromSeconds(2));
         var factory = new ConnectionFactory {
             Uri = new Uri(builder.Configuration.GetConnectionString("rabbitmq")!)
         };

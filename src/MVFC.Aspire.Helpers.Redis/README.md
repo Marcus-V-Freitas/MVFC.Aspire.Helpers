@@ -13,12 +13,13 @@ Este projeto fornece métodos de extensão para facilitar a integração com Red
 ## Funcionalidades
 
 - Adiciona um container Redis configurado.
-- Suporta Redis Commander UI.
-- Suporta persistência de dados.
-- Suporta senha.
+- Suporte ao Redis Commander UI.
+- Suporte a persistência de dados via volume Docker (AOF habilitado).
+- Suporte a senha.
 
 ## Imagens compatíveis:
  - `redis`
+ - `rediscommander/redis-commander` (UI)
 
 ## Instalação
 
@@ -31,27 +32,35 @@ dotnet add package MVFC.Aspire.Helpers.Redis
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
 
-var redisConfig = new RedisConfig(
-    WithCommander: true, 
-    VolumeName: "redis-data");
+var redis = builder.AddRedis("redis")
+    .WithPassword("minha-senha")
+    .WithCommander()
+    .WithDataVolume("redis-data");
 
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
-       .WithRedis(builder, name: "redis", redisConfig: redisConfig);
+       .WithReference(redis)
+       .WaitFor(redis);
 
 await builder.Build().RunAsync();
 ```
 
-## Principais parâmetros
+## Métodos Fluentes
 
-- `Port`: Porta do Redis (padrão: null para porta aleatória)
-- `Password`: Senha para autenticação no Redis
-- `WithCommander`: Booleano para habilitar o Redis Commander UI.
-- `CommanderPort`: Porta do Redis Commander (padrão: null para porta aleatória)
-- `VolumeName`: String para nome do volume de persistência.
+| Método | Descrição |
+|---|---|
+| `WithDockerImage(image, tag)` | Substitui a imagem Docker utilizada. |
+| `WithPassword(password)` | Define a senha do Redis. |
+| `WithCommander(port?)` | Adiciona o Redis Commander UI. |
+| `WithDataVolume(volumeName)` | Habilita persistência com volume Docker (AOF). |
+
+## Principais parâmetros do `AddRedis`
+
+- `name`: Nome do recurso Redis.
+- `port` *(Opcional)*: Porta do Redis (padrão: `6379`).
 
 ## Outros parâmetros Opcionais importantes:
 
-- **connectionStringSection** (Opcional): Define o caminho da variável de ambiente ou configuração que contém a string de conexão do Redis. O padrão é "ConnectionStrings:redis". Cada `:` indica um nível/seção dentro do arquivo `appsettings.json`, permitindo acessar configurações aninhadas, por exemplo:
+- **connectionStringSection** (Opcional): Define o caminho da variável de ambiente ou configuração que contém a string de conexão do Redis. O padrão é `"ConnectionStrings:redis"`. Cada `:` indica um nível/seção dentro do arquivo `appsettings.json`:
 
 ```json
 {
@@ -61,15 +70,14 @@ await builder.Build().RunAsync();
 }
 ```
 
-## Métodos Públicos
+## Detalhes de Porta
 
-- `WithRedis`: Adiciona um recurso Redis ao projeto Aspire.
-- `AddRedis`: Adiciona um recurso Redis ao projeto Aspire.
-- `WaitForRedis`: Aguarda até que o recurso Redis esteja disponível antes de iniciar o projeto Aspire.
+- **Porta Redis**: definida via parâmetro `port` (padrão: `6379`).
+- **Porta Redis Commander**: aleatória por padrão; pode ser definida via parâmetro `commanderPort` em `WithCommander`.
 
 ## Requisitos
 - .NET 9+
 - Aspire.Hosting >= 9.5.0
 
 ## Licença
-Apache-2.0  
+Apache-2.0

@@ -1,7 +1,7 @@
 ﻿namespace MVFC.Aspire.Helpers.Tests.TestUtils;
 
-public sealed class AppHostFixture : IAsyncLifetime {
-
+public sealed class AppHostFixture : IAsyncLifetime 
+{
     private ProjectAppHost _appHost = default!;
 
     public HttpClient HttpClient { get; private set; } = default!;

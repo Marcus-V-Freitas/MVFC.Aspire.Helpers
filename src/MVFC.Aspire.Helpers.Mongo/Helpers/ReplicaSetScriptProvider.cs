@@ -1,10 +1,13 @@
-namespace MVFC.Aspire.Helpers.Mongo.Helpers;
+﻿namespace MVFC.Aspire.Helpers.Mongo.Helpers;
 
 /// <summary>
-/// Provedor de scripts para inicialização do Replica Set
+/// Provider for Replica Set initialization scripts.
 /// </summary>
 internal static class ReplicaSetScriptProvider
 {
+    /// <summary>
+    /// Loads and returns the content of the Replica Set initialization script from the assembly's embedded resources.
+    /// </summary>
     public static string GetInitScript()
     {
         var assembly = Assembly.GetExecutingAssembly();

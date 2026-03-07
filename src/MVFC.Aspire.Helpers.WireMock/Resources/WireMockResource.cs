@@ -1,18 +1,19 @@
-namespace MVFC.Aspire.Helpers.WireMock.Resources;
+﻿namespace MVFC.Aspire.Helpers.WireMock.Resources;
 
 /// <summary>
 /// Representa um recurso WireMock gerenciado pelo Aspire, com inicialização explícita e tratamento de erro.
 /// </summary>
-public sealed class WireMockResource : Resource, IResourceWithEndpoints, IResourceWithConnectionString, IDisposable {
-    /// <summary>
-    /// Instância do servidor WireMock associado ao recurso.
-    /// </summary>
-    private readonly WireMockServer _server;
-
+public sealed class WireMockResource : Resource, IResourceWithEndpoints, IResourceWithConnectionString, IDisposable
+{
     /// <summary>
     /// Indica se os recursos do servidor WireMock foram liberados, para evitar múltiplas chamadas de Dispose.
     /// </summary>
     private bool _disposed;
+
+    /// <summary>
+    /// Obtém a instância do servidor WireMock.
+    /// </summary>
+    public WireMockServer Server { get; }
 
     /// <summary>
     /// Porta TCP utilizada pelo servidor WireMock.
@@ -26,19 +27,18 @@ public sealed class WireMockResource : Resource, IResourceWithEndpoints, IResour
     /// <param name="port">Porta TCP para o servidor WireMock.</param>
     /// <param name="configure">Ação opcional para configuração adicional do servidor.</param>
     public WireMockResource(string name, int? port, Action<WireMockServer>? configure = null)
-        : base(name) {
-        
-        _server = WireMockServer.Start(port);
-        Port = _server.Port;
+        : base(name)
+    {
 
-        configure?.Invoke(_server);
+        Server = WireMockServer.Start(port);
+        Port = Server.Port;
+
+        configure?.Invoke(Server);
     }
 
     /// <summary>
-    /// Obtém a instância do servidor WireMock.
+    /// Expressão que representa a connection string HTTP local do servidor WireMock.
     /// </summary>
-    public WireMockServer Server => _server;
-
     public ReferenceExpression ConnectionStringExpression =>
         ReferenceExpression.Create($"http://localhost:{Port.ToString()}");
 
@@ -52,13 +52,13 @@ public sealed class WireMockResource : Resource, IResourceWithEndpoints, IResour
 
         try
         {
-            if (_server?.IsStarted == true)
+            if (Server?.IsStarted == true)
             {
-                _server.Stop();
+                Server.Stop();
                 Thread.Sleep(100);
             }
 
-            (_server as IDisposable)?.Dispose();
+            (Server as IDisposable)?.Dispose();
         }
         finally
         {

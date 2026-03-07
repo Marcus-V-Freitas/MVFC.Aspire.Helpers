@@ -1,39 +1,40 @@
 ﻿namespace MVFC.Aspire.Helpers.WireMock.Settings;
 
 /// <summary>
-/// Configurações customizáveis para serialização e deserialização de objetos em endpoints WireMock.
-/// Permite definir delegates para serialização e deserialização, além de métodos genéricos para facilitar o uso.
+/// Customizable settings for object serialization and deserialization in WireMock endpoints.
+/// Allows defining delegates for serialization and deserialization, as well as generic methods for convenience.
 /// </summary>
-public sealed class EndpointSettings {
+public sealed class EndpointSettings
+{
     /// <summary>
-    /// Delegate responsável por serializar um objeto para string.
-    /// Pode ser sobrescrito para utilizar qualquer serializador desejado.
+    /// Delegate responsible for serializing an object to a string.
+    /// Can be overridden to use any desired serializer.
     /// </summary>
     public Func<object, string> Serialize { get; set; } =
         obj => JsonSerializer.Serialize(obj);
 
     /// <summary>
-    /// Delegate responsável por deserializar uma string para um objeto do tipo especificado.
-    /// Pode ser sobrescrito para utilizar qualquer desserializador desejado.
+    /// Delegate responsible for deserializing a string to an object of the specified type.
+    /// Can be overridden to use any desired deserializer.
     /// </summary>
     public Func<string, Type, object?> Deserialize { get; set; } =
         (json, type) => JsonSerializer.Deserialize(json, type);
 
     /// <summary>
-    /// Serializa um objeto do tipo <typeparamref name="T"/> para string usando o delegate <see cref="Serializar"/>.
+    /// Serializes an object of type <typeparamref name="T"/> to a string using the <see cref="Serialize"/> delegate.
     /// </summary>
-    /// <typeparam name="T">Tipo do objeto a ser serializado.</typeparam>
-    /// <param name="obj">Objeto a ser serializado.</param>
-    /// <returns>Representação em string do objeto serializado.</returns>
+    /// <typeparam name="T">Type of the object to be serialized.</typeparam>
+    /// <param name="obj">Object to be serialized.</param>
+    /// <returns>String representation of the serialized object.</returns>
     public string SerializeGeneric<T>(T obj) =>
         Serialize(obj!);
 
     /// <summary>
-    /// Desserializa uma string para um objeto do tipo <typeparamref name="T"/> usando o delegate <see cref="Desserializar"/>.
+    /// Deserializes a string to an object of type <typeparamref name="T"/> using the <see cref="Deserialize"/> delegate.
     /// </summary>
-    /// <typeparam name="T">Tipo de destino da desserialização.</typeparam>
-    /// <param name="json">String contendo o objeto serializado.</param>
-    /// <returns>Objeto desserializado do tipo <typeparamref name="T"/>.</returns>
+    /// <typeparam name="T">Target deserialization type.</typeparam>
+    /// <param name="json">String containing the serialized object.</param>
+    /// <returns>Deserialized object of type <typeparamref name="T"/>.</returns>
     public T? DeserializeGeneric<T>(string json) =>
         (T?)Deserialize(json, typeof(T));
 }

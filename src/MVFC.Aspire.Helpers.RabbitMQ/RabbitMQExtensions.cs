@@ -1,244 +1,183 @@
-namespace MVFC.Aspire.Helpers.RabbitMQ;
+﻿namespace MVFC.Aspire.Helpers.RabbitMQ;
 
 /// <summary>
-/// Fornece métodos de extensão para facilitar a configuração e integração do recurso RabbitMQ
-/// em aplicações distribuídas utilizando o Aspire.
+/// Provides extension methods to simplify the configuration and integration of the RabbitMQ resource
+/// in distributed applications using Aspire.
 /// </summary>
 public static class RabbitMQExtensions
 {
-    private static readonly string[] _roleAdmin = ["administrator"];
-    private static readonly JsonSerializerOptions _options = new()
-    {
-        WriteIndented = true
-    };
-
     /// <summary>
-    /// Adiciona um recurso RabbitMQ à aplicação distribuída.
-    /// Permite configurar opções como imagem, portas, credenciais, exchanges, queues e persistência de dados.
+    /// Adds a RabbitMQ resource to the distributed application with default settings.
+    /// Use fluent methods such as WithCredentials, WithExchanges, WithQueues, WithDataVolume to customize.
     /// </summary>
-    /// <param name="builder">O construtor da aplicação distribuída.</param>
-    /// <param name="name">O nome do recurso RabbitMQ.</param>
-    /// <param name="rabbitMQConfig">Configurações opcionais para o RabbitMQ. Se nulo, utiliza valores padrão.</param>
-    /// <returns>Um <see cref="IResourceBuilder{RabbitMQResource}"/> configurado.</returns>
     public static IResourceBuilder<RabbitMQResource> AddRabbitMQ(
         this IDistributedApplicationBuilder builder,
         string name,
-        RabbitMQConfig? rabbitMQConfig = null)
+        int amqpPort = RabbitMQDefaults.DEFAULT_AMQP_PORT,
+        int httpPort = RabbitMQDefaults.DEFAULT_MANAGEMENT_PORT)
     {
-
-        rabbitMQConfig ??= new RabbitMQConfig();
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentNullException.ThrowIfNull(builder);
 
         var resource = new RabbitMQResource(name);
 
-        var resourceBuilder = builder.AddResource(resource)
-            .WithImage(rabbitMQConfig.ImageName)
-            .WithImageTag(rabbitMQConfig.ImageTag)
-            .WithEndpoint(
-                port: rabbitMQConfig.Port,
-                targetPort: RabbitMQDefaults.DefaultAmqpPort,
-                name: RabbitMQResource.AmqpEndpointName)
+        var rb = builder.AddResource(resource)
+            .WithDockerImage(
+                image: RabbitMQDefaults.DEFAULT_RABBIT_MQ_IMAGE,
+                tag: RabbitMQDefaults.DEFAULT_RABBIT_MQ_TAG)
+            .WithRabbitEndpoint(amqpPort, httpPort)
+            .WithEnvironment(ctx =>
+            {
+                ctx.EnvironmentVariables[RabbitMQDefaults.DEFAULT_USER_ENV_VAR] = resource.Username;
+                ctx.EnvironmentVariables[RabbitMQDefaults.DEFAULT_PASS_ENV_VAR] = resource.Password;
+            });
+
+        RegisterDefinitionsLoader(builder, resource, rb);
+
+        return rb;
+    }
+
+    /// <summary>
+    /// Replaces the Docker image used by the RabbitMQ resource.
+    /// </summary>
+    public static IResourceBuilder<RabbitMQResource> WithDockerImage(
+        this IResourceBuilder<RabbitMQResource> builder,
+        string image,
+        string tag)
+    {
+        ArgumentNullException.ThrowIfNullOrEmpty(image);
+        ArgumentNullException.ThrowIfNullOrEmpty(tag);
+        ArgumentNullException.ThrowIfNull(builder);
+
+        return builder.WithImage(image).WithImageTag(tag);
+    }
+
+    /// <summary>
+    /// Configures RabbitMQ access credentials.
+    /// </summary>
+    public static IResourceBuilder<RabbitMQResource> WithCredentials(
+        this IResourceBuilder<RabbitMQResource> builder,
+        string username,
+        string password)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(username);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(password);
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Resource.Username = username;
+        builder.Resource.Password = password;
+        return builder;
+    }
+
+    /// <summary>
+    /// Configures exchanges to be automatically created in RabbitMQ via definitions.json.
+    /// </summary>
+    public static IResourceBuilder<RabbitMQResource> WithExchanges(
+        this IResourceBuilder<RabbitMQResource> builder,
+        IReadOnlyList<ExchangeConfig> exchanges)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Resource.Exchanges ??= [];
+        builder.Resource.Exchanges.AddRange(exchanges);
+        return builder;
+    }
+
+    /// <summary>
+    /// Configures queues to be automatically created in RabbitMQ via definitions.json.
+    /// </summary>
+    public static IResourceBuilder<RabbitMQResource> WithQueues(
+        this IResourceBuilder<RabbitMQResource> builder,
+        IReadOnlyList<QueueConfig> queues)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Resource.Queues ??= [];
+        builder.Resource.Queues.AddRange(queues);
+        return builder;
+    }
+
+    /// <summary>
+    /// Configures a Docker volume for RabbitMQ data persistence.
+    /// </summary>
+    public static IResourceBuilder<RabbitMQResource> WithDataVolume(
+        this IResourceBuilder<RabbitMQResource> builder,
+        string volumeName)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(volumeName);
+        ArgumentNullException.ThrowIfNull(builder);
+
+        return builder.WithVolume(volumeName, RabbitMQDefaults.DATA_VOLUME_PATH);
+    }
+
+    /// <summary>
+    /// Adds a reference to the RabbitMQ resource in the project, configuring WaitFor
+    /// and the connection string via native WithReference.
+    /// </summary>
+    public static IResourceBuilder<ProjectResource> WithReference(
+        this IResourceBuilder<ProjectResource> project,
+        IResourceBuilder<RabbitMQResource> rabbitMQ)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+        ArgumentNullException.ThrowIfNull(rabbitMQ);
+
+        return project.WithReference(source: rabbitMQ);
+    }
+
+    /// <summary>
+    /// Configures the AMQP and Management HTTP endpoints for the RabbitMQ resource, without proxy, with health check.
+    /// </summary>
+    private static IResourceBuilder<RabbitMQResource> WithRabbitEndpoint(
+        this IResourceBuilder<RabbitMQResource> resource,
+        int amqpPort,
+        int httpPort)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(amqpPort, IPEndPoint.MinPort);
+        ArgumentOutOfRangeException.ThrowIfLessThan(httpPort, IPEndPoint.MinPort);
+
+        return resource.WithEndpoint(
+                port: amqpPort,
+                targetPort: RabbitMQDefaults.DEFAULT_AMQP_PORT,
+                name: RabbitMQResource.AMQP_ENDPOINT_NAME,
+                isProxied: false)
             .WithHttpEndpoint(
-                port: rabbitMQConfig.ManagementPort,
-                targetPort: RabbitMQDefaults.DefaultManagementPort,
-                name: RabbitMQResource.ManagementEndpointName);
-
-        // Configurar credenciais
-        resourceBuilder
-            .WithEnvironment("RABBITMQ_DEFAULT_USER", rabbitMQConfig.Username)
-            .WithEnvironment("RABBITMQ_DEFAULT_PASS", rabbitMQConfig.Password);
-
-        // Configurar persistência se volume especificado
-        if (!string.IsNullOrWhiteSpace(rabbitMQConfig.VolumeName))
-        {
-            resourceBuilder.WithVolume(rabbitMQConfig.VolumeName, "/var/lib/rabbitmq");
-        }
-
-        // Criar exchanges e queues via definitions.json importado automaticamente pelo RabbitMQ
-        if (rabbitMQConfig.Exchanges?.Count > 0 || rabbitMQConfig.Queues?.Count > 0)
-        {
-            ConfigureDefinitions(resourceBuilder, rabbitMQConfig);
-        }
-
-        return resourceBuilder;
+                port: httpPort,
+                targetPort: RabbitMQDefaults.DEFAULT_MANAGEMENT_PORT,
+                name: RabbitMQResource.MANAGEMENT_ENDPOINT_NAME,
+                isProxied: false)
+            .WithHttpHealthCheck(endpointName: RabbitMQResource.MANAGEMENT_ENDPOINT_NAME);
     }
 
     /// <summary>
-    /// Gera o arquivo definitions.json com exchanges, queues e bindings,
-    /// e configura o RabbitMQ para importá-lo automaticamente na inicialização.
+    /// Registers the BeforeStartEvent subscriber responsible for generating and mounting the RabbitMQ definitions.json
+    /// file before resource initialization, if exchanges or queues are configured.
     /// </summary>
-    private static void ConfigureDefinitions(
-        IResourceBuilder<RabbitMQResource> resourceBuilder,
-        RabbitMQConfig config)
+    private static void RegisterDefinitionsLoader(
+        IDistributedApplicationBuilder appBuilder,
+        RabbitMQResource resource,
+        IResourceBuilder<RabbitMQResource> rb)
     {
-        var definitions = BuildDefinitionsJson(config);
-        var definitionsJson = JsonSerializer.Serialize(definitions, _options);
-
-        // Gerar o arquivo definitions.json em um diretório temporário
-        var tempDir = Path.Combine(Path.GetTempPath(), "aspire-rabbitmq", resourceBuilder.Resource.Name);
-        Directory.CreateDirectory(tempDir);
-
-        var definitionsPath = Path.Combine(tempDir, "definitions.json");
-        File.WriteAllText(definitionsPath, definitionsJson);
-
-        // Montar definitions.json e configurar carregamento via variável de ambiente
-        resourceBuilder
-            .WithBindMount(definitionsPath, "/etc/rabbitmq/definitions.json")
-            .WithEnvironment("RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS",
-                "-rabbitmq_management load_definitions \"/etc/rabbitmq/definitions.json\"");
-    }
-
-    /// <summary>
-    /// Gera hash de senha no formato esperado pelo RabbitMQ: Base64(salt + SHA256(salt + password)).
-    /// </summary>
-    private static string HashPassword(string password)
-    {
-        var salt = new byte[4];
-        System.Security.Cryptography.RandomNumberGenerator.Fill(salt);
-        var passwordBytes = System.Text.Encoding.UTF8.GetBytes(password);
-
-        var toHash = new byte[salt.Length + passwordBytes.Length];
-        Buffer.BlockCopy(salt, 0, toHash, 0, salt.Length);
-        Buffer.BlockCopy(passwordBytes, 0, toHash, salt.Length, passwordBytes.Length);
-
-        var hash = System.Security.Cryptography.SHA256.HashData(toHash);
-
-        var result = new byte[salt.Length + hash.Length];
-        Buffer.BlockCopy(salt, 0, result, 0, salt.Length);
-        Buffer.BlockCopy(hash, 0, result, salt.Length, hash.Length);
-
-        return Convert.ToBase64String(result);
-    }
-
-    /// <summary>
-    /// Constrói o objeto de definições do RabbitMQ com usuário, vhosts, permissões, exchanges, queues e bindings.
-    /// </summary>
-    private static RabbitMQDefinitions BuildDefinitionsJson(RabbitMQConfig config)
-    {
-
-        var exchanges = new List<RabbitMQExchange>();
-        var queues = new List<RabbitMQQueue>();
-        var bindings = new List<RabbitMQBinding>();
-
-        // Exchanges
-        if (config.Exchanges is not null)
+        // Deferred definitions.json generation — runs after all With* calls
+        appBuilder.Eventing.Subscribe<BeforeStartEvent>((_, _) =>
         {
-            foreach (var exchange in config.Exchanges)
+            if (resource.Exchanges?.Count > 0 || resource.Queues?.Count > 0)
             {
-                exchanges.Add(new RabbitMQExchange(
-                    Name: exchange.Name,
-                    Vhost: "/",
-                    Type: exchange.Type,
-                    Durable: exchange.Durable,
-                    AutoDelete: exchange.AutoDelete,
-                    Internal: false,
-                    Arguments: []
-                ));
+                var definitions = RabbitMQDefinitionsBuilder.Build(resource);
+                var definitionsJson = JsonSerializer.Serialize(definitions, RabbitMQDefinitionsBuilder.JsonOptions);
+
+                rb.WithContainerFiles(RabbitMQDefaults.DEFINITIONS_DIR_PATH,
+                [
+                    new ContainerFile
+                    {
+                        Name = RabbitMQDefaults.DEFINITIONS_FILENAME,
+                        Contents = definitionsJson,
+                        Mode = UnixFileMode.UserRead | UnixFileMode.UserWrite |
+                               UnixFileMode.GroupRead | UnixFileMode.OtherRead
+                    }
+                ])
+                .WithEnvironment(RabbitMQDefaults.ADDITIONAL_ERL_ARGS_ENV_VAR, RabbitMQDefaults.ADDITIONAL_ERL_ARGS_VALUE);
             }
-        }
-
-        // Queues e Bindings
-        if (config.Queues is not null)
-        {
-            foreach (var queue in config.Queues)
-            {
-                var arguments = new Dictionary<string, object>();
-
-                if (!string.IsNullOrWhiteSpace(queue.DeadLetterExchange))
-                    arguments["x-dead-letter-exchange"] = queue.DeadLetterExchange;
-
-                if (queue.MessageTTL.HasValue)
-                    arguments["x-message-ttl"] = queue.MessageTTL.Value;
-
-                queues.Add(new RabbitMQQueue(
-                    Name: queue.Name,
-                    Vhost: "/",
-                    Durable: queue.Durable,
-                    AutoDelete: queue.AutoDelete,
-                    Arguments: arguments
-                ));
-
-                // Criar binding se ExchangeName fornecido
-                if (!string.IsNullOrWhiteSpace(queue.ExchangeName))
-                {
-                    bindings.Add(new RabbitMQBinding(
-                        Source: queue.ExchangeName,
-                        Vhost: "/",
-                        Destination: queue.Name,
-                        DestinationType: "queue",
-                        RoutingKey: queue.RoutingKey ?? queue.Name,
-                        Arguments: []
-                    ));
-                }
-            }
-        }
-
-        return new RabbitMQDefinitions(
-            Users:
-            [
-                new RabbitMQUser(
-                    Name: config.Username,
-                    PasswordHash: HashPassword(config.Password),
-                    HashingAlgorithm: "rabbit_password_hashing_sha256",
-                    Tags: _roleAdmin)
-            ],
-            Vhosts:
-            [
-                new RabbitMQVhost(Name: "/")
-            ],
-            Permissions:
-            [
-                new RabbitMQPermission(
-                    User: config.Username,
-                    Vhost: "/",
-                    Configure: ".*",
-                    Write: ".*",
-                    Read: ".*")
-            ],
-            Exchanges: exchanges,
-            Queues: queues,
-            Bindings: bindings
-        );
-    }
-
-    /// <summary>
-    /// Aguarda até que o recurso RabbitMQ esteja disponível antes de iniciar o projeto Aspire.
-    /// Adiciona uma referência ao recurso RabbitMQ, garantindo que o projeto só será iniciado após o RabbitMQ estar pronto.
-    /// </summary>
-    /// <param name="project">O builder do recurso do projeto Aspire.</param>
-    /// <param name="rabbitMQ">O builder do recurso RabbitMQ.</param>
-    /// <returns>O builder do recurso do projeto Aspire com dependência do RabbitMQ.</returns>
-    public static IResourceBuilder<ProjectResource> WaitForRabbitMQ(
-        this IResourceBuilder<ProjectResource> project,
-        IResourceBuilder<RabbitMQResource> rabbitMQ) =>
-
-        project.WaitFor(rabbitMQ)
-               .WithReference(rabbitMQ);
-
-    /// <summary>
-    /// Adiciona uma referência ao recurso RabbitMQ em um projeto Aspire.
-    /// </summary>
-    /// <param name="project">O builder do recurso do projeto.</param>
-    /// <param name="builder">O construtor da aplicação distribuída.</param>
-    /// <param name="name">O nome do recurso RabbitMQ.</param>
-    /// <param name="rabbitMQConfig">Configurações opcionais para o RabbitMQ.</param>
-    /// <param name="connectionStringSection">Seção da connection string na configuração da aplicação.</param>
-    /// <returns>O builder do recurso do projeto com a referência ao RabbitMQ.</returns>
-    public static IResourceBuilder<ProjectResource> WithRabbitMQ(
-        this IResourceBuilder<ProjectResource> project,
-        IDistributedApplicationBuilder builder,
-        string name,
-        RabbitMQConfig? rabbitMQConfig = null,
-        string connectionStringSection = RabbitMQDefaults.DefaultConnectionStringSection)
-    {
-
-        IResourceBuilder<RabbitMQResource> rabbitMQ;
-
-        if (!builder.TryCreateResourceBuilder(name, out rabbitMQ!))
-        {
-            rabbitMQ = builder.AddRabbitMQ(name, rabbitMQConfig);
-        }
-
-        return project.WaitForRabbitMQ(rabbitMQ)
-                      .WithEnvironment(connectionStringSection, rabbitMQ.Resource.ConnectionStringExpression);
+            return Task.CompletedTask;
+        });
     }
 }

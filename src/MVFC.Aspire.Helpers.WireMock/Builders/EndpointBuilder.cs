@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.WireMock.Builders;
+﻿namespace MVFC.Aspire.Helpers.WireMock.Builders;
 
 /// <summary>
 /// Builder para configuração de endpoints WireMock integrados ao Aspire.
@@ -27,7 +27,8 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// </summary>
     /// <param name="bodyType">Tipo do corpo da requisição.</param>
     /// <returns>O próprio <see cref="EndpointBuilder"/> para encadeamento.</returns>
-    public EndpointBuilder WithRequestBodyType(BodyType bodyType) {
+    public EndpointBuilder WithRequestBodyType(BodyType bodyType)
+    {
         _requestBodyType = bodyType;
         return this;
     }
@@ -37,7 +38,8 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// </summary>
     /// <param name="encoding">Instância de <see cref="Encoding"/> a ser utilizada.</param>
     /// <returns>O próprio <see cref="EndpointBuilder"/> para encadeamento.</returns>
-    public EndpointBuilder SetEncoding(Encoding encoding) {
+    public EndpointBuilder SetEncoding(Encoding encoding)
+    {
         _encoding = encoding;
         return this;
     }
@@ -47,7 +49,8 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// </summary>
     /// <param name="bodyType">Tipo do corpo da resposta.</param>
     /// <returns>O próprio <see cref="EndpointBuilder"/> para encadeamento.</returns>
-    public EndpointBuilder WithResponseBodyType(BodyType bodyType) {
+    public EndpointBuilder WithResponseBodyType(BodyType bodyType)
+    {
         _responseBodyType = bodyType;
         return this;
     }
@@ -57,7 +60,8 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// </summary>
     /// <param name="bodyType">Tipo do corpo para requisição e resposta.</param>
     /// <returns>O próprio <see cref="EndpointBuilder"/> para encadeamento.</returns>
-    public EndpointBuilder WithDefaultBodyType(BodyType bodyType) {
+    public EndpointBuilder WithDefaultBodyType(BodyType bodyType)
+    {
         _requestBodyType = bodyType;
         _responseBodyType = bodyType;
         return this;
@@ -68,7 +72,8 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// </summary>
     /// <param name="statusCode">Status code de erro padrão.</param>
     /// <returns>O próprio <see cref="EndpointBuilder"/> para encadeamento.</returns>
-    public EndpointBuilder WithDefaultErrorStatusCode(HttpStatusCode statusCode) {
+    public EndpointBuilder WithDefaultErrorStatusCode(HttpStatusCode statusCode)
+    {
         _defaultErrorStatusCode = statusCode;
         return this;
     }
@@ -80,8 +85,10 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// <param name="error">Objeto de erro retornado em caso de falha.</param>
     /// <param name="contentType">Tipo do corpo do erro.</param>
     /// <returns>O próprio <see cref="EndpointBuilder"/> para encadeamento.</returns>
-    public EndpointBuilder RequireBearer(string token, object? error = null, BodyType contentType = BodyType.Json) {
-        _authValidator = request => {
+    public EndpointBuilder RequireBearer(string token, object? error = null, BodyType contentType = BodyType.Json)
+    {
+        _authValidator = request =>
+        {
             var auth = request.Headers != null && request.Headers.TryGetValue("Authorization", out var authList)
                 ? authList.FirstOrDefault()
                 : null;
@@ -99,7 +106,8 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// </summary>
     /// <param name="validator">Função de validação customizada.</param>
     /// <returns>O próprio <see cref="EndpointBuilder"/> para encadeamento.</returns>
-    public EndpointBuilder RequireCustomAuth(Func<IRequestMessage, (bool, object?, BodyType)> validator) {
+    public EndpointBuilder RequireCustomAuth(Func<IRequestMessage, (bool, object?, BodyType)> validator)
+    {
         _authValidator = validator;
         return this;
     }
@@ -110,7 +118,8 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// <param name="key">Nome do header.</param>
     /// <param name="value">Valor do header.</param>
     /// <returns>O próprio <see cref="EndpointBuilder"/> para encadeamento.</returns>
-    public EndpointBuilder WithResponseHeader(string key, string value) {
+    public EndpointBuilder WithResponseHeader(string key, string value)
+    {
         if (_customHeaders.TryGetValue(key, out var list))
             list.Add(value);
         else
@@ -123,8 +132,10 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// </summary>
     /// <param name="headers">Dicionário de headers e seus valores.</param>
     /// <returns>O próprio <see cref="EndpointBuilder"/> para encadeamento.</returns>
-    public EndpointBuilder WithResponseHeaders(Dictionary<string, IEnumerable<string>> headers) {
-        foreach (var kvp in headers) {
+    public EndpointBuilder WithResponseHeaders(Dictionary<string, IEnumerable<string>> headers)
+    {
+        foreach (var kvp in headers ?? [])
+        {
             if (_customHeaders.TryGetValue(kvp.Key, out var list))
                 list.AddRange(kvp.Value);
             else
@@ -141,7 +152,8 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// <typeparam name="TResponse">Tipo do corpo da resposta.</typeparam>
     /// <param name="handler">Função que processa a requisição e retorna resposta, status e tipo de body.</param>
     /// <returns>O próprio <see cref="EndpointBuilder"/> para encadeamento.</returns>
-    public EndpointBuilder OnPost<TRequest, TResponse>(Func<TRequest, (TResponse, HttpStatusCode, BodyType?)> handler) {
+    public EndpointBuilder OnPost<TRequest, TResponse>(Func<TRequest, (TResponse, HttpStatusCode, BodyType?)> handler)
+    {
         _server.Given(
             Request.Create()
                 .UsingPost()
@@ -166,7 +178,8 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// <typeparam name="TResponse">Tipo do corpo da resposta.</typeparam>
     /// <param name="handler">Função que retorna resposta, status e tipo de body.</param>
     /// <returns>O próprio <see cref="EndpointBuilder"/> para encadeamento.</returns>
-    public EndpointBuilder OnGet<TResponse>(Func<(TResponse, HttpStatusCode, BodyType?)> handler) {
+    public EndpointBuilder OnGet<TResponse>(Func<(TResponse, HttpStatusCode, BodyType?)> handler)
+    {
         _server.Given(
             Request.Create()
                 .UsingGet()
@@ -175,7 +188,8 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
         .RespondWith(
             Response.Create()
                 .WithCallback(request =>
-                    HandleRequest(request, () => {
+                    HandleRequest(request, () =>
+                    {
                         var (resp, status, respType) = handler();
                         return (resp, status, respType ?? _responseBodyType);
                     })
@@ -192,7 +206,8 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// <typeparam name="TResponse">Tipo do corpo da resposta.</typeparam>
     /// <param name="handler">Função que processa a requisição e retorna resposta, status e tipo de body.</param>
     /// <returns>O próprio <see cref="EndpointBuilder"/> para encadeamento.</returns>
-    public EndpointBuilder OnPut<TRequest, TResponse>(Func<TRequest, (TResponse, HttpStatusCode, BodyType?)> handler) {
+    public EndpointBuilder OnPut<TRequest, TResponse>(Func<TRequest, (TResponse, HttpStatusCode, BodyType?)> handler)
+    {
         _server.Given(
             Request.Create()
                 .UsingPut()
@@ -217,7 +232,8 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// <typeparam name="TResponse">Tipo do corpo da resposta.</typeparam>
     /// <param name="handler">Função que retorna resposta, status e tipo de body.</param>
     /// <returns>O próprio <see cref="EndpointBuilder"/> para encadeamento.</returns>
-    public EndpointBuilder OnDelete<TResponse>(Func<(TResponse, HttpStatusCode, BodyType?)> handler) {
+    public EndpointBuilder OnDelete<TResponse>(Func<(TResponse, HttpStatusCode, BodyType?)> handler)
+    {
         _server.Given(
             Request.Create()
                 .UsingDelete()
@@ -226,7 +242,8 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
         .RespondWith(
             Response.Create()
                 .WithCallback(request =>
-                    HandleRequest(request, () => {
+                    HandleRequest(request, () =>
+                    {
                         var (resp, status, respType) = handler();
                         return (resp, status, respType ?? _responseBodyType);
                     })
@@ -243,7 +260,8 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// <typeparam name="TResponse">Tipo do corpo da resposta.</typeparam>
     /// <param name="handler">Função que processa a requisição e retorna resposta, status e tipo de body.</param>
     /// <returns>O próprio <see cref="EndpointBuilder"/> para encadeamento.</returns>
-    public EndpointBuilder OnPatch<TRequest, TResponse>(Func<TRequest, (TResponse, HttpStatusCode, BodyType?)> handler) {
+    public EndpointBuilder OnPatch<TRequest, TResponse>(Func<TRequest, (TResponse, HttpStatusCode, BodyType?)> handler)
+    {
         _server.Given(
             Request.Create()
                 .UsingPatch()
@@ -270,7 +288,8 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// <param name="request">Mensagem da requisição recebida.</param>
     /// <param name="handler">Função que processa o objeto da requisição e retorna resposta, status e tipo de body.</param>
     /// <returns>Tupla contendo resposta, status HTTP e tipo de body.</returns>
-    private (TResponse, HttpStatusCode, BodyType) ProcessResponse<TRequest, TResponse>(IRequestMessage request, Func<TRequest, (TResponse, HttpStatusCode, BodyType?)> handler) {
+    private (TResponse, HttpStatusCode, BodyType) ProcessResponse<TRequest, TResponse>(IRequestMessage request, Func<TRequest, (TResponse, HttpStatusCode, BodyType?)> handler)
+    {
         if (string.IsNullOrWhiteSpace(request.Body))
             return (default!, HttpStatusCode.BadRequest, _responseBodyType);
 
@@ -287,7 +306,8 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// <param name="bodyType">Tipo do corpo da requisição.</param>
     /// <returns>Objeto desserializado ou null.</returns>
     private TRequest? DeserializeBody<TRequest>(string body, BodyType bodyType)
-        => bodyType switch {
+        => bodyType switch
+        {
             BodyType.Json => _settings.DeserializeGeneric<TRequest>(body),
             BodyType.String => (TRequest)(object)body,
             BodyType.Bytes => (TRequest)(object)_encoding.GetBytes(body),
@@ -301,11 +321,14 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// <typeparam name="TRequest">Tipo de destino (deve ser Dictionary&lt;string, string&gt;).</typeparam>
     /// <param name="body">Corpo da requisição em formato FormUrlEncoded.</param>
     /// <returns>Dicionário de chave/valor ou lança exceção se tipo não suportado.</returns>
-    private static TRequest? ParseFormUrlEncoded<TRequest>(string body) {
-        if (typeof(TRequest) == typeof(Dictionary<string, string>)) {
+    private static TRequest? ParseFormUrlEncoded<TRequest>(string body)
+    {
+        if (typeof(TRequest) == typeof(Dictionary<string, string>))
+        {
             var dict = new Dictionary<string, string>();
             var pairs = body.Split('&', StringSplitOptions.RemoveEmptyEntries);
-            foreach (var pair in pairs) {
+            foreach (var pair in pairs)
+            {
                 var kv = pair.Split('=', 2);
                 var key = Uri.UnescapeDataString(kv[0]);
                 var value = kv.Length > 1 ? Uri.UnescapeDataString(kv[1]) : "";
@@ -331,10 +354,13 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// <param name="request">Mensagem da requisição recebida.</param>
     /// <param name="handler">Função que retorna resposta, status e tipo de body.</param>
     /// <returns>Objeto <see cref="ResponseMessage"/> representando a resposta HTTP.</returns>
-    private ResponseMessage HandleRequest<T>(IRequestMessage request, Func<(T, HttpStatusCode, BodyType)> handler) {
-        if (_authValidator != null) {
+    private ResponseMessage HandleRequest<T>(IRequestMessage request, Func<(T, HttpStatusCode, BodyType)> handler)
+    {
+        if (_authValidator != null)
+        {
             var (valido, error, errorContentType) = _authValidator(request);
-            if (!valido) return ResponseMessageBuilder(error, _defaultErrorStatusCode, errorContentType);
+            if (!valido)
+                return ResponseMessageBuilder(error, _defaultErrorStatusCode, errorContentType);
         }
         var (respObj, statusCode, contentType) = handler();
         return ResponseMessageBuilder(respObj, statusCode, contentType);
@@ -348,34 +374,35 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
     /// <param name="statusCode">Status HTTP da resposta.</param>
     /// <param name="contentType">Tipo do corpo da resposta.</param>
     /// <returns>Objeto <see cref="ResponseMessage"/> configurado.</returns>
-    private ResponseMessage ResponseMessageBuilder<T>(T obj, HttpStatusCode statusCode, BodyType contentType) {
-        var response = new ResponseMessage {
+    private ResponseMessage ResponseMessageBuilder<T>(T obj, HttpStatusCode statusCode, BodyType contentType)
+    {
+        var response = new ResponseMessage
+        {
             StatusCode = statusCode,
             Headers = new Dictionary<string, WireMockList<string>>(_customHeaders),
-            BodyData = new BodyData {
+            BodyData = new BodyData
+            {
                 Encoding = _encoding,
                 DetectedBodyType = contentType
             }
         };
 
-        if (obj is null) {
+        if (obj is null)
+        {
             response.BodyData = null;
             return response;
         }
 
-        switch (contentType) {
+        switch (contentType)
+        {
             case BodyType.Json:
-                response.BodyData.BodyAsString = _settings.SerializeGeneric(obj);
-                response.Headers["Content-Type"] = ["application/json"];
-                response.BodyData.DetectedBodyType = BodyType.String;
+                ApplyJsonBody(response, obj);
                 break;
             case BodyType.Bytes:
-                response.BodyData.BodyAsBytes = obj is byte[] bytes ? bytes : response.BodyData.Encoding!.GetBytes(obj?.ToString() ?? "");
-                response.Headers["Content-Type"] = ["application/octet-stream"];
+                ApplyBytesBody(response, obj);
                 break;
             case BodyType.FormUrlEncoded:
-                response.BodyData.BodyAsString = SerializeFormUrlEncoded(obj as IDictionary<string, string> ?? new Dictionary<string, string>());
-                response.Headers["Content-Type"] = ["application/x-www-form-urlencoded"];
+                ApplyFormBody(response, obj);
                 break;
             default:
                 response.BodyData.BodyAsString = obj?.ToString();
@@ -384,5 +411,38 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
         }
 
         return response;
+    }
+
+    /// <summary>
+    /// Aplica o corpo JSON à resposta, serializando o objeto e definindo o Content-Type adequado.
+    /// </summary>
+    private void ApplyJsonBody<T>(ResponseMessage response, T obj)
+    {
+        response.BodyData!.BodyAsString = _settings.SerializeGeneric(obj);
+        (response.Headers ??= new Dictionary<string, WireMockList<string>>())["Content-Type"] = ["application/json"];
+        response.BodyData.DetectedBodyType = BodyType.String;
+    }
+
+    /// <summary>
+    /// Aplica o corpo binário (bytes) à resposta, convertendo o objeto se necessário,
+    /// e define o Content-Type adequado.
+    /// </summary>
+    private static void ApplyBytesBody<T>(ResponseMessage response, T obj)
+    {
+        response.BodyData!.BodyAsBytes = obj is byte[] bytes
+            ? bytes
+            : response.BodyData.Encoding!.GetBytes(obj?.ToString() ?? "");
+        (response.Headers ??= new Dictionary<string, WireMockList<string>>())["Content-Type"] = ["application/octet-stream"];
+    }
+
+    /// <summary>
+    /// Aplica o corpo FormUrlEncoded à resposta, serializando o dicionário de chave/valor
+    /// e definindo o Content-Type adequado.
+    /// </summary>
+    private static void ApplyFormBody<T>(ResponseMessage response, T obj)
+    {
+        response.BodyData!.BodyAsString = SerializeFormUrlEncoded(
+            obj as IDictionary<string, string> ?? new Dictionary<string, string>());
+        (response.Headers ??= new Dictionary<string, WireMockList<string>>())["Content-Type"] = ["application/x-www-form-urlencoded"];
     }
 }

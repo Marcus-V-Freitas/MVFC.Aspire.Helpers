@@ -1,7 +1,7 @@
-﻿namespace MVFC.Aspire.Helpers.Tests.TestUtils; 
+﻿namespace MVFC.Aspire.Helpers.Tests.TestUtils;
 
-internal class ProjectAppHost() : DistributedApplicationFactory(typeof(MVFC_Aspire_Helpers_Playground_AppHost)) {
-
+internal class ProjectAppHost() : DistributedApplicationFactory(typeof(MVFC_Aspire_Helpers_Playground_AppHost)) 
+{
     protected override void OnBuilderCreating(DistributedApplicationOptions applicationOptions, HostApplicationBuilderSettings hostOptions) {
         applicationOptions.AllowUnsecuredTransport = true;
         hostOptions.Args = ["--testmode=true"];

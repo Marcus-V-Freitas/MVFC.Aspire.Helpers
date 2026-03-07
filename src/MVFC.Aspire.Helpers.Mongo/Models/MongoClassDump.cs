@@ -1,16 +1,16 @@
 ﻿namespace MVFC.Aspire.Helpers.Mongo.Models;
 
 /// <summary>
-/// Representa um "dump" de uma coleção do MongoDB, contendo informações sobre o banco de dados,
-/// a coleção, a quantidade de documentos e um gerador de dados fictícios para os documentos.
+/// Represents a MongoDB collection "dump" containing information about the database,
+/// collection, number of documents, and a fake data generator for the documents.
 /// </summary>
 /// <typeparam name="T">
-/// Tipo dos documentos que serão gerados e incluídos no dump. Deve ser uma classe.
+/// Type of documents that will be generated and included in the dump. Must be a class.
 /// </typeparam>
-/// <param name="DatabaseName">Nome do banco de dados MongoDB associado ao dump.</param>
-/// <param name="CollectionName">Nome da coleção MongoDB associada ao dump.</param>
-/// <param name="Quantity">Quantidade de documentos a serem gerados no dump.</param>
-/// <param name="Faker">Instância do gerador de dados fictícios (<see cref="Faker{T}"/>) para criar os documentos.</param>
+/// <param name="DatabaseName">MongoDB database name associated with the dump.</param>
+/// <param name="CollectionName">MongoDB collection name associated with the dump.</param>
+/// <param name="Quantity">Number of documents to be generated in the dump.</param>
+/// <param name="Faker">Fake data generator instance (<see cref="Faker{T}"/>) for creating the documents.</param>
 public record class MongoClassDump<T>(
     string DatabaseName,
     string CollectionName,

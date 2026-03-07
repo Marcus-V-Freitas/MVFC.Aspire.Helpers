@@ -212,7 +212,7 @@ csharp_space_between_square_brackets                            = false
 # ──────────────────────────────────────────────────────────
 # 9. FORMATAÇÃO — WRAPPING
 # ──────────────────────────────────────────────────────────
-csharp_preserve_single_line_statements = false
+csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks     = true
 
 # ──────────────────────────────────────────────────────────
@@ -246,6 +246,10 @@ dotnet_naming_symbols.private_fields.applicable_accessibilities = private,protec
 
 dotnet_naming_symbols.constants.applicable_kinds             = field,local
 dotnet_naming_symbols.constants.required_modifiers           = const
+
+dotnet_naming_symbols.private_static_readonly.applicable_kinds = field
+dotnet_naming_symbols.private_static_readonly.applicable_accessibilities = private, protected
+dotnet_naming_symbols.private_static_readonly.required_modifiers = static, readonly
 
 dotnet_naming_symbols.static_readonly.applicable_kinds       = field
 dotnet_naming_symbols.static_readonly.required_modifiers     = static,readonly
@@ -308,6 +312,10 @@ dotnet_naming_rule.private_fields_must_be_underscore_camel.severity = warning
 dotnet_naming_rule.constants_must_be_upper.symbols  = constants
 dotnet_naming_rule.constants_must_be_upper.style    = upper_case
 dotnet_naming_rule.constants_must_be_upper.severity = warning
+
+dotnet_naming_rule.private_static_readonly_must_be_underscore.symbols = private_static_readonly
+dotnet_naming_rule.private_static_readonly_must_be_underscore.style = underscore_camel
+dotnet_naming_rule.private_static_readonly_must_be_underscore.severity = warning
 
 dotnet_naming_rule.static_readonly_must_be_pascal.symbols  = static_readonly
 dotnet_naming_rule.static_readonly_must_be_pascal.style    = pascal_case

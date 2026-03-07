@@ -9,23 +9,9 @@ var messageConfig = new MessageConfig(
     AckDeadlineSeconds = 300,
 };
 
-var rabbitConfig = new RabbitMQConfig(
-    Exchanges: [
-        new ExchangeConfig("test-exchange", "topic"), 
-        new ExchangeConfig("dead-letter", "fanout")], 
-    Queues: [
-        new QueueConfig(Name: "test-queue", ExchangeName: "test-exchange", RoutingKey: "test.*", DeadLetterExchange: "dead-letter"), 
-        new QueueConfig(Name: "empty-queue", ExchangeName: "test-exchange", RoutingKey: "empty.*"), 
-        new QueueConfig(Name: "dlq", ExchangeName: "dead-letter")],
-    VolumeName: "rabbit-mq");
-
 var pubSubConfig = new PubSubConfig(
                             projectId: "test-project",
                             messageConfig: messageConfig);
-
-var redisConfig = new RedisConfig(
-    WithCommander: true, 
-    VolumeName: "redis-data");
 
 IReadOnlyCollection<IMongoClassDump> dumps = [
     new MongoClassDump<TestDatabase>("TestDatabase", "TestCollection", 100,
@@ -33,17 +19,51 @@ IReadOnlyCollection<IMongoClassDump> dumps = [
               .CustomInstantiator(f => new TestDatabase(f.Person.FirstName, f.Person.Cpf())))
 ];
 
-var storageConfig = new CloudStorageConfig(
-    Port: 4443,
-    LocalBucketFolder: "./bucket-data");
+// Criar recursos com padrão builder
+var cloudStorage = builder.AddCloudStorage("cloud-storage")
+    .WithBucketFolder("./bucket-data");
 
+var mongo = builder.AddMongoReplicaSet("mongo")
+    .WithDumps(dumps);
+
+var pubSub = builder.AddGcpPubSub("gcp-pubsub")
+    .WithPubSubConfigs(pubSubConfig);
+
+var pubSubUI = builder.AddGcpPubSubUI("gcp-pubsub-ui")
+    .WithReference(pubSub);
+
+var mailpit = builder.AddMailpit("mailpit");
+
+var rabbitMQ = builder.AddRabbitMQ("rabbitmq")
+    .WithExchanges([
+        new ExchangeConfig("test-exchange", "topic"),
+        new ExchangeConfig("dead-letter", "fanout")])
+    .WithQueues([
+        new QueueConfig(Name: "test-queue", ExchangeName: "test-exchange", RoutingKey: "test.*", DeadLetterExchange: "dead-letter"),
+        new QueueConfig(Name: "empty-queue", ExchangeName: "test-exchange", RoutingKey: "empty.*"),
+        new QueueConfig(Name: "dlq", ExchangeName: "dead-letter")])
+    .WithDataVolume("rabbit-mq");
+
+var redis = builder.AddRedis("redis")
+    .WithCommander()
+    .WithDataVolume("redis-data");
+
+// Referenciar recursos no projeto
 var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
-                 .WithCloudStorage(builder, name: "cloud-storage", storageConfig: storageConfig)
-                 .WithMongoReplicaSet(builder, name: "mongo", dumps: dumps, port: 27017)
-                 .WithGcpPubSub(builder, name: "gcp-pubsub", pubSubConfig: pubSubConfig)
-                 .WithMailPit(builder, name: "mailpit")
-                 .WithRabbitMQ(builder, name: "rabbitmq", rabbitMQConfig: rabbitConfig)
-                 .WithRedis(builder, name: "redis", redisConfig: redisConfig);
+                 .WithReference(cloudStorage)
+                 .WaitFor(cloudStorage)
+                 .WithReference(mongo)
+                 .WaitFor(mongo)
+                 .WithReference(pubSub)
+                 .WaitFor(pubSub)
+                 .WithReference(mailpit)
+                 .WaitFor(mailpit)
+                 .WithReference(rabbitMQ)
+                 .WaitFor(rabbitMQ)
+                 .WithReference(redis)
+                 .WaitFor(redis)
+                 .WithReference(pubSubUI)
+                 .WaitFor(pubSubUI);
 
 var wireMock = builder.AddWireMock("wireMock", port: 9090, configure: (server) => {
     server.Endpoint("/api/echo")
@@ -105,7 +125,7 @@ var wireMock = builder.AddWireMock("wireMock", port: 9090, configure: (server) =
         .OnPost<byte[], byte[]>(body => (body, HttpStatusCode.OK, BodyType.Bytes));
 
     server.Endpoint("/api/unsupported")
-        .WithDefaultBodyType((BodyType)999) // BodyType n�o suportado
+        .WithDefaultBodyType((BodyType)999)
         .OnPost<string, string>(_ => ("Not Supported", HttpStatusCode.NotImplemented, null));
 
     server.Endpoint("/api/json")

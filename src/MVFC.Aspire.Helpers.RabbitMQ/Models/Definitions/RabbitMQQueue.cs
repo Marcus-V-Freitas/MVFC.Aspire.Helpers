@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.RabbitMQ.Models.Definitions;
+﻿namespace MVFC.Aspire.Helpers.RabbitMQ.Models.Definitions;
 
 internal sealed record RabbitMQQueue(
     [property: JsonPropertyName("name")] string Name,

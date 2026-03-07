@@ -1,53 +1,63 @@
 ﻿namespace MVFC.Aspire.Helpers.GcpPubSub.Models;
 
 /// <summary>
-/// Representa a configuração de uma mensagem para o Pub/Sub, incluindo o nome do tópico, o nome da assinatura,
-/// o endpoint de push para entrega de mensagens, configurações de dead letter e o tempo limite para confirmação (acknowledgment) da mensagem.
+/// Represents the message configuration for Pub/Sub, including the topic name, subscription name,
+/// push endpoint for message delivery, dead letter settings, and the acknowledgment deadline.
 /// </summary>
 /// <param name="TopicName">
-/// Nome do tópico Pub/Sub ao qual a mensagem será publicada.
+/// Pub/Sub topic name to which the message will be published.
 /// </param>
 /// <param name="SubscriptionName">
-/// (Opcional) Nome da assinatura associada ao tópico.
+/// (Optional) Subscription name associated with the topic.
 /// </param>
 /// <param name="PushEndpoint">
-/// (Opcional) Endpoint HTTP para entrega de mensagens via push. Se não informado, a assinatura será do tipo pull.
+/// (Optional) HTTP endpoint for push message delivery. If not provided, the subscription will be pull-based.
 /// </param>
 public sealed record class MessageConfig(
     string TopicName,
     string? SubscriptionName = null,
-    string? PushEndpoint = null) {
+    string? PushEndpoint = null)
+{
 
     /// <summary>
-    /// Nome do tópico Pub/Sub ao qual a mensagem será publicada.
+    /// Pub/Sub topic name to which the message will be published.
     /// </summary>
     public string TopicName { get; init; } = TopicName;
 
     /// <summary>
-    /// Nome da assinatura associada ao tópico.
+    /// Subscription name associated with the topic.
     /// </summary>
     public string? SubscriptionName { get; init; } = SubscriptionName;
 
     /// <summary>
-    /// (Opcional) Endpoint HTTP para entrega de mensagens via push. Se não informado, a assinatura será do tipo pull.
+    /// (Optional) HTTP endpoint for push message delivery. If not provided, the subscription will be pull-based.
     /// </summary>
     public string? PushEndpoint { get; init; } = PushEndpoint;
 
     /// <summary>
-    /// (Opcional) Nome do tópico de dead letter (DLQ) para onde mensagens não processadas serão encaminhadas após o número máximo de tentativas.
-    /// Se não informado, a assinatura não terá suporte a dead letter.
+    /// (Optional) Dead letter topic (DLQ) name where unprocessed messages will be forwarded after the maximum delivery attempts.
+    /// If not provided, the subscription will not support dead lettering.
     /// </summary>
-    public string? DeadLetterTopic { get; init; }
+    public string? DeadLetterTopic
+    {
+        get; init;
+    }
 
     /// <summary>
-    /// (Opcional) Número máximo de tentativas de entrega antes de encaminhar a mensagem para o tópico de dead letter.
-    /// Válido apenas se <see cref="DeadLetterTopic"/> estiver definido. O padrão é 5.
+    /// (Optional) Maximum number of delivery attempts before forwarding the message to the dead letter topic.
+    /// Only valid when <see cref="DeadLetterTopic"/> is defined. Default is 5.
     /// </summary>
-    public int? MaxDeliveryAttempts { get; init; }
+    public int? MaxDeliveryAttempts
+    {
+        get; init;
+    }
 
     /// <summary>
-    /// (Opcional) Tempo limite em segundos para confirmação (acknowledgment) da mensagem.
-    /// Se não informado, o padrão é 5 minutos.
+    /// (Optional) Acknowledgment deadline in seconds.
+    /// If not provided, the default is 5 minutes.
     /// </summary>
-    public int? AckDeadlineSeconds { get; init; }
+    public int? AckDeadlineSeconds
+    {
+        get; init;
+    }
 }

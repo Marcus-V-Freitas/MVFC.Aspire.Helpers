@@ -1,15 +1,15 @@
-namespace MVFC.Aspire.Helpers.RabbitMQ.Models;
+﻿namespace MVFC.Aspire.Helpers.RabbitMQ.Models;
 
 /// <summary>
-/// Configuração de uma Queue do RabbitMQ.
+/// RabbitMQ queue configuration.
 /// </summary>
-/// <param name="Name">Nome da queue</param>
-/// <param name="ExchangeName">Nome do exchange ao qual a queue será vinculada</param>
-/// <param name="RoutingKey">Routing key para binding (padrão: nome da queue)</param>
-/// <param name="Durable">Se a queue deve ser durável</param>
-/// <param name="AutoDelete">Se a queue deve ser deletada automaticamente quando não usada</param>
-/// <param name="DeadLetterExchange">Nome do exchange de dead letter</param>
-/// <param name="MessageTTL">Tempo de vida das mensagens em milissegundos</param>
+/// <param name="Name">Queue name</param>
+/// <param name="ExchangeName">Name of the exchange to bind the queue to</param>
+/// <param name="RoutingKey">Routing key for binding (default: queue name)</param>
+/// <param name="Durable">Whether the queue should be durable</param>
+/// <param name="AutoDelete">Whether the queue should be auto-deleted when unused</param>
+/// <param name="DeadLetterExchange">Dead letter exchange name</param>
+/// <param name="MessageTTL">Message time-to-live in milliseconds</param>
 public sealed record QueueConfig(
     string Name,
     string? ExchangeName = null,

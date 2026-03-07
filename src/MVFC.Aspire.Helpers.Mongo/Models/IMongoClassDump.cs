@@ -1,32 +1,32 @@
 ﻿namespace MVFC.Aspire.Helpers.Mongo.Models;
 
 /// <summary>
-/// Define a estrutura básica para um "dump" de uma coleção do MongoDB.
-/// Implementações dessa interface devem fornecer informações essenciais sobre
-/// o banco de dados, a coleção e a quantidade de documentos envolvidos na operação.
+/// Defines the basic structure for a MongoDB collection "dump".
+/// Implementations of this interface should provide essential information about
+/// the database, collection, and number of documents involved in the operation.
 /// </summary>
 public interface IMongoClassDump
 {
     /// <summary>
-    /// Nome do banco de dados MongoDB associado ao dump.
+    /// MongoDB database name associated with the dump.
     /// </summary>
-    string DatabaseName { get; }
+    public string DatabaseName { get; }
 
     /// <summary>
-    /// Nome da coleção MongoDB associada ao dump.
+    /// MongoDB collection name associated with the dump.
     /// </summary>
-    string CollectionName { get; }
+    public string CollectionName { get; }
 
     /// <summary>
-    /// Quantidade de documentos incluídos no dump.
+    /// Number of documents included in the dump.
     /// </summary>
-    int Quantity { get; }
+    public int Quantity { get; }
 
     /// <summary>
-    /// Executa a inserção dos documentos na coleção especificada.
+    /// Executes the document insertion into the specified collection.
     /// </summary>
-    /// <param name="client">O cliente MongoDB.</param>
-    /// <param name="cancellationToken">Token de cancelamento.</param>
-    /// <returns>Uma tarefa que representa a operação assíncrona.</returns>
-    Task ExecuteDumpAsync(IMongoClient client, CancellationToken cancellationToken);
+    /// <param name="client">The MongoDB client.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    public Task ExecuteDumpAsync(IMongoClient client, CancellationToken cancellationToken);
 }

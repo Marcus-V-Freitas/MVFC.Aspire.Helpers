@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.WireMock
+﻿# MVFC.Aspire.Helpers.WireMock
 
 Helpers para integração do WireMock.Net em projetos .NET Aspire, facilitando o mock de APIs para desenvolvimento, testes e integração.
 

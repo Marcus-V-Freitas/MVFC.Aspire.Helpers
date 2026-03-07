@@ -1,28 +1,29 @@
 ﻿namespace MVFC.Aspire.Helpers.CloudStorage.Resources;
 
 /// <summary>
-/// Representa um recurso de Cloud Storage (emulador GCS) para uso em aplicações distribuídas,
-/// fornecendo acesso ao endpoint HTTP e expressão de conexão para integração.
+/// Represents a Cloud Storage resource (GCS emulator) for use in distributed applications,
+/// providing access to the HTTP endpoint and connection expression for integration.
 /// </summary>
 public sealed class CloudStorageResource(string name)
-    : ContainerResource(name), IResourceWithConnectionString {
+    : ContainerResource(name), IResourceWithConnectionString
+{
 
     /// <summary>
-    /// Nome padrão do endpoint HTTP exposto pelo recurso de Cloud Storage.
+    /// Default name of the HTTP endpoint exposed by the Cloud Storage resource.
     /// </summary>
-    internal const string HttpEndpointName = "http";
+    internal const string HTTP_ENDPOINT_NAME = "http";
 
     private EndpointReference? _httpReference;
 
     /// <summary>
-    /// Obtém a referência ao endpoint HTTP do recurso de Cloud Storage.
+    /// Gets the reference to the HTTP endpoint of the Cloud Storage resource.
     /// </summary>
     public EndpointReference HttpEndpoint =>
-        _httpReference ??= new(this, HttpEndpointName);
+        _httpReference ??= new(this, HTTP_ENDPOINT_NAME);
 
     /// <summary>
-    /// Expressão que constrói a string de conexão para o endpoint do emulador de Cloud Storage,
-    /// incluindo o esquema, host, porta e o sufixo "/storage/v1/".
+    /// Expression that builds the connection string for the Cloud Storage emulator endpoint,
+    /// including the scheme, host, port, and the "/storage/v1/" suffix.
     /// </summary>
     public ReferenceExpression ConnectionStringExpression =>
         ReferenceExpression.Create(

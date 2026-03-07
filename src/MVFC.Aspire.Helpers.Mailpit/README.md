@@ -15,7 +15,7 @@ Este projeto permite adicionar e integrar o MailPit como recurso gerenciado em a
 - Adiciona o container MailPit à aplicação Aspire.
 - Exposição da interface web para visualização dos e-mails recebidos.
 - Métodos de extensão para facilitar a configuração no AppHost.
-- Permite configuração de porta e persistência opcional dos dados.
+- Permite configuração de porta, número máximo de mensagens, autenticação e persistência opcional dos dados.
 
 ## Imagens compatíveis
 
@@ -34,43 +34,44 @@ dotnet add package MVFC.Aspire.Helpers.Mailpit
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
 
+var mailpit = builder.AddMailpit("mailpit")
+    .WithMaxMessages(1000)
+    .WithDataFilePath("/data/mailpit.db")
+    .WithWebAuth(username: "admin", password: "secret");
+
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
-       .WithMailpit(builder, name: "mailpit");
+       .WithReference(mailpit)
+       .WaitFor(mailpit);
 
 await builder.Build().RunAsync();
 ```
-## Parâmetros de configuração
 
-### MailPitConfig
+## Métodos Fluentes
 
-- `HttpPort`: Porta da interface web do MailPit.
-- `SmtpPort`: Porta do servidor SMTP.
-- `MaxMessages`: Quantidade máxima de mensagens armazenadas.
-- `DataFilePath`: Caminho para persistência dos dados dos e-mails.
-- `SmtpAuthAcceptAny`: Permite autenticação SMTP com qualquer usuário/senha.
-- `SmtpAuthAllowInsecure`: Permite autenticação SMTP em conexões inseguras.
-- `EnableWebAuth`: Habilita autenticação na interface web.
-- `WebAuthUsername`: Usuário para autenticação web.
-- `WebAuthPassword`: Senha para autenticação web.
-- `ImageName`: Nome da imagem Docker utilizada.
-- `ImageTag`: Tag da imagem Docker utilizada.
-- `VerboseLogging`: Habilita logs detalhados do MailPit.
-- `MaxMessageSize`: Tamanho máximo permitido para cada mensagem (em MB).
-- `SmtpHostname`: Hostname do servidor SMTP.
+| Método | Descrição |
+|---|---|
+| `WithDockerImage(image, tag)` | Substitui a imagem Docker utilizada. |
+| `WithMaxMessages(max)` | Define o número máximo de mensagens armazenadas. |
+| `WithMaxMessageSize(sizeInMb)` | Define o tamanho máximo de cada mensagem em MB. |
+| `WithSmtpAuth()` | Habilita autenticação SMTP (accept any + insecure). |
+| `WithSmtpHostname(hostname)` | Define o hostname do servidor SMTP. |
+| `WithDataFilePath(path)` | Define o caminho do arquivo de persistência dos e-mails. |
+| `WithWebAuth(username, password)` | Habilita autenticação na interface web. |
+| `WithVerboseLogging()` | Habilita logs detalhados do MailPit. |
+
+## Parâmetros de `AddMailpit`
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|---|---|---|---|
+| `name` | `string` | — | Nome do recurso. |
+| `httpPort` | `int` | `8025` | Porta da interface web. |
+| `smtpPort` | `int` | `1025` | Porta do servidor SMTP. |
 
 ## Detalhes de Porta e Visualização
 
-- **Porta SMTP**: Definida via parâmetro smtpPort (exemplo: `1025`).
-- **Porta Web**: Definida via parâmetro webPort (exemplo: `8025`).
-- **Acesso à interface**: A interface web do MailPit fica disponível em `http://localhost:<webPort>/`
-
-## Métodos Públicos
-
-- **AddMailpit**  
-Adiciona o recurso MailPit à aplicação distribuída.
-
-- **WithMailpit**  
-Integra o recurso MailPit ao projeto, configurando dependências e variáveis de ambiente.
+- **Porta SMTP**: definida via parâmetro `smtpPort` (padrão: `1025`).
+- **Porta Web**: definida via parâmetro `httpPort` (padrão: `8025`).
+- **Acesso à interface**: A interface web do MailPit fica disponível em `http://localhost:<httpPort>/`.
 
 ## Requisitos
 - .NET 9+

@@ -1,37 +1,54 @@
-namespace MVFC.Aspire.Helpers.RabbitMQ.Resources;
+﻿namespace MVFC.Aspire.Helpers.RabbitMQ.Resources;
 
 /// <summary>
-/// Representa o recurso RabbitMQ como um container Aspire, fornecendo endpoints AMQP e Management
-/// e uma expressão de string de conexão para integração em aplicações distribuídas.
+/// Represents the RabbitMQ resource as an Aspire container, providing AMQP and Management endpoints
+/// and a connection string expression for integration in distributed applications.
 /// </summary>
-/// <remarks>
-/// Esta classe encapsula a configuração dos endpoints necessários para o funcionamento do RabbitMQ,
-/// permitindo fácil referência e integração com outros recursos Aspire.
-/// </remarks>
-public sealed class RabbitMQResource(string name) : ContainerResource(name), IResourceWithConnectionString {
+public sealed class RabbitMQResource(string name) : ContainerResource(name), IResourceWithConnectionString
+{
     /// <summary>
-    /// Nome do endpoint AMQP utilizado pelo RabbitMQ.
+    /// AMQP endpoint name used by RabbitMQ.
     /// </summary>
-    internal const string AmqpEndpointName = "amqp";
+    internal const string AMQP_ENDPOINT_NAME = "amqp";
 
     /// <summary>
-    /// Nome do endpoint HTTP do Management UI utilizado pelo RabbitMQ.
+    /// HTTP endpoint name for the RabbitMQ Management UI.
     /// </summary>
-    internal const string ManagementEndpointName = "management";
+    internal const string MANAGEMENT_ENDPOINT_NAME = "management";
 
     private EndpointReference? _amqpReference;
 
     /// <summary>
-    /// Referência ao endpoint AMQP do recurso RabbitMQ.
+    /// Reference to the AMQP endpoint of the RabbitMQ resource.
     /// </summary>
     public EndpointReference AmqpEndpoint =>
-        _amqpReference ??= new(this, AmqpEndpointName);
+        _amqpReference ??= new(this, AMQP_ENDPOINT_NAME);
 
     /// <summary>
-    /// Expressão que representa a string de conexão AMQP para o RabbitMQ.
+    /// Expression representing the AMQP connection string for RabbitMQ.
     /// </summary>
     public ReferenceExpression ConnectionStringExpression =>
         ReferenceExpression.Create(
             $"amqp://{AmqpEndpoint.Property(EndpointProperty.Host)}:{AmqpEndpoint.Property(EndpointProperty.Port)}"
         );
+
+    /// <summary>
+    /// RabbitMQ username (used to generate definitions.json).
+    /// </summary>
+    internal string Username { get; set; } = RabbitMQDefaults.DEFAULT_USERNAME;
+
+    /// <summary>
+    /// RabbitMQ password (used to generate definitions.json).
+    /// </summary>
+    internal string Password { get; set; } = RabbitMQDefaults.DEFAULT_PASSWORD;
+
+    /// <summary>
+    /// List of configured exchanges.
+    /// </summary>
+    internal List<ExchangeConfig>? Exchanges { get; set; }
+
+    /// <summary>
+    /// List of configured queues.
+    /// </summary>
+    internal List<QueueConfig>? Queues { get; set; }
 }

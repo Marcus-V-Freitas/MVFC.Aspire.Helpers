@@ -1,6 +1,7 @@
 namespace MVFC.Aspire.Helpers.Tests;
 
-public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHostFixture> {
+public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHostFixture> 
+{
     private readonly AppHostFixture _fixture = fixture;
 
     #region Mongo
@@ -283,14 +284,10 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     [Fact]
     public async Task RabbitMQ_PublishAndConsume_ShouldReturnMessage() {
         // Arrange
-        await Task.Delay(2000, TestContext.Current.CancellationToken);
         var message = "integration-test-message";
 
         // Act - Publish
         await _fixture.AppHttpClient.PostAsync($"/api/rabbitmq/publish/test-exchange/test.key/{message}", null, TestContext.Current.CancellationToken);
-
-        // Wait a bit for message to be processed
-        await Task.Delay(2000, TestContext.Current.CancellationToken);
 
         // Act - Consume
         var response = await _fixture.AppHttpClient.GetAsync("/api/rabbitmq/consume/test-queue", TestContext.Current.CancellationToken);
@@ -304,7 +301,6 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     [Fact]
     public async Task RabbitMQ_ConsumeEmpty_ShouldReturnNoContent() {
         // Arrange & Act
-        await Task.Delay(2000, TestContext.Current.CancellationToken);
         var response = await _fixture.AppHttpClient.GetAsync("/api/rabbitmq/consume/empty-queue", TestContext.Current.CancellationToken);
 
         // Assert

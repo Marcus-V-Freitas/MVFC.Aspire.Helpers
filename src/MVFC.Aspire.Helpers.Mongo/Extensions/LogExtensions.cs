@@ -1,6 +1,7 @@
-namespace MVFC.Aspire.Helpers.Mongo.Extensions;
+﻿namespace MVFC.Aspire.Helpers.Mongo.Extensions;
 
-internal static partial class LogExtensions {
+internal static partial class LogExtensions
+{
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to process MongoDB dump: {DatabaseName}.{CollectionName}")]
     public static partial void LogMongoDumpFailed(this ILogger logger, Exception exception, string databaseName, string collectionName);

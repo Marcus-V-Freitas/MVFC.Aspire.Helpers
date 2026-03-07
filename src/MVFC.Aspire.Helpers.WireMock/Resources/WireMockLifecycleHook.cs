@@ -1,99 +1,106 @@
-namespace MVFC.Aspire.Helpers.WireMock.Resources;
+﻿namespace MVFC.Aspire.Helpers.WireMock.Resources;
 
 /// <summary>
-/// Subscriber de eventos do ciclo de vida para recursos WireMock no Aspire.
-/// Responsável por publicar eventos e atualizar o estado dos recursos WireMock durante a inicialização.
+/// Eventing subscriber for WireMock resource lifecycle in Aspire.
+/// Responsible for publishing events and updating WireMock resource state during initialization.
 /// </summary>
 internal sealed class WireMockLifecycleHook(
     ResourceNotificationService resourceNotificationService,
     IDistributedApplicationEventing eventing,
     ResourceLoggerService resourceLoggerService,
-    IServiceProvider serviceProvider) : IDistributedApplicationEventingSubscriber {
+    IServiceProvider serviceProvider) : IDistributedApplicationEventingSubscriber
+{
     private readonly ResourceNotificationService _resourceNotificationService = resourceNotificationService;
     private readonly IDistributedApplicationEventing _eventing = eventing;
     private readonly ResourceLoggerService _resourceLoggerService = resourceLoggerService;
     private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     /// <summary>
-    /// Registra a assinatura do evento <see cref="BeforeStartEvent"/> no pipeline de eventos do Aspire.
+    /// Registers the <see cref="BeforeStartEvent"/> subscription in the Aspire eventing pipeline.
     /// </summary>
-    /// <param name="eventing">Instância do sistema de eventos da aplicação distribuída.</param>
-    /// <param name="executionContext">Contexto de execução da aplicação distribuída.</param>
-    /// <param name="cancellationToken">Token para cancelamento da operação assíncrona.</param>
-    /// <returns>Uma tarefa que representa a operação assíncrona.</returns>
+    /// <param name="eventing">Distributed application eventing instance.</param>
+    /// <param name="executionContext">Distributed application execution context.</param>
+    /// <param name="cancellationToken">Cancellation token for the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public Task SubscribeAsync(
         IDistributedApplicationEventing eventing,
         DistributedApplicationExecutionContext executionContext,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default)
+    {
 
         eventing.Subscribe<BeforeStartEvent>(OnBeforeStartAsync);
         return Task.CompletedTask;
     }
 
     /// <summary>
-    /// Manipula o evento BeforeStartEvent, executando ações de inicialização dos recursos WireMock,
-    /// publicando eventos de início e pronto, além de atualizar o estado conforme o resultado da inicialização.
+    /// Handles the BeforeStartEvent, performing initialization actions for WireMock resources,
+    /// publishing start and ready events, and updating state based on the initialization result.
     /// </summary>
-    /// <param name="event">Evento disparado antes do início da aplicação distribuída.</param>
-    /// <param name="cancellationToken">Token para cancelamento da operação assíncrona.</param>
-    /// <returns>Uma tarefa que representa a operação assíncrona.</returns>
+    /// <param name="event">Event fired before the distributed application starts.</param>
+    /// <param name="cancellationToken">Cancellation token for the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task OnBeforeStartAsync(
         BeforeStartEvent @event,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default)
+    {
         var appModel = @event.Model;
-        foreach (var wireMockResource in appModel.Resources.OfType<WireMockResource>()) {
+        foreach (var wireMockResource in appModel.Resources.OfType<WireMockResource>())
+        {
             var logger = _resourceLoggerService.GetLogger(wireMockResource);
 
-            await PublishStartEventAsync(wireMockResource, logger, cancellationToken);
-            await PublishReadyEventAsync(wireMockResource, cancellationToken);
-            await NotifyWireMockAsync(wireMockResource, logger);
+            await PublishStartEventAsync(wireMockResource, logger, cancellationToken).ConfigureAwait(false);
+            await PublishReadyEventAsync(wireMockResource, cancellationToken).ConfigureAwait(false);
+            await NotifyWireMockAsync(wireMockResource, logger).ConfigureAwait(false);
         }
     }
 
     /// <summary>
-    /// Publica o evento de início do recurso WireMock e registra no log.
+    /// Publishes the WireMock resource start event and logs it.
     /// </summary>
-    /// <param name="resource">Recurso WireMock.</param>
-    /// <param name="logger">Logger associado ao recurso.</param>
-    /// <param name="cancellationToken">Token de cancelamento.</param>
-    /// <returns>Uma tarefa que representa a operação assíncrona.</returns>
+    /// <param name="resource">WireMock resource.</param>
+    /// <param name="logger">Logger associated with the resource.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task PublishStartEventAsync(
         WireMockResource resource,
         ILogger logger,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken)
+    {
 
         var startEvent = new BeforeResourceStartedEvent(resource, _serviceProvider);
-        await _eventing.PublishAsync(startEvent, cancellationToken);
+        await _eventing.PublishAsync(startEvent, cancellationToken).ConfigureAwait(false);
         logger.LogStartingAspireWireMock();
     }
 
     /// <summary>
-    /// Publica o evento indicando que o recurso WireMock está pronto.
+    /// Publishes the event indicating the WireMock resource is ready.
     /// </summary>
-    /// <param name="resource">Recurso WireMock.</param>
-    /// <param name="cancellationToken">Token de cancelamento.</param>
-    /// <returns>Uma tarefa que representa a operação assíncrona.</returns>
+    /// <param name="resource">WireMock resource.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task PublishReadyEventAsync(
         WireMockResource resource,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken)
+    {
 
         var readyEvent = new ResourceReadyEvent(resource, _serviceProvider);
-        await _eventing.PublishAsync(readyEvent, cancellationToken);
+        await _eventing.PublishAsync(readyEvent, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Atualiza o estado do recurso WireMock para "Running" ou "Error" e registra no log.
+    /// Updates the WireMock resource state to "Running" or "Error" and logs the status.
     /// </summary>
-    /// <param name="resource">Recurso WireMock.</param>
-    /// <param name="logger">Logger associado ao recurso.</param>
-    /// <returns>Uma tarefa que representa a operação assíncrona.</returns>
+    /// <param name="resource">WireMock resource.</param>
+    /// <param name="logger">Logger associated with the resource.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task NotifyWireMockAsync(
         WireMockResource resource,
-        ILogger logger) {
+        ILogger logger)
+    {
 
         var started = resource.Server.IsStarted;
 
-        LogarMensagem(logger, resource, started);
+        LogStatusMessage(logger, resource, started);
 
         await _resourceNotificationService.PublishUpdateAsync(
             resource,
@@ -101,22 +108,31 @@ internal sealed class WireMockLifecycleHook(
             {
                 StartTimeStamp = started ? DateTime.UtcNow : null,
                 StopTimeStamp = started ? null : DateTime.UtcNow,
-                Urls = DefinirUrls(resource, started),
-                State = DefinirResourceState(started),
-            });
+                Urls = BuildUrls(resource, started),
+                State = BuildResourceState(started),
+            }).ConfigureAwait(false);
     }
 
-    private static ImmutableArray<UrlSnapshot> DefinirUrls(WireMockResource resource, bool started) =>
+    /// <summary>
+    /// Returns the URL snapshot for the WireMock resource if the server is started; otherwise returns an empty array.
+    /// </summary>
+    private static ImmutableArray<UrlSnapshot> BuildUrls(WireMockResource resource, bool started) =>
         started ?
         [new UrlSnapshot("http", resource.Server.Url!, false)] :
         [];
 
-    private static ResourceStateSnapshot DefinirResourceState(bool started) =>
+    /// <summary>
+    /// Returns the resource state snapshot: "Running" if started, or "Error" otherwise.
+    /// </summary>
+    private static ResourceStateSnapshot BuildResourceState(bool started) =>
         started ?
         new ResourceStateSnapshot("Running", KnownResourceStateStyles.Success) :
         new ResourceStateSnapshot("Error", KnownResourceStateStyles.Error);
 
-    private static void LogarMensagem(ILogger logger, WireMockResource resource, bool started)
+    /// <summary>
+    /// Logs the WireMock resource status message (ready or error).
+    /// </summary>
+    private static void LogStatusMessage(ILogger logger, WireMockResource resource, bool started)
     {
         Action<string, int> logMessage = started ? logger.LogReadyAspireWireMock : logger.LogErrorAspireWireMock;
 

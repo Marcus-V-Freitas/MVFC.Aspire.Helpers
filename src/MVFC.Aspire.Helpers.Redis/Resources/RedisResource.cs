@@ -1,29 +1,25 @@
-namespace MVFC.Aspire.Helpers.Redis.Resources;
+﻿namespace MVFC.Aspire.Helpers.Redis.Resources;
 
 /// <summary>
-/// Representa o recurso Redis como um container Aspire, fornecendo endpoint Redis
-/// e uma expressão de string de conexão para integração em aplicações distribuídas.
+/// Represents the Redis resource as an Aspire container, providing a Redis endpoint
+/// and a connection string expression for integration in distributed applications.
 /// </summary>
 /// <remarks>
-/// Esta classe encapsula a configuração do endpoint necessário para o funcionamento do Redis,
-/// permitindo fácil referência e integração com outros recursos Aspire.
+/// This class encapsulates the endpoint configuration required for Redis operation,
+/// enabling easy referencing and integration with other Aspire resources.
 /// </remarks>
-public sealed class RedisResource(string name) : ContainerResource(name), IResourceWithConnectionString {
-    /// <summary>
-    /// Nome do endpoint Redis utilizado pelo container.
-    /// </summary>
-    internal const string RedisEndpointName = "redis";
-
+public sealed class RedisResource(string name) : ContainerResource(name), IResourceWithConnectionString
+{
     private EndpointReference? _redisReference;
 
     /// <summary>
-    /// Referência ao endpoint Redis do recurso.
+    /// Reference to the Redis endpoint of the resource.
     /// </summary>
     public EndpointReference RedisEndpoint =>
-        _redisReference ??= new(this, RedisEndpointName);
+        _redisReference ??= new(this, RedisDefaults.ENDPOINT_NAME);
 
     /// <summary>
-    /// Expressão que representa a string de conexão Redis.
+    /// Expression representing the Redis connection string.
     /// </summary>
     public ReferenceExpression ConnectionStringExpression =>
         ReferenceExpression.Create(

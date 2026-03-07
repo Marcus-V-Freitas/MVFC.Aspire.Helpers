@@ -1,235 +1,136 @@
 # MVFC.Aspire.Helpers
 
-Este projeto facilita a configuração e integração de recursos essenciais para aplicações distribuídas .NET Aspire, fornecendo métodos de extensão para:
+Coleção de helpers para integrar serviços comuns com o .NET Aspire de forma rápida e padronizada.
 
-### [`Cloud Storage`](./src/MVFC.Aspire.Helpers.CloudStorage)
+## Visão Geral
 
-- Adiciona e integra um emulador GCS.
-- Permite persistência opcional dos buckets via bind mount.
-- Adicione o pacote NuGet ao seu projeto AppHost:
+Este repositório fornece extensões de configuração do Aspire para os seguintes serviços:
+
+| Pacote | Serviço | NuGet |
+|---|---|---|
+| [MVFC.Aspire.Helpers.CloudStorage](src/MVFC.Aspire.Helpers.CloudStorage/README.md) | Google Cloud Storage (emulador GCS) | `MVFC.Aspire.Helpers.CloudStorage` |
+| [MVFC.Aspire.Helpers.Mongo](src/MVFC.Aspire.Helpers.Mongo/README.md) | MongoDB com Replica Set | `MVFC.Aspire.Helpers.Mongo` |
+| [MVFC.Aspire.Helpers.GcpPubSub](src/MVFC.Aspire.Helpers.GcpPubSub/README.md) | Google Pub/Sub (emulador + UI) | `MVFC.Aspire.Helpers.GcpPubSub` |
+| [MVFC.Aspire.Helpers.WireMock](src/MVFC.Aspire.Helpers.WireMock/README.md) | WireMock.Net (mock de APIs) | `MVFC.Aspire.Helpers.WireMock` |
+| [MVFC.Aspire.Helpers.Mailpit](src/MVFC.Aspire.Helpers.Mailpit/README.md) | Mailpit (emulador SMTP) | `MVFC.Aspire.Helpers.Mailpit` |
+| [MVFC.Aspire.Helpers.RabbitMQ](src/MVFC.Aspire.Helpers.RabbitMQ/README.md) | RabbitMQ | `MVFC.Aspire.Helpers.RabbitMQ` |
+| [MVFC.Aspire.Helpers.Redis](src/MVFC.Aspire.Helpers.Redis/README.md) | Redis + Redis Commander | `MVFC.Aspire.Helpers.Redis` |
+
+---
+
+## Instalação
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.CloudStorage
-```
-
----
-
-### [`Mongo`](./src/MVFC.Aspire.Helpers.Mongo)
-
-- Adiciona um container MongoDB configurado como Replica Set.
-- Inicializa automaticamente o Replica Set via script.
-- Adicione o pacote NuGet ao seu projeto AppHost:
-
-```sh
 dotnet add package MVFC.Aspire.Helpers.Mongo
-```
-
----
-
-### [`GCP Pub/Sub`](./src/MVFC.Aspire.Helpers.GcpPubSub)
-
-- Adiciona o emulador do Google Pub/Sub e UI.
-- Cria tópicos e assinaturas automaticamente conforme configuração.
-- Suporte a assinaturas do tipo push e pull.
-- Adicione o pacote NuGet ao seu projeto AppHost:
-
-```sh
 dotnet add package MVFC.Aspire.Helpers.GcpPubSub
-```
-
-### [`WireMock`](./src/MVFC.Aspire.Helpers.WireMock)
-
-- Adiciona e integra um servidor WireMock.Net embutido para simular APIs HTTP.
-- Permite definir endpoints mockados, métodos, autenticação, headers e respostas customizadas.
-- Gerencia ciclo de vida do recurso WireMock no ambiente Aspire.
-- Adicione o pacote NuGet ao seu projeto AppHost:
-
-```sh
 dotnet add package MVFC.Aspire.Helpers.WireMock
-```
-
-### [`MailPit`](./src/MVFC.Aspire.Helpers.Mailpit)
-
-- Adiciona e integra o emulador SMTP MailPit.
-- Permite testes de envio de e-mails em ambientes de desenvolvimento.
-- Exposição da interface web para visualização dos e-mails recebidos.
-- Permite configuração de porta e persistência opcional dos dados.
-- Adicione o pacote NuGet ao seu projeto AppHost:
-
-```sh
 dotnet add package MVFC.Aspire.Helpers.Mailpit
-```
-
-### [`RabbitMQ`](./src/MVFC.Aspire.Helpers.RabbitMQ)
-
-- Adiciona um container RabbitMQ.
-- Permite configuração de exchanges e queues.
-- Permite configuração de dead-letter exchanges.
-- Permite configuração de volume de persistência.
-- Adicione o pacote NuGet ao seu projeto AppHost:
-
-```sh
 dotnet add package MVFC.Aspire.Helpers.RabbitMQ
-```
-
-### [`Redis`](./src/MVFC.Aspire.Helpers.Redis)
-
-- Adiciona um container Redis.
-- Permite configuração de volume de persistência.
-- Adicione o pacote NuGet ao seu projeto AppHost:
-
-```sh
 dotnet add package MVFC.Aspire.Helpers.Redis
 ```
 
 ---
 
-## API de Exemplo (Playground)
+## Exemplo de Uso no AppHost
 
-- Endpoints para testar integração com MongoDB, Cloud Storage e Pub/Sub:
-  - `/api/mongo`
-  - `/api/bucket/{bucketName}`
-  - `/api/pub-sub-enter`
-  - `/api/pub-sub-exit`
-  - `/rabbitmq/publish/{exchange}/{routingKey}/{message}`
-  - `/rabbitmq/consume/{queue}`
-  - `/redis/set/{key}/{value}`
-  - `/redis/get/{key}`
-- Implementações no projeto [`MVFC.Aspire.Helpers.Playground.Api`](./playground/MVFC.Aspire.Helpers.Playground.Api/).
-
-## Integração no Aspire no [`MVFC.Aspire.Helpers.Playground.AppHost`](./playground/MVFC.Aspire.Helpers.Playground.AppHost/AppHost.cs)
+O exemplo abaixo demonstra como configurar todos os helpers em um único `AppHost`:
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
 
-var messageConfig = new MessageConfig(
-                            TopicName: "test-topic",
-                            SubscriptionName: "test-subscription",
-                            PushEndpoint: "/api/pub-sub-exit") {
-    DeadLetterTopic = "test-dead-letter-topic",
-    MaxDeliveryAttempts = 5,
-    AckDeadlineSeconds = 300,
-};
+// --- Cloud Storage ---
+var cloudStorage = builder.AddCloudStorage("cloud-storage")
+    .WithBucketFolder("./bucket-data");
 
-var rabbitConfig = new RabbitMQConfig(
-    Exchanges: [
-        new ExchangeConfig("test-exchange", "topic"), 
-        new ExchangeConfig("dead-letter", "fanout")], 
-    Queues: [
-        new QueueConfig(Name: "test-queue", ExchangeName: "test-exchange", RoutingKey: "test.*", DeadLetterExchange: "dead-letter"), 
-        new QueueConfig(Name: "empty-queue", ExchangeName: "test-exchange", RoutingKey: "empty.*"), 
-        new QueueConfig(Name: "dlq", ExchangeName: "dead-letter")],
-    VolumeName: "rabbit-mq");
+// --- MongoDB Replica Set ---
+var mongo = builder.AddMongoReplicaSet("mongo")
+    .WithDumps([/* lista de IMongoClassDump */])
+    .WithDataVolume("mongo-data");
 
-var pubSubConfig = new PubSubConfig(
-                            projectId: "test-project",
-                            messageConfig: messageConfig);
+// --- GCP Pub/Sub ---
+var pubSubConfig = new PubSubConfig("my-project", new MessageConfig(
+    TopicName: "my-topic",
+    SubscriptionName: "my-subscription",
+    PushEndpoint: "/api/pubsub"));
 
-var redisConfig = new RedisConfig(
-    WithCommander: true, 
-    VolumeName: "redis-data");
+var gcpPubSub = builder.AddGcpPubSub("gcp-pubsub")
+    .WithPubSubConfigs([pubSubConfig]);
 
-IReadOnlyCollection<IMongoClassDump> dumps = [
-    new MongoClassDump<TestDatabase>("TestDatabase", "TestCollection", 100,
-        new Faker<TestDatabase>()
-              .CustomInstantiator(f => new TestDatabase(f.Person.FirstName, f.Person.Cpf())))
-];
+var pubSubUI = builder.AddGcpPubSubUI("pubsub-ui")
+    .WithReference(gcpPubSub)
+    .WaitFor(gcpPubSub);
 
-var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
-                 .WithCloudStorage(builder, name: "cloud-storage", localBucketFolder: "./bucket-data")
-                 .WithMongoReplicaSet(builder, name: "mongo", dumps: dumps)
-                 .WithGcpPubSub(builder, name: "gcp-pubsub", pubSubConfig: pubSubConfig)
-                 .WithMailPit(builder, name: "mailpit")
-                 .WithRabbitMQ(builder, name: "rabbitmq", rabbitMQConfig: rabbitConfig)
-                 .WithRedis(builder, name: "redis", redisConfig: redisConfig);
-
-var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: (server) => {
-    server.Endpoint("/api/echo")
-          .WithDefaultBodyType(BodyType.String)
-          .OnPost<string, string>(body => ($"Echo: {body}", HttpStatusCode.Created, null));
-
+// --- WireMock ---
+var wireMock = builder.AddWireMock("wire-mock", port: 8090, configure: server =>
+{
     server.Endpoint("/api/test")
-          .WithDefaultBodyType(BodyType.String)
-          .OnGet<string>(() => ("Aspire GET OK", HttpStatusCode.OK, null));
-
-    server.Endpoint("/api/secure")
-           .RequireBearer("mytoken", "Unauthorized", BodyType.String)
-           .OnGet(() => ("Secret Data", HttpStatusCode.OK, BodyType.String));
-
-    server.Endpoint("/api/secure")
-          .RequireBearer("mytoken", "Unauthorized", BodyType.String)
-          .OnGet(() => ("Secret Data", HttpStatusCode.OK, BodyType.String));
-
-    server.Endpoint("/api/put")
-           .WithDefaultBodyType(BodyType.String)
-           .OnPut<string, string>(req => ($"Echo: {req}", HttpStatusCode.Accepted, BodyType.String));
-
-    server.Endpoint("/api/customauth")
-        .WithDefaultErrorStatusCode(HttpStatusCode.Forbidden)
-        .RequireCustomAuth(req => (req.Headers!.ContainsKey("X-Test"), "Forbidden", BodyType.String))
-        .OnGet(() => ("Authorized", HttpStatusCode.OK, BodyType.String));
-
-    server.Endpoint("/api/headers")
-        .WithResponseHeaders(new() { { "X-Test", ["v1", "v2"] } })
-        .WithResponseHeader("X-Other", "v3")
-        .OnGet(() => ("Headers OK", HttpStatusCode.OK, BodyType.String));
-
-    server.Endpoint("/api/error")
-        .WithRequestBodyType(BodyType.String)
-        .WithDefaultErrorStatusCode((HttpStatusCode)418)
-        .OnGet(() => ("I am a teapot", (HttpStatusCode)418, BodyType.String));
-
-    server.Endpoint("/api/delete")
-       .WithResponseBodyType(BodyType.String)
-       .WithResponseHeader("v1", "v1")
-       .WithResponseHeaders(new() { { "v1", ["v2", "v3"] } })
-       .WithResponseHeader("v1", "v4")
-       .OnDelete<string>(() => (null!, HttpStatusCode.NoContent, null));
-
-    server.Endpoint("/api/form")
-        .WithDefaultBodyType(BodyType.FormUrlEncoded)
-        .OnPost<Dictionary<string, string>, IDictionary<string, string>>(body => (body, HttpStatusCode.OK, BodyType.FormUrlEncoded));
-
-    server.Endpoint("/api/form-wrong")
-       .WithDefaultBodyType(BodyType.FormUrlEncoded)
-       .OnPost<string, string>(body => (body, HttpStatusCode.OK, BodyType.FormUrlEncoded));
-
-    server.Endpoint("/api/patch")
-        .WithDefaultBodyType(BodyType.String)
-        .OnPatch<string, string>(body => ($"Patched: {body}", HttpStatusCode.OK, BodyType.String));
-
-    server.Endpoint("/api/bytes")
-        .WithDefaultBodyType(BodyType.Bytes)
-        .OnPost<byte[], byte[]>(body => (body, HttpStatusCode.OK, BodyType.Bytes));
-
-    server.Endpoint("/api/unsupported")
-        .WithDefaultBodyType((BodyType)999) // BodyType n�o suportado
-        .OnPost<string, string>(_ => ("Not Supported", HttpStatusCode.NotImplemented, null));
-
-    server.Endpoint("/api/json")
-        .WithDefaultBodyType(BodyType.Json)
-        .OnPost<JsonModel, JsonModel>(body => (body, HttpStatusCode.OK, BodyType.Json));
-
-    server.Endpoint("/webhook/payment")
           .WithDefaultBodyType(BodyType.Json)
-          .OnGet<string>(() => {
-
-              var payload = new PaymentPayload(2000, "R$");
-
-              _ = Task.Run(async () => {
-                  using var client = new HttpClient();
-
-                  var callbackBaseUrl = $"http://localhost:{api.GetEndpoint("http").Port}";
-                  await client.PostAsync($"{callbackBaseUrl}/api/payment-callback", new StringContent(JsonSerializer.Serialize(payload)));
-              });
-
-              return (null!, HttpStatusCode.Accepted, BodyType.Json);
-          });
+          .OnGet<MyModel>(() => (new MyModel(), HttpStatusCode.OK, null));
 });
 
-await builder.Build().RunAsync();
+// --- Mailpit ---
+var mailpit = builder.AddMailpit("mailpit")
+    .WithMaxMessages(500);
 
+// --- RabbitMQ ---
+var rabbitMQ = builder.AddRabbitMQ("rabbitmq")
+    .WithCredentials("admin", "password")
+    .WithExchanges([new ExchangeConfig("orders", "topic")])
+    .WithQueues([new QueueConfig("orders-queue", ExchangeName: "orders", RoutingKey: "orders.*")])
+    .WithDataVolume("rabbit-data");
+
+// --- Redis ---
+var redis = builder.AddRedis("redis")
+    .WithPassword("minha-senha")
+    .WithCommander()
+    .WithDataVolume("redis-data");
+
+// --- API referenciando todos os serviços ---
+builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api")
+       .WithReference(cloudStorage)
+       .WaitFor(cloudStorage)
+       .WithReference(mongo)
+       .WaitFor(mongo)
+       .WithReference(gcpPubSub)
+       .WaitFor(gcpPubSub)
+       .WithReference(rabbitMQ)
+       .WaitFor(rabbitMQ)
+       .WithReference(redis)
+       .WaitFor(redis);
+
+await builder.Build().RunAsync();
 ```
 
+---
+
+## Estrutura dos Projetos
+
+```
+src/
+  MVFC.Aspire.Helpers.CloudStorage/
+  MVFC.Aspire.Helpers.GcpPubSub/
+  MVFC.Aspire.Helpers.Mailpit/
+  MVFC.Aspire.Helpers.Mongo/
+  MVFC.Aspire.Helpers.RabbitMQ/
+  MVFC.Aspire.Helpers.Redis/
+  MVFC.Aspire.Helpers.WireMock/
+test/
+  MVFC.Aspire.Helpers.Tests/
+playground/
+  MVFC.Aspire.Helpers.Playground.Api/
+```
+
+---
+
+## Requisitos
+
+- .NET 9+
+- Aspire.Hosting >= 9.5.0
+- Docker em execução
+
+---
+
 ## Licença
-Apache-2.0
+
+[Apache-2.0](LICENSE)

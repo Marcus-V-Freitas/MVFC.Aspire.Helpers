@@ -1,10 +1,13 @@
-namespace MVFC.Aspire.Helpers.Mongo.Processors;
+﻿namespace MVFC.Aspire.Helpers.Mongo.Processors;
 
 /// <summary>
-/// Implementação do processador de dumps de coleções MongoDB
+/// MongoDB collection dump processor implementation.
 /// </summary>
 internal static class MongoDumpProcessor
 {
+    /// <summary>
+    /// Executes all dumps in parallel using the provided MongoDB client.
+    /// </summary>
     internal static async Task ProcessDumpsAsync(
         IMongoClient client,
         IReadOnlyCollection<IMongoClassDump> dumps,

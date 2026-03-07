@@ -1,9 +1,11 @@
 ﻿namespace MVFC.Aspire.Helpers.Playground.Api.Storage;
 
-public sealed class GoogleCloudStorageAdapter(StorageClient storageClient) : IStorageService {
+public sealed class GoogleCloudStorageAdapter(StorageClient storageClient) : IStorageService 
+{
     private readonly StorageClient _storageClient = storageClient;
 
-    public async Task<IEnumerable<string>> ListFilesAsync(string bucketName, string? prefix = null) {
+    public async Task<IEnumerable<string>> ListFilesAsync(string bucketName, string? prefix = null) 
+    {
         List<string> items = [];
 
         await foreach (var item in _storageClient.ListObjectsAsync(bucketName)) items.Add(item.Name);
@@ -11,7 +13,8 @@ public sealed class GoogleCloudStorageAdapter(StorageClient storageClient) : ISt
         return items;
     }
 
-    public async Task<Stream> DownloadFileAsync(string bucketName, string fileName) {
+    public async Task<Stream> DownloadFileAsync(string bucketName, string fileName) 
+    {
         var stream = new MemoryStream();
         await _storageClient.DownloadObjectAsync(bucketName, fileName, stream);
         stream.Position = 0;

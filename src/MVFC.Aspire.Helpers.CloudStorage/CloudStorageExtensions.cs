@@ -1,162 +1,88 @@
-namespace MVFC.Aspire.Helpers.CloudStorage;
+﻿namespace MVFC.Aspire.Helpers.CloudStorage;
 
 /// <summary>
-/// Fornece métodos de extensão para facilitar a configuração, integração e uso de um recurso de Cloud Storage (emulador GCS) em aplicações distribuídas,
-/// permitindo customização de imagem, persistência de buckets e integração com projetos dependentes.
+/// Provides extension methods to simplify the configuration and integration of a Cloud Storage resource (GCS emulator)
+/// in distributed applications.
 /// </summary>
-public static class CloudStorageExtensions {
-    
+public static class CloudStorageExtensions
+{
     /// <summary>
-    /// Adiciona um recurso de Cloud Storage (emulador GCS) à aplicação distribuída, utilizando um container baseado na imagem "fsouza/fake-gcs-server".
-    /// Permite customizar configurações como tag da imagem, host público e persistência dos buckets.
+    /// Adds a Cloud Storage resource (GCS emulator) to the distributed application with default settings.
+    /// Use fluent methods such as WithBucketFolder to customize.
     /// </summary>
-    /// <param name="builder">O construtor da aplicação distribuída (<see cref="IDistributedApplicationBuilder"/>).</param>
-    /// <param name="name">Nome do recurso de Cloud Storage a ser criado.</param>
-    /// <param name="storageConfig">Configurações opcionais para o recurso de Cloud Storage.</param>
-    /// <returns>
-    /// Um <see cref="IResourceBuilder{CloudStorageResource}"/> representando o recurso de Cloud Storage configurado.
-    /// </returns>
     public static IResourceBuilder<CloudStorageResource> AddCloudStorage(
         this IDistributedApplicationBuilder builder,
         string name,
-        CloudStorageConfig? storageConfig = null) {
-
-        storageConfig ??= new CloudStorageConfig();
+        int port = CloudStorageDefaults.HOST_PORT)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentNullException.ThrowIfNull(builder);
 
         var resource = new CloudStorageResource(name);
 
-        var resourceBuilder = builder.AddResource(resource)
-            .WithImage(storageConfig.EmulatorImage)
-            .WithImageTag(storageConfig.EmulatorTag)
-            .WithHttpEndpoint(
-                port: storageConfig.Port ?? CloudStorageDefaults.HostPort,
-                targetPort: CloudStorageDefaults.HostPort,
-                name: CloudStorageResource.HttpEndpointName,
-                isProxied: false)
-            .WithArgs("--scheme", CloudStorageResource.HttpEndpointName);
-
-        if (!string.IsNullOrWhiteSpace(storageConfig.LocalBucketFolder)) {
-            resourceBuilder.WithBindMount(storageConfig.LocalBucketFolder, "/data");
-        }
-
-        return resourceBuilder;
+        return builder.AddResource(resource)
+            .WithDockerImage(
+                image: CloudStorageDefaults.DEFAULT_IMAGE,
+                tag: CloudStorageDefaults.DEFAULT_IMAGE_TAG)
+            .WithCloudStorageEndpoint(port)
+            .WithArgs("--scheme", CloudStorageResource.HTTP_ENDPOINT_NAME);
     }
 
     /// <summary>
-    /// Sobrecarga simplificada com porta customizada
+    /// Replaces the Docker image used by the Cloud Storage resource.
     /// </summary>
-    /// <param name="builder">O construtor da aplicação distribuída.</param>
-    /// <param name="name">Nome do recurso de Cloud Storage.</param>
-    /// <param name="localBucketFolder">Caminho local para persistência dos buckets (opcional).</param>
-    /// <returns>
-    /// O <see cref="IResourceBuilder{ProjectResource}"/> do projeto, configurado para utilizar o Cloud Storage.
-    /// </returns>
-    public static IResourceBuilder<CloudStorageResource> AddCloudStorage(
-        this IDistributedApplicationBuilder builder,
-        string name,
-        string? localBucketFolder = null) =>
+    public static IResourceBuilder<CloudStorageResource> WithDockerImage(
+        this IResourceBuilder<CloudStorageResource> builder,
+        string image,
+        string tag)
+    {
+        ArgumentNullException.ThrowIfNullOrEmpty(image);
+        ArgumentNullException.ThrowIfNullOrEmpty(tag);
+        ArgumentNullException.ThrowIfNull(builder);
 
-        builder.AddCloudStorage(name, new CloudStorageConfig(
-            LocalBucketFolder: localBucketFolder
-        ));
-
-    /// <summary>
-    /// Configura o projeto para aguardar a inicialização do recurso de Cloud Storage, adicionando referência, variável de ambiente com a URL do endpoint e dependência de inicialização.
-    /// </summary>
-    /// <param name="project">O recurso do projeto que irá depender do Cloud Storage.</param>
-    /// <param name="cloudStorage">O recurso de Cloud Storage a ser aguardado.</param>
-    /// <returns>
-    /// O <see cref="IResourceBuilder{ProjectResource}"/> do projeto, configurado para aguardar e utilizar o Cloud Storage.
-    /// </returns>
-    public static IResourceBuilder<ProjectResource> WaitForCloudStorage(
-        this IResourceBuilder<ProjectResource> project,
-        IResourceBuilder<CloudStorageResource> cloudStorage) =>
-
-        project.WithReference(cloudStorage)
-               .WithEnvironment(CloudStorageDefaults.StorageEmulatorVariableName, GetStorageEndpointUrl(cloudStorage.Resource))
-               .WaitFor(cloudStorage);
-
-    /// <summary>
-    /// Adiciona e integra o recurso de Cloud Storage ao projeto, configurando dependências e persistência opcional.
-    /// </summary>
-    /// <param name="project">O recurso do projeto que irá utilizar o Cloud Storage.</param>
-    /// <param name="builder">O construtor da aplicação distribuída.</param>
-    /// <param name="name">Nome do recurso de Cloud Storage.</param>
-    /// <param name="storageConfig">Configurações opcionais para o recurso de Cloud Storage.</param>
-    /// <returns>
-    /// O <see cref="IResourceBuilder{ProjectResource}"/> do projeto, configurado para utilizar o Cloud Storage.
-    /// </returns>
-    public static IResourceBuilder<ProjectResource> WithCloudStorage(
-        this IResourceBuilder<ProjectResource> project,
-        IDistributedApplicationBuilder builder,
-        string name,
-        CloudStorageConfig? storageConfig = null) {
-
-        IResourceBuilder<CloudStorageResource> cloudStorage;
-
-        if (!builder.TryCreateResourceBuilder(name, out cloudStorage!))
-        {
-            cloudStorage = builder.AddCloudStorage(name, storageConfig);
-        }
-
-        return project.WaitForCloudStorage(cloudStorage);
+        return builder.WithImage(image).WithImageTag(tag);
     }
 
     /// <summary>
-    /// Adiciona e integra o recurso de Cloud Storage ao projeto, permitindo informar apenas o nome e o caminho local para persistência dos buckets.
+    /// Configures a local folder for bucket persistence (bind mount in the container).
     /// </summary>
-    /// <param name="project">O recurso do projeto.</param>
-    /// <param name="builder">O construtor da aplicação distribuída.</param>
-    /// <param name="name">Nome do recurso de Cloud Storage.</param>
-    /// <param name="localBucketFolder">Caminho local para persistência dos buckets (opcional).</param>
-    /// <returns>
-    /// O <see cref="IResourceBuilder{ProjectResource}"/> do projeto, configurado para utilizar o Cloud Storage.
-    /// </returns>
-    public static IResourceBuilder<ProjectResource> WithCloudStorage(
-        this IResourceBuilder<ProjectResource> project,
-        IDistributedApplicationBuilder builder,
-        string name,
-        string? localBucketFolder = null) {
+    public static IResourceBuilder<CloudStorageResource> WithBucketFolder(
+        this IResourceBuilder<CloudStorageResource> builder,
+        string localBucketFolder)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(localBucketFolder);
+        ArgumentNullException.ThrowIfNull(builder);
 
-        var settings = new CloudStorageConfig(
-            LocalBucketFolder: localBucketFolder
-        );
-
-        return project.WithCloudStorage(builder, name, settings);
+        builder.WithBindMount(localBucketFolder, "/data");
+        return builder;
     }
 
     /// <summary>
-    /// Adiciona e integra o recurso de Cloud Storage ao projeto, permitindo customização das configurações via callback.
+    /// Adds a reference to the Cloud Storage resource in the project.
     /// </summary>
-    /// <param name="project">O recurso do projeto.</param>
-    /// <param name="builder">O construtor da aplicação distribuída.</param>
-    /// <param name="configure">Callback para customizar as configurações do Cloud Storage.</param>
-    /// <param name="name">Nome do recurso de Cloud Storage.</param>
-    /// <returns>
-    /// O <see cref="IResourceBuilder{ProjectResource}"/> do projeto, configurado para utilizar o Cloud Storage.
-    /// </returns>
-    public static IResourceBuilder<ProjectResource> WithCloudStorage(
+    public static IResourceBuilder<ProjectResource> WithReference(
         this IResourceBuilder<ProjectResource> project,
-        IDistributedApplicationBuilder builder,
-        Func<CloudStorageConfig, CloudStorageConfig> configure,
-        string name) {
+        IResourceBuilder<CloudStorageResource> cloudStorage)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+        ArgumentNullException.ThrowIfNull(cloudStorage);
 
-        var settings = configure(new CloudStorageConfig());
-
-        return project.WithCloudStorage(builder, name, settings);
+        return project.WithReference(source: cloudStorage)
+                      .WithEnvironment(CloudStorageDefaults.STORAGE_EMULATOR_VARIABLE_NAME, cloudStorage.Resource.ConnectionStringExpression);
     }
 
     /// <summary>
-    /// Constrói a URL completa do endpoint do emulador de Cloud Storage, incluindo o sufixo "/storage/v1/".
+    /// Configures the HTTP endpoint for the Cloud Storage emulator.
     /// </summary>
-    /// <param name="resource">O recurso de Cloud Storage.</param>
-    /// <returns>
-    /// Expressão de referência contendo a URL do endpoint.
-    /// </returns>
-    private static ReferenceExpression GetStorageEndpointUrl(CloudStorageResource resource) {
-        var endpoint = resource.HttpEndpoint;
-        return ReferenceExpression.Create(
-            $"{endpoint.Property(EndpointProperty.Scheme)}://{endpoint.Property(EndpointProperty.Host)}:{endpoint.Property(EndpointProperty.Port)}{CloudStorageDefaults.StoragePathSuffix}"
-        );
+    private static IResourceBuilder<CloudStorageResource> WithCloudStorageEndpoint(
+        this IResourceBuilder<CloudStorageResource> resource, int port)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(port, IPEndPoint.MinPort);
+
+        return resource.WithHttpEndpoint(
+            port: port,
+            targetPort: CloudStorageDefaults.HOST_PORT,
+            name: CloudStorageResource.HTTP_ENDPOINT_NAME,
+            isProxied: false);
     }
 }

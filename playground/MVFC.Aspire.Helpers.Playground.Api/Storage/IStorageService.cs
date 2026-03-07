@@ -1,6 +1,7 @@
 ﻿namespace MVFC.Aspire.Helpers.Playground.Api.Storage;
 
-public interface IStorageService {
+public interface IStorageService 
+{
     Task<IEnumerable<string>> ListFilesAsync(string bucketName, string? prefix = null);
 
     Task<Stream> DownloadFileAsync(string bucketName, string fileName);

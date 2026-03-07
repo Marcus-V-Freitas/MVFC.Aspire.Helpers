@@ -1,34 +1,35 @@
 ﻿namespace MVFC.Aspire.Helpers.Mailpit.Resources;
 
 /// <summary>
-/// Representa o recurso Mailpit como um container Aspire, fornecendo endpoints SMTP e HTTP
-/// e uma expressão de string de conexão para integração em aplicações distribuídas.
+/// Represents the Mailpit resource as an Aspire container, providing SMTP and HTTP endpoints
+/// and a connection string expression for integration in distributed applications.
 /// </summary>
 /// <remarks>
-/// Esta classe encapsula a configuração dos endpoints necessários para o funcionamento do Mailpit,
-/// permitindo fácil referência e integração com outros recursos Aspire.
+/// This class encapsulates the endpoint configuration required for Mailpit operation,
+/// enabling easy referencing and integration with other Aspire resources.
 /// </remarks>
-public sealed class MailpitResource(string name) : ContainerResource(name), IResourceWithConnectionString {
+public sealed class MailpitResource(string name) : ContainerResource(name), IResourceWithConnectionString
+{
     /// <summary>
-    /// Nome do endpoint SMTP utilizado pelo Mailpit.
+    /// SMTP endpoint name used by Mailpit.
     /// </summary>
-    internal const string SmtpEndpointName = "smtp";
+    internal const string SMTP_ENDPOINT_NAME = "smtp";
 
     /// <summary>
-    /// Nome do endpoint HTTP utilizado pelo Mailpit.
+    /// HTTP endpoint name used by Mailpit.
     /// </summary>
-    internal const string HttpEndpointName = "http";
+    internal const string HTTP_ENDPOINT_NAME = "http";
 
     private EndpointReference? _smtpReference;
 
     /// <summary>
-    /// Referência ao endpoint SMTP do recurso Mailpit.
+    /// Reference to the SMTP endpoint of the Mailpit resource.
     /// </summary>
     public EndpointReference SmtpEndpoint =>
-        _smtpReference ??= new(this, SmtpEndpointName);
+        _smtpReference ??= new(this, SMTP_ENDPOINT_NAME);
 
     /// <summary>
-    /// Expressão que representa a string de conexão SMTP para o Mailpit.
+    /// Expression representing the SMTP connection string for Mailpit.
     /// </summary>
     public ReferenceExpression ConnectionStringExpression =>
         ReferenceExpression.Create(
