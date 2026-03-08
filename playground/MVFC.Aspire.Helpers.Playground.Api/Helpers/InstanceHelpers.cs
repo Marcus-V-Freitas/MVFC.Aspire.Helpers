@@ -19,14 +19,21 @@ public static class InstanceHelpers
         ArgumentNullException.ThrowIfNull(builder);
 
         var smtpUri = new Uri(builder.Configuration.GetConnectionString("mailpit")!);
-        return new SmtpClient(smtpUri.Host, smtpUri.Port);
+
+        return new SmtpClient(smtpUri.Host, smtpUri.Port)
+        {
+            Credentials = new NetworkCredential("teste", "teste"),
+        };
     }
 
     public static async Task<IConnectionMultiplexer> CreateRedisAsync(this WebApplicationBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        return await ConnectionMultiplexer.ConnectAsync(builder.Configuration.GetConnectionString("redis")!).ConfigureAwait(false);
+        var options = ConfigurationOptions.Parse(builder.Configuration.GetConnectionString("redis")!);
+        options.Password = "teste";
+
+        return await ConnectionMultiplexer.ConnectAsync(options).ConfigureAwait(false);
     }
 
     public static async Task<IConnection> CreateRabbitAsync(this WebApplicationBuilder builder)
@@ -37,7 +44,9 @@ public static class InstanceHelpers
 
         var factory = new ConnectionFactory
         {
-            Uri = new Uri(builder.Configuration.GetConnectionString("rabbitmq")!)
+            Uri = new Uri(builder.Configuration.GetConnectionString("rabbitmq")!),
+            Password = "teste",
+            UserName = "teste",
         };
         return await factory.CreateConnectionAsync().ConfigureAwait(false);
     }
@@ -52,6 +61,8 @@ public static class InstanceHelpers
 
     public static void AddKeycloak(this IServiceCollection services, IConfiguration configuration)
     {
+        ArgumentNullException.ThrowIfNull(configuration);
+
         var keycloakBaseUrl = configuration["Keycloak:BaseUrl"]!;
         var keycloakRealm = configuration["Keycloak:Realm"]!;
         var keycloakClient = configuration["Keycloak:ClientId"]!;

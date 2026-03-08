@@ -21,3 +21,4 @@ global using Refit;
 global using Scalar.AspNetCore;
 global using StackExchange.Redis;
 global using Microsoft.AspNetCore.Authentication.JwtBearer;
+global using System.Net;

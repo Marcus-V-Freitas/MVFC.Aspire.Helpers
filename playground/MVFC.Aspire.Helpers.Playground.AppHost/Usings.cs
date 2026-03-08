@@ -1,4 +1,5 @@
 ﻿global using System.Net;
+global using System.Text;
 global using Bogus;
 global using Bogus.Extensions.Brazil;
 global using MVFC.Aspire.Helpers.CloudStorage;

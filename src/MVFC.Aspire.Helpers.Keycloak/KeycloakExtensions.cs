@@ -87,12 +87,7 @@ public static class KeycloakExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var strategyValue = strategy switch
-        {
-            KeycloakImportStrategy.IgnoreExisting => "IGNORE_EXISTING",
-            KeycloakImportStrategy.OverwriteExisting => "OVERWRITE_EXISTING",
-            _ => throw new ArgumentOutOfRangeException(nameof(strategy)),
-        };
+        var strategyValue = strategy == KeycloakImportStrategy.IgnoreExisting ? "IGNORE_EXISTING" : "OVERWRITE_EXISTING";
 
         return builder.WithArgs($"--spi-import-importer-file-strategy={strategyValue}");
     }

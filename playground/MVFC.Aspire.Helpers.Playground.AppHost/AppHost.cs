@@ -1,5 +1,6 @@
 ﻿var builder = DistributedApplication.CreateBuilder(args);
 
+// --- GCP Pub/Sub Configs ---
 var messageConfig = new MessageConfig(
                             TopicName: "test-topic",
                             SubscriptionName: "test-subscription",
@@ -13,46 +14,65 @@ var pubSubConfig = new PubSubConfig(
                             projectId: "test-project",
                             messageConfig: messageConfig);
 
+var emptyMessageConfig = new MessageConfig("empty-topic") { DeadLetterTopic = null };
+var pubSubConfig2 = new PubSubConfig("test-project-2", emptyMessageConfig);
+
+// --- MongoDB Dumps ---
 IReadOnlyCollection<IMongoClassDump> dumps = [
     new MongoClassDump<TestDatabase>("TestDatabase", "TestCollection", 100,
         new Faker<TestDatabase>()
               .CustomInstantiator(f => new TestDatabase(f.Person.FirstName, f.Person.Cpf())))
 ];
 
+// --- Keycloak ---
 var keycloak = builder.AddKeycloak("keycloak")
-    .WithAdminCredentials("admin", "Admin@123")
-    .WithSeeds([new MyAppRealm()])
-    .WithImportStrategy(KeycloakImportStrategy.IgnoreExisting)
-    .WithDataVolume("key-cloak-data");
+                      .WithAdminCredentials("admin", "Admin@123")
+                      .WithSeeds([new MyAppRealm(), new EmptyRealmSeed()])
+                      .WithImportStrategy(KeycloakImportStrategy.OverwriteExisting)
+                      .WithDataVolume("key-cloak-data");
 
-// Criar recursos com padrão builder
+// --- Cloud Storage ---
 var cloudStorage = builder.AddCloudStorage("cloud-storage")
-    .WithBucketFolder("./bucket-data");
+                          .WithBucketFolder("./bucket-data");
 
+// --- MongoDB ---
 var mongo = builder.AddMongoReplicaSet("mongo")
-    .WithDumps(dumps);
+                   .WithDumps(dumps)
+                   .WithDataVolume("mongo-data");
 
+// --- GCP Pub/Sub ---
 var pubSub = builder.AddGcpPubSub("gcp-pubsub")
-    .WithPubSubConfigs(pubSubConfig);
+                    .WithWaitTimeout(15)
+                    .WithPubSubConfigs(pubSubConfig, pubSubConfig2);
 
 var pubSubUI = builder.AddGcpPubSubUI("gcp-pubsub-ui")
-    .WithReference(pubSub);
+                      .WithReference(pubSub);
 
-var mailpit = builder.AddMailpit("mailpit");
+// --- Mailpit ---
+var mailpit = builder.AddMailpit("mailpit")
+                     .WithMaxMessageSize(50)
+                     .WithSmtpHostname("localhost")
+                     .WithDataFile("mailpit-data")
+                     .WithWebAuth("teste", "teste")
+                     .WithVerboseLogging();
 
+// --- RabbitMQ ---
 var rabbitMQ = builder.AddRabbitMQ("rabbitmq")
-    .WithExchanges([
-        new ExchangeConfig("test-exchange", "topic"),
-        new ExchangeConfig("dead-letter", "fanout")])
-    .WithQueues([
-        new QueueConfig(Name: "test-queue", ExchangeName: "test-exchange", RoutingKey: "test.*", DeadLetterExchange: "dead-letter"),
-        new QueueConfig(Name: "empty-queue", ExchangeName: "test-exchange", RoutingKey: "empty.*"),
-        new QueueConfig(Name: "dlq", ExchangeName: "dead-letter")])
-    .WithDataVolume("rabbit-mq");
+                      .WithCredentials("teste", "teste")
+                      .WithExchanges([
+                          new ExchangeConfig("test-exchange", "topic"),
+                          new ExchangeConfig("dead-letter", "fanout")])
+                      .WithQueues([
+                          new QueueConfig(Name: "test-queue", ExchangeName: "test-exchange", RoutingKey: "test.*", DeadLetterExchange: "dead-letter", MessageTTL: 100),
+                          new QueueConfig(Name: "empty-queue", ExchangeName: "test-exchange", RoutingKey: "empty.*"),
+                          new QueueConfig(Name: "dlq", ExchangeName: "dead-letter")])
+                      .WithDataVolume("rabbit-mq");                    
 
+// --- Redis ---
 var redis = builder.AddRedis("redis")
-    .WithCommander()
-    .WithDataVolume("redis-data");
+                   .WithPassword("teste")
+                   .WithCommander()
+                   .WithDataVolume("redis-data");
 
 // --- Gotenberg ---
 var gotenberg = builder.AddGotenberg("gotenberg", port: 3000);
@@ -83,6 +103,7 @@ var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-e
 
 var wireMock = builder.AddWireMock("wireMock", port: 7070, configure: (server) => {
     server.Endpoint("/api/echo")
+          .SetEncoding(Encoding.UTF8)
           .WithDefaultBodyType(BodyType.String)
           .OnPost<string, string>(body => ($"Echo: {body}", HttpStatusCode.Created, null));
 

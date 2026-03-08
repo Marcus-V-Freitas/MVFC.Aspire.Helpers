@@ -1,13 +1,13 @@
 ﻿namespace MVFC.Aspire.Helpers.Tests;
 
-public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHostFixture> 
+public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHostFixture>
 {
     private readonly AppHostFixture _fixture = fixture;
 
     #region Gotenberg
 
     [Fact]
-    public async Task GotenbergOkStatusCode() 
+    public async Task GotenbergOkStatusCode()
     {
         // Arrange
         var body = new JsonObject
@@ -29,7 +29,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     #region Mongo
 
     [Fact]
-    public async Task MongoOkStatusCode() 
+    public async Task MongoOkStatusCode()
     {
         // Arrange & Act
         using var response = await _fixture.PlaygroundApi.GetMongoStatusAsync();
@@ -43,7 +43,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     #region CloudStorage
 
     [Fact]
-    public async Task CloudStorageOkStatusCode() 
+    public async Task CloudStorageOkStatusCode()
     {
         // Arrange & Act
         using var response = await _fixture.PlaygroundApi.GetCloudStorageBucketAsync("bucket-teste");
@@ -57,7 +57,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     #region PubSub
 
     [Fact]
-    public async Task PubSubOkStatusCode() 
+    public async Task PubSubOkStatusCode()
     {
         // Arrange & Act
         using var response = await _fixture.PlaygroundApi.GetPubSubEnterAsync();
@@ -71,7 +71,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     #region MailPit
 
     [Fact]
-    public async Task MailPitOkStatusCode() 
+    public async Task MailPitOkStatusCode()
     {
         // Act
         var body = new JsonObject
@@ -93,7 +93,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     #region WireMock
 
     [Fact]
-    public async Task WireMockEndpoint_Get_ShouldReturnMockedResponse() 
+    public async Task WireMockEndpoint_Get_ShouldReturnMockedResponse()
     {
         // Arrange & Act
         using var response = await _fixture.WireMockApi.GetTestAsync();
@@ -104,7 +104,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task WireMockEndpoint_Post_ShouldReturnPostedData() 
+    public async Task WireMockEndpoint_Post_ShouldReturnPostedData()
     {
         // Arrange & Act
         var httpContent = "Aspire";
@@ -116,7 +116,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task WireMockEndpoint_Post_ShouldReturnBadRequest() 
+    public async Task WireMockEndpoint_Post_ShouldReturnBadRequest()
     {
         // Arrange & Act
         using var response = await _fixture.WireMockApi.PostEchoEmptyAsync();
@@ -127,7 +127,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task WireMockEndpoint_Auth_ShouldReturnUnauthorized_WhenTokenMissing() 
+    public async Task WireMockEndpoint_Auth_ShouldReturnUnauthorized_WhenTokenMissing()
     {
         // Arrange & Act
         using var response = await _fixture.WireMockApi.GetSecureAsync();
@@ -138,7 +138,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task WireMockEndpoint_Auth_ShouldReturnData_WhenTokenPresent() 
+    public async Task WireMockEndpoint_Auth_ShouldReturnData_WhenTokenPresent()
     {
         // Act
         using var response = await _fixture.WireMockApi.GetSecureWithTokenAsync("mytoken");
@@ -149,7 +149,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task PutEndpoint_ShouldReturnAccepted() 
+    public async Task PutEndpoint_ShouldReturnAccepted()
     {
         // Arrange & Act
         using var response = await _fixture.WireMockApi.PutEchoAsync("Aspire");
@@ -160,11 +160,11 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task CustomAuth_ShouldReturnForbidden_WhenInvalid() 
+    public async Task CustomAuth_ShouldReturnForbidden_WhenInvalid()
     {
         // Arrange & Act
         using var response = await _fixture.WireMockApi.GetCustomAuthAsync();
-        
+
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         response.Error!.Content.Should().Be("Forbidden");
@@ -173,11 +173,11 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     [Theory]
     [InlineData(true, HttpStatusCode.OK, "Authorized")]
     [InlineData(false, HttpStatusCode.Forbidden, "Forbidden")]
-    public async Task CustomAuth_ShouldReturnAuthorized_WhenValid(bool useHeader, HttpStatusCode expectedStatusCode, string expectedContent) 
+    public async Task CustomAuth_ShouldReturnAuthorized_WhenValid(bool useHeader, HttpStatusCode expectedStatusCode, string expectedContent)
     {
         // Arrange & Act
         var response = useHeader ? await _fixture.WireMockApi.GetCustomAuthWithHeaderAsync() : await _fixture.WireMockApi.GetCustomAuthAsync();
-        
+
         // Assert
         response.StatusCode.Should().Be(expectedStatusCode);
         var content = response.IsSuccessful ? response.Content : response.Error!.Content;
@@ -185,7 +185,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task ResponseHeaders_ShouldReturnAllHeaders() 
+    public async Task ResponseHeaders_ShouldReturnAllHeaders()
     {
         // Arrange & Act
         using var response = await _fixture.WireMockApi.GetHeadersAsync();
@@ -198,7 +198,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task ErrorStatusCode_ShouldReturnCustomStatus() 
+    public async Task ErrorStatusCode_ShouldReturnCustomStatus()
     {
         // Arrange & Act
         using var response = await _fixture.WireMockApi.GetErrorAsync();
@@ -209,7 +209,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task WireMockEndpoint_Delete_ShouldReturnNoContent() 
+    public async Task WireMockEndpoint_Delete_ShouldReturnNoContent()
     {
         // Arrange & Act
         using var response = await _fixture.WireMockApi.DeleteAsync();
@@ -219,11 +219,11 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task WireMockEndpoint_FormUrlEncoded_ShouldParseFormData() 
+    public async Task WireMockEndpoint_FormUrlEncoded_ShouldParseFormData()
     {
         // Arrange
         var formContent = new Dictionary<string, string> { ["key"] = "value" };
-        
+
         // Act
         using var response = await _fixture.WireMockApi.PostFormAsync(formContent);
 
@@ -233,7 +233,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task WireMockEndpoint_Patch_ShouldReturnPatched() 
+    public async Task WireMockEndpoint_Patch_ShouldReturnPatched()
     {
         // Arrange & Act
         var patchContent = "patch-data";
@@ -245,13 +245,13 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task WireMockEndpoint_Bytes_ShouldReturnBytes() 
+    public async Task WireMockEndpoint_Bytes_ShouldReturnBytes()
     {
         // Arrange
         var bytes = Encoding.UTF8.GetBytes("AspireBytes");
         var content = new ByteArrayContent(bytes);
         content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-        
+
         // Act
         using var response = await _fixture.WireMockApi.PostBytesAsync(content);
 
@@ -261,11 +261,11 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task WireMockEndpoint_FormUrlEncoded_ShouldReturnBadRequest_WhenNotDictionary() 
+    public async Task WireMockEndpoint_FormUrlEncoded_ShouldReturnBadRequest_WhenNotDictionary()
     {
         // Arrange
         var content = "not-a-dictionary";
-        
+
         // Act
         using var response = await _fixture.WireMockApi.PostFormWrongAsync(content);
 
@@ -274,11 +274,11 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task WireMockEndpoint_Headers_ShouldOverwriteAndReturnAll() 
+    public async Task WireMockEndpoint_Headers_ShouldOverwriteAndReturnAll()
     {
         // Arrange
         using var responseDelete = await _fixture.WireMockApi.DeleteAsync();
-        
+
         // Act
         var headers = responseDelete.Headers.GetValues("v1").ToArray();
 
@@ -290,11 +290,11 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task WireMockEndpoint_UnsupportedBodyType_ShouldReturnError() 
+    public async Task WireMockEndpoint_UnsupportedBodyType_ShouldReturnError()
     {
         // Arrange
         var content = "unsupported";
-        
+
         // Act
         using var response = await _fixture.WireMockApi.PostUnsupportedAsync(content);
 
@@ -303,7 +303,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task WireMockEndpoint_Json_ShouldEchoJsonObject() 
+    public async Task WireMockEndpoint_Json_ShouldEchoJsonObject()
     {
         // Arrange
         var body = new JsonObject { ["Message"] = "Aspire JSON" };
@@ -318,7 +318,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task WireMockEndpoint_Webhook_ShouldAccept() 
+    public async Task WireMockEndpoint_Webhook_ShouldAccept()
     {
         // Arrange & Act
         using var response = await _fixture.WireMockApi.GetWebhookPaymentAsync();
@@ -332,7 +332,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     #region Redis
 
     [Fact]
-    public async Task Redis_Get_ShouldReturnValue() 
+    public async Task Redis_Get_ShouldReturnValue()
     {
         // Arrange
         using var responseSet = await _fixture.PlaygroundApi.SetRedisValueAsync("integration-key", "integration-value");
@@ -346,7 +346,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task Redis_GetNonExistent_ShouldReturnNotFound() 
+    public async Task Redis_GetNonExistent_ShouldReturnNotFound()
     {
         // Arrange & Act
         using var response = await _fixture.PlaygroundApi.GetRedisValueAsync("non-existent-key");
@@ -360,7 +360,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     #region RabbitMQ
 
     [Fact]
-    public async Task RabbitMQ_PublishAndConsume_ShouldReturnMessage() 
+    public async Task RabbitMQ_PublishAndConsume_ShouldReturnMessage()
     {
         // Arrange
         var message = "integration-test-message";
@@ -377,7 +377,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
-    public async Task RabbitMQ_ConsumeEmpty_ShouldReturnNoContent() 
+    public async Task RabbitMQ_ConsumeEmpty_ShouldReturnNoContent()
     {
         // Arrange & Act
         using var response = await _fixture.PlaygroundApi.ConsumeRabbitMqMessageAsync("empty-queue");
@@ -391,7 +391,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     #region Keycloak
 
     [Fact]
-    public async Task Keycloak_ApiAuthentication_ShouldReturnUnauthorizedWithoutToken() 
+    public async Task Keycloak_ApiAuthentication_ShouldReturnUnauthorizedWithoutToken()
     {
         // Arrange & Act
         using var response = await _fixture.PlaygroundApi.GetSecretDataAsync();

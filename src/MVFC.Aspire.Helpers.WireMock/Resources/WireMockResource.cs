@@ -3,13 +3,8 @@
 /// <summary>
 /// Representa um recurso WireMock gerenciado pelo Aspire, com inicialização explícita e tratamento de erro.
 /// </summary>
-public sealed class WireMockResource : Resource, IResourceWithEndpoints, IResourceWithConnectionString, IDisposable
+public sealed class WireMockResource : Resource, IResourceWithEndpoints, IResourceWithConnectionString
 {
-    /// <summary>
-    /// Indica se os recursos do servidor WireMock foram liberados, para evitar múltiplas chamadas de Dispose.
-    /// </summary>
-    private bool _disposed;
-
     /// <summary>
     /// Obtém a instância do servidor WireMock.
     /// </summary>
@@ -41,28 +36,4 @@ public sealed class WireMockResource : Resource, IResourceWithEndpoints, IResour
     /// </summary>
     public ReferenceExpression ConnectionStringExpression =>
         ReferenceExpression.Create($"http://localhost:{Port.ToString()}");
-
-    /// <summary>
-    /// Libera os recursos do servidor WireMock, parando o servidor se estiver em execução.
-    /// </summary>
-    public void Dispose()
-    {
-        if (_disposed)
-            return;
-
-        try
-        {
-            if (Server?.IsStarted == true)
-            {
-                Server.Stop();
-                Thread.Sleep(100);
-            }
-
-            (Server as IDisposable)?.Dispose();
-        }
-        finally
-        {
-            _disposed = true;
-        }
-    }
 }

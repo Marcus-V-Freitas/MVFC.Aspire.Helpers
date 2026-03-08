@@ -26,6 +26,7 @@ internal static class PubSubConfigurator
         {
             var pushEndpoint = $"http://{PubSubDefaults.DockerInternalHost}:{portEndpoint}";
             var tasks = pubSubConfig.MessageConfigs
+                .Where(p => !string.IsNullOrWhiteSpace(p.SubscriptionName))
                 .Select(mc => ModifyPushEndpoint(pubSubConfig.ProjectId, mc, pushEndpoint, ct))
                 .ToList();
             await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -38,20 +39,13 @@ internal static class PubSubConfigurator
     private static async Task ModifyPushEndpoint(
         string projectId, MessageConfig messageConfig, string pushEndpoint, CancellationToken ct)
     {
-        try
-        {
-            var subscriptionName = SubscriptionName.FormatProjectSubscription(projectId, messageConfig.SubscriptionName);
-            var subscription = await _subscriberClient.Value.GetSubscriptionAsync(subscriptionName).ConfigureAwait(false);
-            subscription.PushConfig = BuildPushEndpoint(messageConfig, pushEndpoint);
-            subscription.AckDeadlineSeconds = messageConfig.AckDeadlineSeconds ?? PubSubDefaults.ACK_DEADLINE_SECONDS_DEFAULT;
-            subscription.DeadLetterPolicy = BuildDeadLetterPolicy(projectId, messageConfig);
-            await _subscriberClient.Value.UpdateSubscriptionAsync(subscription, BuildFieldMaskUpdate(messageConfig), ct).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _logger.Value.LogSubscriptionConfigFailed(ex, messageConfig.SubscriptionName ?? "unknown");
-            throw;
-        }
+        var subscriptionName = SubscriptionName.FormatProjectSubscription(projectId, messageConfig.SubscriptionName);
+        var subscription = await _subscriberClient.Value.GetSubscriptionAsync(subscriptionName).ConfigureAwait(false);
+        subscription.PushConfig = BuildPushEndpoint(messageConfig, pushEndpoint);
+        subscription.AckDeadlineSeconds = messageConfig.AckDeadlineSeconds ?? PubSubDefaults.ACK_DEADLINE_SECONDS_DEFAULT;
+        subscription.DeadLetterPolicy = BuildDeadLetterPolicy(projectId, messageConfig);
+
+        await _subscriberClient.Value.UpdateSubscriptionAsync(subscription, BuildFieldMaskUpdate(messageConfig), ct).ConfigureAwait(false);
     }
 
     /// <summary>

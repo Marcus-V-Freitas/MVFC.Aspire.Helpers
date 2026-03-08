@@ -6,6 +6,5 @@ global using Google.Api.Gax;
 global using Google.Cloud.PubSub.V1;
 global using Google.Protobuf.WellKnownTypes;
 global using Microsoft.Extensions.Logging;
-global using MVFC.Aspire.Helpers.GcpPubSub.Extensions;
 global using MVFC.Aspire.Helpers.GcpPubSub.Models;
 global using MVFC.Aspire.Helpers.GcpPubSub.Resources;

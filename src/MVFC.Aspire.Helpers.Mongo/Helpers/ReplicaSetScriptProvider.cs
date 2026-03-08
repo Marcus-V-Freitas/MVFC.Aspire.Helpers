@@ -13,8 +13,8 @@ internal static class ReplicaSetScriptProvider
         var assembly = Assembly.GetExecutingAssembly();
         var resourceName = "MVFC.Aspire.Helpers.Mongo.Resources.init-replica-set.js";
 
-        using var stream = assembly.GetManifestResourceStream(resourceName) ?? throw new InvalidOperationException($"Could not load embedded resource '{resourceName}'. Ensure it is configured as EmbeddedResource.");
-        using var reader = new StreamReader(stream);
+        using var stream = assembly.GetManifestResourceStream(resourceName);
+        using var reader = new StreamReader(stream!);
         return reader.ReadToEnd();
     }
 }

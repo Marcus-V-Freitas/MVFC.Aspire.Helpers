@@ -20,13 +20,15 @@ public record class MongoClassDump<T>(
     /// <inheritdoc />
     public async Task ExecuteDumpAsync(IMongoClient client, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         var database = client.GetDatabase(DatabaseName);
         var collection = database.GetCollection<T>(CollectionName);
         var items = Faker.Generate(Quantity);
 
         if (items.Count > 0)
         {
-            await collection.InsertManyAsync(items, cancellationToken: cancellationToken);
+            await collection.InsertManyAsync(items, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
     }
 }
