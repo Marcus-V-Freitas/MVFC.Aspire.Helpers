@@ -1,6 +1,6 @@
 ﻿namespace MVFC.Aspire.Helpers.Playground.Api.PubSub;
 
-public interface IMessagePublisher 
+internal interface IMessagePublisher 
 {
-    Task PublishAsync<T>(string topicName, T message);
+    internal Task PublishAsync<T>(string topicName, T message);
 }

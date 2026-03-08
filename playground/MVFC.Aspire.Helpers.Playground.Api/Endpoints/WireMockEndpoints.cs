@@ -6,7 +6,7 @@ public static class WireMockEndpoints
       apiGroup.MapPost("/payment-callback", async (HttpRequest request) => 
       {
           using var reader = new StreamReader(request.Body);
-          var body = await reader.ReadToEndAsync();
+          var body = await reader.ReadToEndAsync().ConfigureAwait(false);
           return Results.Ok(body);
       });
 }

@@ -1,6 +1,6 @@
 ﻿namespace MVFC.Aspire.Helpers.Playground.Api.PubSub;
 
-public sealed class GooglePubSubMessagePublisher(PublisherServiceApiClient publisherClient) : IMessagePublisher 
+internal sealed class GooglePubSubMessagePublisher(PublisherServiceApiClient publisherClient) : IMessagePublisher 
 {
     private readonly PublisherServiceApiClient _publisherClient = publisherClient;
 
@@ -8,10 +8,11 @@ public sealed class GooglePubSubMessagePublisher(PublisherServiceApiClient publi
     {
         var topic = TopicName.FromProjectTopic("test-project", topicName);
         var json = JsonSerializer.Serialize(content);
-        var message = new PubsubMessage {
+        var message = new PubsubMessage
+        {
             Data = ByteString.CopyFromUtf8(json)
         };
 
-        await _publisherClient.PublishAsync(topic, [message]);
+        await _publisherClient.PublishAsync(topic, [message]).ConfigureAwait(false);
     }
 }

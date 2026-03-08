@@ -97,20 +97,6 @@ public static class RedisExtensions
     }
 
     /// <summary>
-    /// Adds a reference to the Redis resource in the project, configuring WaitFor
-    /// and the connection string via native WithReference.
-    /// </summary>
-    public static IResourceBuilder<ProjectResource> WithReference(
-        this IResourceBuilder<ProjectResource> project,
-        IResourceBuilder<RedisResource> redis)
-    {
-        ArgumentNullException.ThrowIfNull(project);
-        ArgumentNullException.ThrowIfNull(redis);
-
-        return project.WithReference(source: redis);
-    }
-
-    /// <summary>
     /// Configures the Redis endpoint on the container, without proxy.
     /// </summary>
     private static IResourceBuilder<RedisResource> WithRedisEndpoint(

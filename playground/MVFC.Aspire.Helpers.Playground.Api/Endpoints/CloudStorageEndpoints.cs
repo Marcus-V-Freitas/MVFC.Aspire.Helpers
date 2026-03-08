@@ -7,18 +7,18 @@ public static class CloudStorageEndpoints
         {
             try 
             {
-                var files = await storageClient.ListFilesAsync(bucketName);
+                var files = await storageClient.ListFilesAsync(bucketName).ConfigureAwait(false);
 
                 foreach (var file in files) 
                 {
-                    await using var fileStream = await storageClient.DownloadFileAsync(bucketName, file);
+                    await using var fileStream = await storageClient.DownloadFileAsync(bucketName, file).ConfigureAwait(false);
 
                     using (var reader = new StreamReader(fileStream)) 
                     {
-                        var content = await reader.ReadToEndAsync();
+                        var content = await reader.ReadToEndAsync().ConfigureAwait(false);
                     }
 
-                    await storageClient.DeleteFileAsync(bucketName, file);
+                    await storageClient.DeleteFileAsync(bucketName, file).ConfigureAwait(false);
                 }
 
                 return Results.Ok();
@@ -26,6 +26,7 @@ public static class CloudStorageEndpoints
             catch (Exception ex) 
             {
                 return Results.Problem($"Erro ao listar arquivos: {ex.Message}");
+                throw;
             }
         });
 }

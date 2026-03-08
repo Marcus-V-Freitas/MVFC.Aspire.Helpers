@@ -1,6 +1,7 @@
 ﻿namespace MVFC.Aspire.Helpers.Playground.Api.Endpoints;
 
-public static class MongoEndpoints {
+public static class MongoEndpoints
+{
     public static void MapMongoEndpoints(this IEndpointRouteBuilder apiGroup) =>
         apiGroup.MapGet("/mongo", async (IConfiguration configuration) => 
         {
@@ -10,13 +11,13 @@ public static class MongoEndpoints {
             try 
             {
                 var pingCommand = new BsonDocument("ping", 1);
-                var result = await database.RunCommandAsync<BsonDocument>(pingCommand);
+                var result = await database.RunCommandAsync<BsonDocument>(pingCommand).ConfigureAwait(false);
 
                 return Results.Ok("Funcionou");
             }
             catch 
             {
-                return Results.InternalServerError("Erro");
+                throw;
             }
         });
 }

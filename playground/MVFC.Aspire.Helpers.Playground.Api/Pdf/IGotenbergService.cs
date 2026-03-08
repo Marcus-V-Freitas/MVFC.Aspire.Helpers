@@ -1,6 +1,6 @@
-﻿namespace MVFC.Aspire.Helpers.Playground.Api.Pdf; 
+﻿namespace MVFC.Aspire.Helpers.Playground.Api.Pdf;
 
-public interface IGotenbergService 
+internal interface IGotenbergService 
 {
-    Task<byte[]> HtmlToPdfAsync(string html, CancellationToken ct);
+    internal Task<byte[]> HtmlToPdfAsync(string html, CancellationToken ct);
 }

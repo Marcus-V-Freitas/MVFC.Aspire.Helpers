@@ -14,5 +14,6 @@ public static class DefaultEndpoints
         apiGroup.MapRedisEndpoints();
         apiGroup.MapRabbitMQEndpoints();
         apiGroup.MapGotenbergEndpoints();
+        apiGroup.MapKeycloakEndpoints();
     }
 }

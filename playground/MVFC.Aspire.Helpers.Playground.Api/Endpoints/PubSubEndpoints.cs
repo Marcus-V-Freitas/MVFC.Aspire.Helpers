@@ -14,7 +14,7 @@ public static class PubSubEndpoints
         apiGroup.MapPost("/pub-sub-exit", async (HttpRequest request) => 
         {
             using var reader = new StreamReader(request.Body);
-            var body = await reader.ReadToEndAsync();
+            var body = await reader.ReadToEndAsync().ConfigureAwait(false);
             return Results.Ok(body);
         });
     }

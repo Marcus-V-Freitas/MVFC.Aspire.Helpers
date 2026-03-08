@@ -1,14 +1,16 @@
-﻿namespace MVFC.Aspire.Helpers.Tests.TestUtils;
+﻿namespace MVFC.Aspire.Helpers.Tests.Fixture;
 
-internal class ProjectAppHost() : DistributedApplicationFactory(typeof(MVFC_Aspire_Helpers_Playground_AppHost)) 
+internal sealed class ProjectAppHost() : DistributedApplicationFactory(typeof(MVFC_Aspire_Helpers_Playground_AppHost)) 
 {
-    protected override void OnBuilderCreating(DistributedApplicationOptions applicationOptions, HostApplicationBuilderSettings hostOptions) {
+    protected override void OnBuilderCreating(DistributedApplicationOptions applicationOptions, HostApplicationBuilderSettings hostOptions)
+    {
         applicationOptions.AllowUnsecuredTransport = true;
         hostOptions.Args = ["--testmode=true"];
     }
 
     protected override void OnBuilderCreated(DistributedApplicationBuilder builder) =>
-        builder.Services.ConfigureHttpClientDefaults(x => x.AddStandardResilienceHandler(c => {
+        builder.Services.ConfigureHttpClientDefaults(x => x.AddStandardResilienceHandler(c =>
+        {
             var timeSpan = TimeSpan.FromMinutes(2);
             c.AttemptTimeout.Timeout = timeSpan;
             c.CircuitBreaker.SamplingDuration = timeSpan * 2;

@@ -1,4 +1,4 @@
-var builder = DistributedApplication.CreateBuilder(args);
+﻿var builder = DistributedApplication.CreateBuilder(args);
 
 var messageConfig = new MessageConfig(
                             TopicName: "test-topic",
@@ -18,6 +18,12 @@ IReadOnlyCollection<IMongoClassDump> dumps = [
         new Faker<TestDatabase>()
               .CustomInstantiator(f => new TestDatabase(f.Person.FirstName, f.Person.Cpf())))
 ];
+
+var keycloak = builder.AddKeycloak("keycloak")
+    .WithAdminCredentials("admin", "Admin@123")
+    .WithSeeds([new MyAppRealm()])
+    .WithImportStrategy(KeycloakImportStrategy.IgnoreExisting)
+    .WithDataVolume("key-cloak-data");
 
 // Criar recursos com padrão builder
 var cloudStorage = builder.AddCloudStorage("cloud-storage")
@@ -68,9 +74,14 @@ var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-e
                  .WithReference(pubSubUI)
                  .WaitFor(pubSubUI)
                  .WithReference(gotenberg)
-                 .WaitFor(gotenberg);
+                 .WaitFor(gotenberg)
+                 .WaitFor(keycloak)
+                 .WithReference(keycloak,
+                         realmName: "my-app",
+                         clientId: "my-api",
+                         clientSecret: "api-secret-1234");
 
-var wireMock = builder.AddWireMock("wireMock", port: 9090, configure: (server) => {
+var wireMock = builder.AddWireMock("wireMock", port: 7070, configure: (server) => {
     server.Endpoint("/api/echo")
           .WithDefaultBodyType(BodyType.String)
           .OnPost<string, string>(body => ($"Echo: {body}", HttpStatusCode.Created, null));
@@ -145,11 +156,11 @@ var wireMock = builder.AddWireMock("wireMock", port: 9090, configure: (server) =
               _ = Task.Run(async () => {
                   ApiHelper helper = new(api.GetEndpoint("http").Port);
 
-                  await helper.SendPayloadAsync(payload);
+                  await helper.SendPayloadAsync(payload).ConfigureAwait(false);
               });
 
               return (null!, HttpStatusCode.Accepted, BodyType.Json);
           });
 });
 
-await builder.Build().RunAsync();
+await builder.Build().RunAsync().ConfigureAwait(false);

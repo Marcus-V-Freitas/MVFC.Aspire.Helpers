@@ -15,7 +15,7 @@ public static class MongoExtensions
         string name,
         int port = MongoDefaults.HOST_PORT)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(builder);
 
         var resource = new MongoReplicaSetResource(name);
@@ -64,8 +64,10 @@ public static class MongoExtensions
         this IResourceBuilder<MongoReplicaSetResource> builder,
         string volumeName)
     {
-        builder.WithVolume(volumeName, MongoDefaults.DATA_VOLUME_PATH);
-        return builder;
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(volumeName);
+
+        return builder.WithVolume(volumeName, MongoDefaults.DATA_VOLUME_PATH);
     }
 
     /// <summary>
@@ -116,7 +118,7 @@ public static class MongoExtensions
     /// </summary>
     private static IResourceBuilder<MongoReplicaSetResource> WithReplicaSetArgs(
         this IResourceBuilder<MongoReplicaSetResource> resource) =>
-        resource.WithArgs(MongoDefaults.REPL_SET_ARG, MongoDefaults.REPLICA_SET_NAME, MongoDefaults.BIND_IP_ALL_ARG);
+            resource.WithArgs(MongoDefaults.REPL_SET_ARG, MongoDefaults.REPLICA_SET_NAME, MongoDefaults.BIND_IP_ALL_ARG);
 
     /// <summary>
     /// Configures the MongoDB endpoint in the container.

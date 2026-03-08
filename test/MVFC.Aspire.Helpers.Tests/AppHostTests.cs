@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.Tests;
+﻿namespace MVFC.Aspire.Helpers.Tests;
 
 public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHostFixture> 
 {
@@ -10,19 +10,18 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     public async Task GotenbergOkStatusCode() 
     {
         // Arrange
-        var body = JsonContent.Create(new 
+        var body = new JsonObject
         {
-            Html = await HtmlExtensions.ExtractHtmlTemplateAsync(),
-        });
+            ["Html"] = await HtmlExtensions.ExtractHtmlTemplateAsync()
+        };
 
         // Act
-        var response = await _fixture.AppHttpClient.PostAsync("/api/pdf", body, TestContext.Current.CancellationToken);
-        var bytes = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
+        using var response = await _fixture.PlaygroundApi.ConvertToPdfAsync(body);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        response.Content.Headers.ContentType!.MediaType.Should().Be("application/pdf");
-        bytes.Should().NotBeEmpty();
+        response.ContentHeaders!.ContentType!.MediaType.Should().Be("application/pdf");
+        response.Content!.Should().NotBeNull();
     }
 
     #endregion
@@ -33,7 +32,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     public async Task MongoOkStatusCode() 
     {
         // Arrange & Act
-        var response = await _fixture.AppHttpClient.GetAsync("/api/mongo", TestContext.Current.CancellationToken);
+        using var response = await _fixture.PlaygroundApi.GetMongoStatusAsync();
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -47,7 +46,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     public async Task CloudStorageOkStatusCode() 
     {
         // Arrange & Act
-        var response = await _fixture.AppHttpClient.GetAsync("/api/bucket/bucket-teste", TestContext.Current.CancellationToken);
+        using var response = await _fixture.PlaygroundApi.GetCloudStorageBucketAsync("bucket-teste");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -61,7 +60,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     public async Task PubSubOkStatusCode() 
     {
         // Arrange & Act
-        var response = await _fixture.AppHttpClient.GetAsync("/api/pub-sub-enter", TestContext.Current.CancellationToken);
+        using var response = await _fixture.PlaygroundApi.GetPubSubEnterAsync();
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -75,15 +74,15 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     public async Task MailPitOkStatusCode() 
     {
         // Act
-        var body = JsonContent.Create(new 
+        var body = new JsonObject
         {
-            From = "noreply@teste.com",
-            To = "teste@exemplo.com",
-            Subject = "Teste",
-            Body = "Mensagem de teste"
-        });
+            ["From"] = "noreply@teste.com",
+            ["To"] = "teste@exemplo.com",
+            ["Subject"] = "Teste",
+            ["Body"] = "Mensagem de teste"
+        };
 
-        var response = await _fixture.AppHttpClient.PostAsync("/api/send-email", body, TestContext.Current.CancellationToken);
+        using var response = await _fixture.PlaygroundApi.SendEmailAsync(body);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -97,91 +96,78 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     public async Task WireMockEndpoint_Get_ShouldReturnMockedResponse() 
     {
         // Arrange & Act
-        var response = await _fixture.HttpClient.GetAsync("/api/test", TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        using var response = await _fixture.WireMockApi.GetTestAsync();
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        content.Should().Be("Aspire GET OK");
+        response.Content!.Should().Be("Aspire GET OK");
     }
 
     [Fact]
     public async Task WireMockEndpoint_Post_ShouldReturnPostedData() 
     {
         // Arrange & Act
-        var httpContent = new StringContent("Aspire", Encoding.UTF8, "text/plain");
-        var response = await _fixture.HttpClient.PostAsync("/api/echo", httpContent, TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var httpContent = "Aspire";
+        using var response = await _fixture.WireMockApi.PostEchoAsync(httpContent);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        content.Should().Be("Echo: Aspire");
+        response.Content!.Should().Be("Echo: Aspire");
     }
 
     [Fact]
     public async Task WireMockEndpoint_Post_ShouldReturnBadRequest() 
     {
         // Arrange & Act
-        var response = await _fixture.HttpClient.PostAsync("/api/echo", null, TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        using var response = await _fixture.WireMockApi.PostEchoEmptyAsync();
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        content.Should().BeEmpty();
+        response.Error!.Content.Should().BeEmpty();
     }
 
     [Fact]
     public async Task WireMockEndpoint_Auth_ShouldReturnUnauthorized_WhenTokenMissing() 
     {
         // Arrange & Act
-        var response = await _fixture.HttpClient.GetAsync("/api/secure", TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        using var response = await _fixture.WireMockApi.GetSecureAsync();
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-        content.Should().Be("Unauthorized");
+        response.Error!.Content.Should().Be("Unauthorized");
     }
 
     [Fact]
     public async Task WireMockEndpoint_Auth_ShouldReturnData_WhenTokenPresent() 
     {
-        // Arrange
-        var message = new HttpRequestMessage(HttpMethod.Get, "/api/secure") 
-        {
-            Headers = { { "Authorization", "Bearer mytoken" } }
-        };
-
         // Act
-        var response = await _fixture.HttpClient.SendAsync(message, TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        using var response = await _fixture.WireMockApi.GetSecureWithTokenAsync("mytoken");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        content.Should().Be("Secret Data");
+        response.Content!.Should().Be("Secret Data");
     }
 
     [Fact]
     public async Task PutEndpoint_ShouldReturnAccepted() 
     {
         // Arrange & Act
-        var response = await _fixture.HttpClient.PutAsync("/api/put", new StringContent("Aspire", Encoding.UTF8, "text/plain"), TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        using var response = await _fixture.WireMockApi.PutEchoAsync("Aspire");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Accepted);
-        content.Should().Be("Echo: Aspire");
+        response.Content!.Should().Be("Echo: Aspire");
     }
 
     [Fact]
     public async Task CustomAuth_ShouldReturnForbidden_WhenInvalid() 
     {
         // Arrange & Act
-        var response = await _fixture.HttpClient.GetAsync("/api/customauth", TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        using var response = await _fixture.WireMockApi.GetCustomAuthAsync();
         
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-        content.Should().Be("Forbidden");
+        response.Error!.Content.Should().Be("Forbidden");
     }
 
     [Theory]
@@ -189,51 +175,44 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     [InlineData(false, HttpStatusCode.Forbidden, "Forbidden")]
     public async Task CustomAuth_ShouldReturnAuthorized_WhenValid(bool useHeader, HttpStatusCode expectedStatusCode, string expectedContent) 
     {
-        // Arrange
-        var request = new HttpRequestMessage(HttpMethod.Get, "/api/customauth");
-
-        if (useHeader)
-            request.Headers.Add("X-Test", "ok");
-
-        // Act
-        var response = await _fixture.HttpClient.SendAsync(request, TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        // Arrange & Act
+        var response = useHeader ? await _fixture.WireMockApi.GetCustomAuthWithHeaderAsync() : await _fixture.WireMockApi.GetCustomAuthAsync();
         
         // Assert
         response.StatusCode.Should().Be(expectedStatusCode);
-        content.Should().Be(expectedContent);
+        var content = response.IsSuccessful ? response.Content : response.Error!.Content;
+        content!.Should().Be(expectedContent);
     }
 
     [Fact]
     public async Task ResponseHeaders_ShouldReturnAllHeaders() 
     {
         // Arrange & Act
-        var response = await _fixture.HttpClient.GetAsync("/api/headers", TestContext.Current.CancellationToken);
+        using var response = await _fixture.WireMockApi.GetHeadersAsync();
         string.Join(',', response.Headers.GetValues("X-Test")).Should().Be("v1,v2");
         string.Join(',', response.Headers.GetValues("X-Other")).Should().Be("v3");
 
         // Assert
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        content.Should().Be("Headers OK");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content!.Should().Be("Headers OK");
     }
 
     [Fact]
     public async Task ErrorStatusCode_ShouldReturnCustomStatus() 
     {
         // Arrange & Act
-        var response = await _fixture.HttpClient.GetAsync("/api/error", TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        using var response = await _fixture.WireMockApi.GetErrorAsync();
 
         // Assert
         response.StatusCode.Should().Be((HttpStatusCode)418);
-        content.Should().Be("I am a teapot");
+        response.Error!.Content.Should().Be("I am a teapot");
     }
 
     [Fact]
     public async Task WireMockEndpoint_Delete_ShouldReturnNoContent() 
     {
         // Arrange & Act
-        var response = await _fixture.HttpClient.DeleteAsync("/api/delete", TestContext.Current.CancellationToken);
+        using var response = await _fixture.WireMockApi.DeleteAsync();
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
@@ -243,31 +222,26 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     public async Task WireMockEndpoint_FormUrlEncoded_ShouldParseFormData() 
     {
         // Arrange
-        var formContent = new FormUrlEncodedContent([new KeyValuePair<string, string>("key", "value")]);
+        var formContent = new Dictionary<string, string> { ["key"] = "value" };
         
         // Act
-        var response = await _fixture.HttpClient.PostAsync("/api/form", formContent, TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        using var response = await _fixture.WireMockApi.PostFormAsync(formContent);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        content.Should().Be("key=value");
+        response.Content!.Should().Be("key=value");
     }
 
     [Fact]
     public async Task WireMockEndpoint_Patch_ShouldReturnPatched() 
     {
-        // Arrange
-        var patchContent = new StringContent("patch-data", Encoding.UTF8, "text/plain");
-        var request = new HttpRequestMessage(HttpMethod.Patch, "/api/patch") { Content = patchContent };
-        
-        // Act
-        var response = await _fixture.HttpClient.SendAsync(request, TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        // Arrange & Act
+        var patchContent = "patch-data";
+        using var response = await _fixture.WireMockApi.PatchAsync(patchContent);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        content.Should().Be("Patched: patch-data");
+        response.Content!.Should().Be("Patched: patch-data");
     }
 
     [Fact]
@@ -276,25 +250,24 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
         // Arrange
         var bytes = Encoding.UTF8.GetBytes("AspireBytes");
         var content = new ByteArrayContent(bytes);
-        content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
         
         // Act
-        var response = await _fixture.HttpClient.PostAsync("/api/bytes", content, TestContext.Current.CancellationToken);
-        var responseBytes = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
+        using var response = await _fixture.WireMockApi.PostBytesAsync(content);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        responseBytes.Should().BeEquivalentTo(bytes);
+        response.Content!.StreamToByteArray().Should().BeEquivalentTo(bytes);
     }
 
     [Fact]
     public async Task WireMockEndpoint_FormUrlEncoded_ShouldReturnBadRequest_WhenNotDictionary() 
     {
         // Arrange
-        var content = new StringContent("not-a-dictionary", Encoding.UTF8, "application/x-www-form-urlencoded");
+        var content = "not-a-dictionary";
         
         // Act
-        var response = await _fixture.HttpClient.PostAsync("/api/form-wrong", content, TestContext.Current.CancellationToken);
+        using var response = await _fixture.WireMockApi.PostFormWrongAsync(content);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
@@ -304,26 +277,26 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     public async Task WireMockEndpoint_Headers_ShouldOverwriteAndReturnAll() 
     {
         // Arrange
-        var response = await _fixture.HttpClient.DeleteAsync("/api/delete", TestContext.Current.CancellationToken);
+        using var responseDelete = await _fixture.WireMockApi.DeleteAsync();
         
         // Act
-        var headers = response.Headers.GetValues("v1").ToArray();
+        var headers = responseDelete.Headers.GetValues("v1").ToArray();
 
         // Assert
         headers.Should().Contain("v2");
         headers.Should().Contain("v3");
         headers.Should().Contain("v4");
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        responseDelete.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]
     public async Task WireMockEndpoint_UnsupportedBodyType_ShouldReturnError() 
     {
         // Arrange
-        var content = new StringContent("unsupported", Encoding.UTF8, "application/unsupported");
+        var content = "unsupported";
         
         // Act
-        var response = await _fixture.HttpClient.PostAsync("/api/unsupported", content, TestContext.Current.CancellationToken);
+        using var response = await _fixture.WireMockApi.PostUnsupportedAsync(content);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
@@ -333,26 +306,22 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     public async Task WireMockEndpoint_Json_ShouldEchoJsonObject() 
     {
         // Arrange
-        var model = new JsonModel("Aspire JSON");
-        var json = JsonSerializer.Serialize(model);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var body = new JsonObject { ["Message"] = "Aspire JSON" };
 
         // Act
-        var response = await _fixture.HttpClient.PostAsync("/api/json", content, TestContext.Current.CancellationToken);
-        var responseJson = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        var responseModel = JsonSerializer.Deserialize<JsonModel>(responseJson);
+        using var response = await _fixture.WireMockApi.PostJsonAsync(body);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        responseModel.Should().NotBeNull();
-        responseModel!.Message.Should().Be("Aspire JSON");
+        response.Content.Should().NotBeNull();
+        response.Content!.Message.Should().Be("Aspire JSON");
     }
 
     [Fact]
     public async Task WireMockEndpoint_Webhook_ShouldAccept() 
     {
         // Arrange & Act
-        var response = await _fixture.HttpClient.GetAsync("/webhook/payment", TestContext.Current.CancellationToken);
+        using var response = await _fixture.WireMockApi.GetWebhookPaymentAsync();
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Accepted);
@@ -366,22 +335,21 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     public async Task Redis_Get_ShouldReturnValue() 
     {
         // Arrange
-        await _fixture.AppHttpClient.GetAsync("/api/redis/set/integration-key/integration-value", TestContext.Current.CancellationToken);
+        using var responseSet = await _fixture.PlaygroundApi.SetRedisValueAsync("integration-key", "integration-value");
 
         // Act
-        var response = await _fixture.AppHttpClient.GetAsync("/api/redis/get/integration-key", TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        using var response = await _fixture.PlaygroundApi.GetRedisValueAsync("integration-key");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        content.Should().Be("integration-value");
+        response.Content!.Should().Be("integration-value");
     }
 
     [Fact]
     public async Task Redis_GetNonExistent_ShouldReturnNotFound() 
     {
         // Arrange & Act
-        var response = await _fixture.AppHttpClient.GetAsync("/api/redis/get/non-existent-key", TestContext.Current.CancellationToken);
+        using var response = await _fixture.PlaygroundApi.GetRedisValueAsync("non-existent-key");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -398,25 +366,61 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
         var message = "integration-test-message";
 
         // Act - Publish
-        await _fixture.AppHttpClient.PostAsync($"/api/rabbitmq/publish/test-exchange/test.key/{message}", null, TestContext.Current.CancellationToken);
+        using var responsePublish = await _fixture.PlaygroundApi.PublishRabbitMqMessageAsync("test-exchange", "test.key", message);
 
         // Act - Consume
-        var response = await _fixture.AppHttpClient.GetAsync("/api/rabbitmq/consume/test-queue", TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        using var response = await _fixture.PlaygroundApi.ConsumeRabbitMqMessageAsync("test-queue");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        content.Should().Contain(message);
+        response.Content!.Should().Contain(message);
     }
 
     [Fact]
     public async Task RabbitMQ_ConsumeEmpty_ShouldReturnNoContent() 
     {
         // Arrange & Act
-        var response = await _fixture.AppHttpClient.GetAsync("/api/rabbitmq/consume/empty-queue", TestContext.Current.CancellationToken);
+        using var response = await _fixture.PlaygroundApi.ConsumeRabbitMqMessageAsync("empty-queue");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    #endregion
+
+    #region Keycloak
+
+    [Fact]
+    public async Task Keycloak_ApiAuthentication_ShouldReturnUnauthorizedWithoutToken() 
+    {
+        // Arrange & Act
+        using var response = await _fixture.PlaygroundApi.GetSecretDataAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Keycloak_ApiAuthentication_ShouldReturnOkWithToken()
+    {
+        // Arrange
+        var tokenRequest = new Dictionary<string, string>
+        {
+            ["client_id"] = "my-api",
+            ["client_secret"] = "api-secret-1234",
+            ["grant_type"] = "password",
+            ["username"] = "marcus.admin",
+            ["password"] = "Admin@123"
+        };
+
+        using var tokenResponse = await _fixture.KeycloakApi.GetTokenAsync("my-app", tokenRequest);
+        var accessToken = tokenResponse.Content!["access_token"]!.ToString();
+
+        // Act
+        using var response = await _fixture.PlaygroundApi.GetSecretDataWithTokenAsync(accessToken);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     #endregion
