@@ -1,66 +1,68 @@
 # MVFC.Aspire.Helpers.Redis
 
-Helper para integração com Redis em projetos .NET Aspire, incluindo cache distribuído e Redis Commander UI.
+> 🇧🇷 [Leia em Português](README.pt-BR.md)
 
-## Visão Geral
+Helper for integrating with Redis in .NET Aspire projects, including distributed caching and Redis Commander UI.
 
-Este projeto fornece métodos de extensão para facilitar a integração com Redis em projetos .NET Aspire, incluindo cache distribuído e Redis Commander UI.
+## Overview
 
-## Estrutura do Projeto
+This project provides extension methods to facilitate integration with Redis in .NET Aspire projects, including distributed caching and Redis Commander UI.
 
-- [`MVFC.Aspire.Helpers.Redis`](MVFC.Aspire.Helpers.Redis.csproj): Biblioteca de helpers e extensões para Redis.
+## Project Structure
 
-## Funcionalidades
+- [`MVFC.Aspire.Helpers.Redis`](MVFC.Aspire.Helpers.Redis.csproj): Helpers and extensions library for Redis.
 
-- Adiciona um container Redis configurado.
-- Suporte ao Redis Commander UI.
-- Suporte a persistência de dados via volume Docker (AOF habilitado).
-- Suporte a senha.
+## Features
 
-## Imagens compatíveis:
+- Adds a configured Redis container.
+- Support for Redis Commander UI.
+- Support for data persistence via Docker volume (AOF enabled).
+- Support for password.
+
+## Compatible Images:
  - `redis`
  - `rediscommander/redis-commander` (UI)
 
-## Instalação
+## Installation
 
 ```bash
 dotnet add package MVFC.Aspire.Helpers.Redis
 ```
 
-## Exemplo de Uso no AppHost
+## Usage Example in AppHost
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
 
 var redis = builder.AddRedis("redis")
-    .WithPassword("minha-senha")
+    .WithPassword("my-password")
     .WithCommander()
     .WithDataVolume("redis-data");
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
        .WithReference(redis)
        .WaitFor(redis);
 
 await builder.Build().RunAsync();
 ```
 
-## Métodos Fluentes
+## Fluent Methods
 
-| Método | Descrição |
+| Method | Description |
 |---|---|
-| `WithDockerImage(image, tag)` | Substitui a imagem Docker utilizada. |
-| `WithPassword(password)` | Define a senha do Redis. |
-| `WithCommander(port?)` | Adiciona o Redis Commander UI. |
-| `WithDataVolume(volumeName)` | Habilita persistência com volume Docker (AOF). |
+| `WithDockerImage(image, tag)` | Overrides the Docker image used. |
+| `WithPassword(password)` | Defines the Redis password. |
+| `WithCommander(port?)` | Adds the Redis Commander UI. |
+| `WithDataVolume(volumeName)` | Enables persistence with Docker volume (AOF). |
 
-## Principais parâmetros do `AddRedis`
+## Main Parameters for `AddRedis`
 
-- `name`: Nome do recurso Redis.
-- `port` *(Opcional)*: Porta do Redis (padrão: `6379`).
+- `name`: Redis resource name.
+- `port` *(Optional)*: Redis Port (default: `6379`).
 
-## Outros parâmetros Opcionais importantes:
+## Other important Optional parameters:
 
-- **connectionStringSection** (Opcional): Define o caminho da variável de ambiente ou configuração que contém a string de conexão do Redis. O padrão é `"ConnectionStrings:redis"`. Cada `:` indica um nível/seção dentro do arquivo `appsettings.json`:
+- **connectionStringSection** (Optional): Defines the path to the environment variable or configuration containing the Redis connection string. Default is `"ConnectionStrings:redis"`. Each `:` indicates a level/section within the `appsettings.json` file:
 
 ```json
 {
@@ -70,14 +72,14 @@ await builder.Build().RunAsync();
 }
 ```
 
-## Detalhes de Porta
+## Port Details
 
-- **Porta Redis**: definida via parâmetro `port` (padrão: `6379`).
-- **Porta Redis Commander**: aleatória por padrão; pode ser definida via parâmetro `commanderPort` em `WithCommander`.
+- **Redis Port**: defined via `port` parameter (default: `6379`).
+- **Redis Commander Port**: random by default; can be defined via `commanderPort` parameter in `WithCommander`.
 
-## Requisitos
+## Requirements
 - .NET 9+
 - Aspire.Hosting >= 9.5.0
 
-## Licença
+## License
 Apache-2.0

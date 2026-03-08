@@ -1,31 +1,31 @@
 ﻿# MVFC.Aspire.Helpers
 
-> 🇧🇷 [Leia em Português](README.pt-BR.md)
+> 🇺🇸 [Read in English](README.md)
 
 [![CI](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml/badge.svg)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers/branch/main/graph/badge.svg)](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 ![Platform](https://img.shields.io/badge/.NET-9%20%7C%2010-blue)
 
-A collection of helpers to integrate common services with .NET Aspire quickly and in a standardized way.
+Coleção de helpers para integrar serviços comuns com o .NET Aspire de forma rápida e padronizada.
 
-## Overview
+## Visão Geral
 
-| Package | Service | Downloads |
+| Pacote | Serviço | Downloads |
 |---|---|---|
-| [MVFC.Aspire.Helpers.CloudStorage](src/MVFC.Aspire.Helpers.CloudStorage/README.md) | Google Cloud Storage (GCS emulator) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.CloudStorage) |
-| [MVFC.Aspire.Helpers.Mongo](src/MVFC.Aspire.Helpers.Mongo/README.md) | MongoDB with Replica Set | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Mongo) |
-| [MVFC.Aspire.Helpers.GcpPubSub](src/MVFC.Aspire.Helpers.GcpPubSub/README.md) | Google Pub/Sub (emulator + UI) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpPubSub) |
-| [MVFC.Aspire.Helpers.Gotenberg](src/MVFC.Aspire.Helpers.Gotenberg/README.md) | Gotenberg (PDF conversion) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Gotenberg) |
-| [MVFC.Aspire.Helpers.WireMock](src/MVFC.Aspire.Helpers.WireMock/README.md) | WireMock.Net (API mocking) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.WireMock) |
-| [MVFC.Aspire.Helpers.Mailpit](src/MVFC.Aspire.Helpers.Mailpit/README.md) | Mailpit (SMTP emulator) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Mailpit) |
+| [MVFC.Aspire.Helpers.CloudStorage](src/MVFC.Aspire.Helpers.CloudStorage/README.md) | Google Cloud Storage (emulador GCS) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.CloudStorage) |
+| [MVFC.Aspire.Helpers.Mongo](src/MVFC.Aspire.Helpers.Mongo/README.md) | MongoDB com Replica Set | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Mongo) |
+| [MVFC.Aspire.Helpers.GcpPubSub](src/MVFC.Aspire.Helpers.GcpPubSub/README.md) | Google Pub/Sub (emulador + UI) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpPubSub) |
+| [MVFC.Aspire.Helpers.Gotenberg](src/MVFC.Aspire.Helpers.Gotenberg/README.md) | Gotenberg (conversão de PDF) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Gotenberg) |
+| [MVFC.Aspire.Helpers.WireMock](src/MVFC.Aspire.Helpers.WireMock/README.md) | WireMock.Net (mock de APIs) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.WireMock) |
+| [MVFC.Aspire.Helpers.Mailpit](src/MVFC.Aspire.Helpers.Mailpit/README.md) | Mailpit (emulador SMTP) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Mailpit) |
 | [MVFC.Aspire.Helpers.RabbitMQ](src/MVFC.Aspire.Helpers.RabbitMQ/README.md) | RabbitMQ | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.RabbitMQ) |
 | [MVFC.Aspire.Helpers.Redis](src/MVFC.Aspire.Helpers.Redis/README.md) | Redis + Redis Commander | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Redis) |
 | [MVFC.Aspire.Helpers.Keycloak](src/MVFC.Aspire.Helpers.Keycloak/README.md) | Keycloak | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Keycloak) |
 
 ---
 
-## Installation
+## Instalação
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.CloudStorage
@@ -41,7 +41,7 @@ dotnet add package MVFC.Aspire.Helpers.Keycloak
 
 ---
 
-## Usage Example
+## Exemplo de Uso
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
@@ -82,11 +82,11 @@ var wireMock = builder.AddWireMock("wireMock", port: 7070, configure: (server) =
 await builder.Build().RunAsync().ConfigureAwait(false);
 ```
 
-> See [playground/](playground/) for the full working example.
+> Veja o exemplo completo em [playground/](playground/).
 
 ---
 
-## Project Structure
+## Estrutura dos Projetos
 
 ```
 src/
@@ -107,18 +107,18 @@ playground/
 
 ---
 
-## Requirements
+## Requisitos
 
-- .NET 9 or .NET 10
+- .NET 9 ou .NET 10
 - Aspire.Hosting >= 9.5.0
-- Docker running locally
+- Docker em execução
 
 ---
 
-## Contributing
+## Contribuindo
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+Veja [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## License
+## Licença
 
 [Apache-2.0](LICENSE)

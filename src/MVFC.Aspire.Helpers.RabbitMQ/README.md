@@ -1,35 +1,37 @@
 # MVFC.Aspire.Helpers.RabbitMQ
 
-Helper para integração com RabbitMQ em projetos .NET Aspire, incluindo criação automática de exchanges, queues e dead letter queues.
+> 🇧🇷 [Leia em Português](README.pt-BR.md)
 
-## Visão Geral
+Helper for integrating with RabbitMQ in .NET Aspire projects, including automatic creation of exchanges, queues, and dead letter queues.
 
-O MVFC.Aspire.Helpers.RabbitMQ é uma biblioteca de extensão para o .NET Aspire que facilita a integração com o RabbitMQ. Ele fornece métodos de extensão para adicionar recursos RabbitMQ ao seu aplicativo Aspire, configurar exchanges, queues e dead letter queues, e configurar referências entre projetos.
+## Overview
 
-## Estrutura do Projeto
+MVFC.Aspire.Helpers.RabbitMQ is an extension library for .NET Aspire that facilitates integration with RabbitMQ. It provides extension methods to add RabbitMQ resources to your Aspire application, configure exchanges, queues, and dead letter queues, and setup references between projects.
 
-- [`MVFC.Aspire.Helpers.RabbitMQ`](MVFC.Aspire.Helpers.RabbitMQ.csproj): Biblioteca de helpers e extensões para RabbitMQ.
+## Project Structure
 
-## Funcionalidades
+- [`MVFC.Aspire.Helpers.RabbitMQ`](MVFC.Aspire.Helpers.RabbitMQ.csproj): Helpers and extensions library for RabbitMQ.
 
-- Adiciona um container RabbitMQ configurado.
-- Suporte a exchanges e queues customizadas via `definitions.json`.
-- Suporte a dead letter exchanges (DLX).
-- Suporte a TTL de mensagens por fila.
-- Suporte a persistência de dados via volume Docker.
-- Suporte a credenciais customizadas.
-- Suporte ao RabbitMQ Management UI.
+## Features
 
-## Imagens compatíveis:
+- Adds a configured RabbitMQ container.
+- Support for custom exchanges and queues via `definitions.json`.
+- Support for dead letter exchanges (DLX).
+- Support for message TTL per queue.
+- Support for data persistence via Docker volume.
+- Support for custom credentials.
+- Support for the RabbitMQ Management UI.
+
+## Compatible Images:
  - `rabbitmq`
 
-## Instalação
+## Installation
 
 ```bash
 dotnet add package MVFC.Aspire.Helpers.RabbitMQ
 ```
 
-## Exemplo de Uso no AppHost
+## Usage Example in AppHost
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
@@ -47,55 +49,55 @@ var rabbitMQ = builder.AddRabbitMQ("rabbitmq")
     ])
     .WithDataVolume("rabbit-mq");
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
        .WithReference(rabbitMQ)
        .WaitFor(rabbitMQ);
 
 await builder.Build().RunAsync();
 ```
 
-## Principais parâmetros do `AddRabbitMQ`
+## Main Parameters for `AddRabbitMQ`
 
-- `name`: Nome do recurso RabbitMQ.
-- `amqpPort` *(Opcional)*: Porta AMQP (padrão: `5672`).
-- `httpPort` *(Opcional)*: Porta do Management UI (padrão: `15672`).
+- `name`: RabbitMQ resource name.
+- `amqpPort` *(Optional)*: AMQP Port (default: `5672`).
+- `httpPort` *(Optional)*: Management UI Port (default: `15672`).
 
-## Métodos Fluentes
+## Fluent Methods
 
-| Método | Descrição |
+| Method | Description |
 |---|---|
-| `WithDockerImage(image, tag)` | Substitui a imagem Docker utilizada. |
-| `WithCredentials(username, password)` | Define usuário e senha. |
-| `WithExchanges(exchanges)` | Configura exchanges a serem criadas. |
-| `WithQueues(queues)` | Configura queues a serem criadas. |
-| `WithDataVolume(volumeName)` | Habilita persistência com volume Docker. |
+| `WithDockerImage(image, tag)` | Overrides the Docker image used. |
+| `WithCredentials(username, password)` | Defines username and password. |
+| `WithExchanges(exchanges)` | Configures exchanges to be created. |
+| `WithQueues(queues)` | Configures queues to be created. |
+| `WithDataVolume(volumeName)` | Enables persistence with Docker volume. |
 
-## Configuração de Exchanges e Queues
+## Exchanges and Queues Configuration
 
 ### ExchangeConfig
 
-| Parâmetro | Tipo | Padrão | Descrição |
+| Parameter | Type | Default | Description |
 |---|---|---|---|
-| `Name` | `string` | — | Nome do exchange. |
-| `Type` | `string` | `"direct"` | Tipo: `direct`, `topic`, `fanout`, `headers`. |
-| `Durable` | `bool` | `true` | Durável entre reinicializações. |
-| `AutoDelete` | `bool` | `false` | Auto deletar quando não utilizado. |
+| `Name` | `string` | — | Exchange name. |
+| `Type` | `string` | `"direct"` | Type: `direct`, `topic`, `fanout`, `headers`. |
+| `Durable` | `bool` | `true` | Durable across restarts. |
+| `AutoDelete` | `bool` | `false` | Auto delete when unused. |
 
 ### QueueConfig
 
-| Parâmetro | Tipo | Padrão | Descrição |
+| Parameter | Type | Default | Description |
 |---|---|---|---|
-| `Name` | `string` | — | Nome da queue. |
-| `ExchangeName` | `string?` | `null` | Exchange ao qual a queue será vinculada. |
-| `RoutingKey` | `string?` | `null` | Routing key do binding (padrão: nome da queue). |
-| `Durable` | `bool` | `true` | Durável entre reinicializações. |
-| `AutoDelete` | `bool` | `false` | Auto deletar quando não utilizada. |
-| `DeadLetterExchange` | `string?` | `null` | Exchange de dead letter. |
-| `MessageTTL` | `int?` | `null` | TTL de mensagens em milissegundos. |
+| `Name` | `string` | — | Queue name. |
+| `ExchangeName` | `string?` | `null` | Exchange to which the queue will be bound. |
+| `RoutingKey` | `string?` | `null` | Binding routing key (default: queue name). |
+| `Durable` | `bool` | `true` | Durable across restarts. |
+| `AutoDelete` | `bool` | `false` | Auto delete when unused. |
+| `DeadLetterExchange` | `string?` | `null` | Dead letter exchange. |
+| `MessageTTL` | `int?` | `null` | Message TTL in milliseconds. |
 
-## Outros parâmetros Opcionais importantes:
+## Other important Optional parameters:
 
-- **connectionStringSection** (Opcional): Define o caminho da variável de ambiente ou configuração que contém a string de conexão do RabbitMQ. O padrão é `"ConnectionStrings:rabbitmq"`. Cada `:` indica um nível/seção dentro do arquivo `appsettings.json`:
+- **connectionStringSection** (Optional): Defines the path to the environment variable or configuration containing the RabbitMQ connection string. Default is `"ConnectionStrings:rabbitmq"`. Each `:` indicates a level/section within the `appsettings.json` file:
 
 ```json
 {
@@ -105,9 +107,9 @@ await builder.Build().RunAsync();
 }
 ```
 
-## Requisitos
+## Requirements
 - .NET 9+
 - Aspire.Hosting >= 9.5.0
 
-## Licença
+## License
 Apache-2.0

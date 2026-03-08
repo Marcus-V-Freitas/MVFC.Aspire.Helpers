@@ -1,24 +1,55 @@
-name: Publish NuGet
+﻿name: Publish NuGet
 
 on:
   push:
     tags:
-      - 'v*' # Publica apenas quando um novo tag de versão é criado
+      - 'v*'
 
 jobs:
-  build-and-publish:
+  test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
-      - name: Checkout do código
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Instalar .NET 9
+      - name: Setup .NET 9
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
 
-      - name: Instalar .NET 10
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore MVFC.Aspire.Helpers.slnx
+
+      - name: Build
+        run: dotnet build MVFC.Aspire.Helpers.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: |
+          dotnet test test/MVFC.Aspire.Helpers.Tests/MVFC.Aspire.Helpers.Tests.csproj \
+            --configuration Release \
+            --no-build
+
+  build-and-publish:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
@@ -29,33 +60,33 @@ jobs:
 
       - name: Atualizar versão nos csproj
         run: |
-          for csproj_file in $(find . -name "*.csproj"); do
+          for csproj_file in $(find ./src -name "*.csproj"); do
             sed -i "s|<Version>.*</Version>|<Version>${PACKAGE_VERSION}</Version>|" "$csproj_file"
           done
 
       - name: Restaurar dependências
         run: |
-          for csproj_file in $(find . -name "*.csproj"); do
+          for csproj_file in $(find ./src -name "*.csproj"); do
             dotnet restore "$csproj_file"
           done
 
       - name: Build em Release
         run: |
-          for csproj_file in $(find . -name "*.csproj"); do
+          for csproj_file in $(find ./src -name "*.csproj"); do
             dotnet build "$csproj_file" --configuration Release --no-restore
           done
 
       - name: Gerar pacotes NuGet
         run: |
           mkdir -p ./nupkg
-          for csproj_file in $(find . -name "*.csproj"); do
+          for csproj_file in $(find ./src -name "*.csproj"); do
             dotnet pack "$csproj_file" --configuration Release --no-build --output ./nupkg
           done
 
       - name: Publicar no NuGet
         run: |
           for nupkg in ./nupkg/*.nupkg; do
-            dotnet nuget push "$nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+            dotnet nuget push "$nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
           done
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
@@ -63,5 +94,5 @@ jobs:
       - name: Publish to GitHub Packages
         run: |
           for nupkg in ./nupkg/*.nupkg; do
-            dotnet nuget push "$nupkg" --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ secrets.GITHUB_TOKEN }}
+            dotnet nuget push "$nupkg" --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
           done

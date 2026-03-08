@@ -150,6 +150,7 @@ _TeamCity*
 coverage*.json
 coverage*.xml
 coverage*.info
+coverage/
 
 # Visual Studio code coverage results
 *.coverage
@@ -321,8 +322,7 @@ __pycache__/
 *.pyc
 
 # Cake - Uncomment if you are using it
-# tools/**
-# !tools/packages.config
+tools/
 
 # Tabs Studio
 *.tss

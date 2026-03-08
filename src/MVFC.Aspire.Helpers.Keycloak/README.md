@@ -1,51 +1,53 @@
 # MVFC.Aspire.Helpers.Keycloak
 
-Este pacote fornece métodos de extensão para o **.NET Aspire**, facilitando a integração, configuração e inicialização de um servidor **Keycloak** para gerenciar identidade e acesso no ambiente local. 
+> 🇧🇷 [Leia em Português](README.pt-BR.md)
 
-Com ele, você pode não apenas inicializar um container Keycloak, como também injetar configurações (como `BaseUrl`, `Realm`, `ClientId`, etc.) e importar realms customizados (via seeds JSON) em tempo de desenvolvimento.
+This package provides extension methods for **.NET Aspire**, simplifying the integration, configuration, and initialization of a **Keycloak** server to manage local environment identity and access.
 
----
-
-## Recursos e Funcionalidades
-
-- **Server Embutido:** Inicia um container Keycloak oficial (atualmente `quay.io/keycloak/keycloak:26.1.1`).
-- **Autenticação Padrão:** Opcional configuração com um ClientId pré-definido e seeds para desenvolvedor.
-- **Porta Personalizável:** Mapeamento de portas fixo ou dinâmico pelo Aspire.
-- **Injeção Transparente:** Adiciona endpoints de autenticação aos projetos `.WithReference()`, configurando URLs, realms e ClientIds como variáveis de ambiente no modelo correto.
-- **Volume Persistente:** Opcionalmente salva o estado e as bases de dados H2.
-- **Importação Dinâmica de Realm (Seeds):** Facilita iniciar seu ambiente de desenvolvimento populando Realms, Clients, Roles e Users via configuração de código. 
+With it, you can not only initialize an official Keycloak container but also inject configurations (like `BaseUrl`, `Realm`, `ClientId`, etc.) and import custom realms (via JSON seeds) at development time.
 
 ---
 
-## Como instalar
+## Features and Capabilities
 
-Adicione o pacote ao projeto principal do AppHost do seu .NET Aspire:
+- **Embedded Server:** Starts an official Keycloak container (currently `quay.io/keycloak/keycloak:26.1.1`).
+- **Default Authentication:** Optional configuration with a pre-defined ClientId and seeds for developers.
+- **Customizable Port:** Fixed or dynamic port mapping by Aspire.
+- **Transparent Injection:** Adds authentication endpoints to `.WithReference()` projects, configuring URLs, realms, and ClientIds as environment variables in the standard model.
+- **Persistent Volume:** Optionally saves state and H2 databases.
+- **Dynamic Realm Import (Seeds):** Makes it easy to bootstrap your development environment by populating Realms, Clients, Roles, and Users via code configuration.
+
+---
+
+## How to Install
+
+Add the package to the main AppHost project in your .NET Aspire solution:
 
 ```bash
 dotnet add package MVFC.Aspire.Helpers.Keycloak
 ```
 
-*(Lembre-se de configurar a dependência para outros serviços, como as APIs que usarão as variáveis provisionadas!)*
+*(Remember to configure dependencies for other services, like APIs that will use the provisioned variables!)*
 
 ---
 
-## Como utilizar
+## How to Use
 
-### 1. Registrando o Keycloak no `AppHost`
+### 1. Registering Keycloak in `AppHost`
 
-No projeto de infraestrutura do seu Aspire (o `AppHost`), registre o Keycloak e opcionalmente adicione um _seed_ (dados iniciais para seu ambiente de desenvolvimento):
+In your Aspire infrastructure project (`AppHost`), register Keycloak and optionally add a _seed_ (initial data for your development environment):
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Adicionando um container Keycloak básico
+// Adding a basic Keycloak container
 var keycloak = builder.AddKeycloak("keycloak", port: 9000)
-    // Exemplo: criando um Realm automaticamente com clients e roles via código
+    // Example: automatically creating a Realm with clients and roles via code
     .WithSeeds(new()
     {
-        Realm = "meu-app-realm",
+        Realm = "my-app-realm",
         Clients = [
-            new() { ClientId = "minha-api", Secret = "api-secret-1234", DisableAuth = true }
+            new() { ClientId = "my-api", Secret = "api-secret-1234", DisableAuth = true }
         ],
         Roles = ["Admin", "User"],
         Users = [
@@ -53,29 +55,29 @@ var keycloak = builder.AddKeycloak("keycloak", port: 9000)
         ]
     });
 
-// Associando o Identity Provider a uma API
-var api = builder.AddProject<Projects.Minha_Api>("api")
-    // Em APIs rodando Aspire, ao referenciar este componente nós geramos automaticamente 
-    // Keycloak:BaseUrl, Keycloak:Realm e etc na aplicação referenciada
-    .WithReference(keycloak, realmName: "meu-app-realm", clientId: "minha-api", clientSecret: "api-secret-1234")
+// Associating the Identity Provider to an API
+var api = builder.AddProject<Projects.My_Api>("api")
+    // In APIs running on Aspire, referencing this component automatically generates 
+    // Keycloak:BaseUrl, Keycloak:Realm, etc. in the referenced application
+    .WithReference(keycloak, realmName: "my-app-realm", clientId: "my-api", clientSecret: "api-secret-1234")
     .WaitFor(keycloak);
 
 builder.Build().Run();
 ```
 
-### 2. Configurando Autenticação na `.Api`
+### 2. Configuring Authentication in the `.Api`
 
-Você pode referenciar os dados gerados pelo Keycloak do seu `AppHost` diretamente usando pacotes oficiais (como `Microsoft.AspNetCore.Authentication.JwtBearer`). 
-Por padrão, ao usar `.WithReference(keycloak)` o Aspire injeta nativamente as seguintes configurações no seu `IConfiguration`:
+You can reference the data generated by the Keycloak helper from your `AppHost` directly using official packages (like `Microsoft.AspNetCore.Authentication.JwtBearer`). 
+By default, when using `.WithReference(keycloak)`, Aspire natively injects the following configurations into your `IConfiguration`:
 
-| Chave de Configuração | Descrição | Exemplo |
+| Configuration Key | Description | Example |
 | :--- | :--- | :--- |
-| `Keycloak:BaseUrl` | URL completa interna/externa de acesso ao container Keycloak. | `http://localhost:9000` |
-| `Keycloak:Realm` | O nome do Realm configurado e propagado do AppHost. | `meu-app-realm` |
-| `Keycloak:ClientId` | O ID do cliente de fluxo OAuth/OpenID conectado. | `minha-api` |
-| `Keycloak:ClientSecret` | (Opcional) A secret mapeada vinculada ao ClientId. | `api-secret-1234` |
+| `Keycloak:BaseUrl` | Full internal/external URL to access the Keycloak container. | `http://localhost:9000` |
+| `Keycloak:Realm` | The configured Realm name propagated from the AppHost. | `my-app-realm` |
+| `Keycloak:ClientId` | The OAuth/OpenID flow client ID connected. | `my-api` |
+| `Keycloak:ClientSecret` | (Optional) The mapped secret tied to the ClientId. | `api-secret-1234` |
 
-Exemplo no seu `Program.cs` ou `InstanceHelpers.cs` da API:
+Example in your API's `Program.cs` or `InstanceHelpers.cs`:
 
 ```csharp
 var baseUrl = builder.Configuration["Keycloak:BaseUrl"];
@@ -85,7 +87,7 @@ var clientId= builder.Configuration["Keycloak:ClientId"];
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.RequireHttpsMetadata = false; // Em desenvolvimento
+        options.RequireHttpsMetadata = false; // In development
         options.Audience = clientId;
         options.MetadataAddress = $"{baseUrl}/realms/{realm}/.well-known/openid-configuration";
         options.TokenValidationParameters = new TokenValidationParameters
@@ -102,17 +104,17 @@ builder.Services.AddAuthorization();
 
 ---
 
-## Opções do `AddKeycloak()`
+## `AddKeycloak()` Options
 
-| Parâmetro   | Tipo     | Descrição                                                                            | Padrão                                |
-| ----------- | -------- | ------------------------------------------------------------------------------------ | ------------------------------------- |
-| `name`      | `string` | Nome do recurso no framework do Aspire.                                              | `"keycloak"`                          |
-| `userName`  | `string` | Usuário administrador Master do Keycloak.                                            | `admin`                               |
-| `password`  | `string` | Senha administrativa Master do Keycloak.                                             | `admin`                               |
-| `port`      | `int?`   | Porta fixa (opcional) exposta para localhost (ex: 9000). Caso Nulo o Aspire resolve. | `null`                                |
-| `dataBound` | `bool`   | Se verdadeiro irá aplicar `.WithDataBindMount()` criando volume de estado.           | `false`                               |
+| Parameter   | Type     | Description                                                                            | Default                               |
+| ----------- | -------- | -------------------------------------------------------------------------------------- | ------------------------------------- |
+| `name`      | `string` | Resource name in the Aspire framework.                                                 | `"keycloak"`                          |
+| `userName`  | `string` | Keycloak Master admin user.                                                            | `admin`                               |
+| `password`  | `string` | Keycloak Master administrative password.                                               | `admin`                               |
+| `port`      | `int?`   | Fixed port (optional) exposed to localhost (e.g., 9000). If Null, Aspire resolves it.  | `null`                                |
+| `dataBound` | `bool`   | If true, applies `.WithDataBindMount()` to create a state volume.                      | `false`                               |
 
-## Extensões Adicionais
+## Additional Extensions
 
-- `.WithSeeds(KeycloakRealmSeed)`: Utiliza o padrão builder de configuração para provisionar um JSON `[my realm]-realm.json` e importá-lo no boot através do diretório `/opt/keycloak/data/import/`.
-- `.WithRealmImport(importPath)`: Carrega e usa uma sub-pasta ou pasta externa do Host para importar configurações de Realm estáticas via JSON diretamente na imagem Container.
+- `.WithSeeds(KeycloakRealmSeed)`: Uses the configuration builder pattern to provision a JSON `[my realm]-realm.json` and import it on boot via the `/opt/keycloak/data/import/` directory.
+- `.WithRealmImport(importPath)`: Loads and uses a sub-folder or external Host folder to import static Realm configurations via JSON directly into the Container image.

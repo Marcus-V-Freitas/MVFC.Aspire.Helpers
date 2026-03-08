@@ -1,0 +1,34 @@
+﻿name: Feature Request
+description: Suggest a new helper or improvement
+labels: ["enhancement"]
+body:
+  - type: input
+    id: area
+    attributes:
+      label: Related helper or area
+      description: "e.g. MVFC.Aspire.Helpers.Redis, or 'new helper'"
+      placeholder: "MVFC.Aspire.Helpers."
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem this feature solves
+      placeholder: "Currently there is no way to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      placeholder: "Add a method/helper that..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      placeholder: "I considered doing X but..."

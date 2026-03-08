@@ -1,37 +1,39 @@
 # MVFC.Aspire.Helpers.CloudStorage
 
-Helpers para integração com Google Cloud Storage (emulador GCS) em projetos .NET Aspire.
+> 🇧🇷 [Leia em Português](README.pt-BR.md)
 
-## Visão Geral
+Helpers for integrating with Google Cloud Storage (GCS emulator) in .NET Aspire projects.
 
-Este projeto facilita a configuração e integração do emulador Google Cloud Storage em aplicações distribuídas .NET Aspire, fornecendo métodos de extensão para:
+## Overview
 
-- Adicionar e integrar o emulador GCS.
-- Permitir persistência opcional dos buckets via bind mount.
+This project facilitates the configuration and integration of the Google Cloud Storage emulator in distributed .NET Aspire applications, providing extension methods to:
 
-## Estrutura do Projeto
+- Add and integrate the GCS emulator.
+- Allow optional persistence of buckets via bind mount.
 
-- [`MVFC.Aspire.Helpers.CloudStorage`](MVFC.Aspire.Helpers.CloudStorage.csproj): Biblioteca de helpers e extensões para Cloud Storage.
+## Project Structure
 
-## Funcionalidades
+- [`MVFC.Aspire.Helpers.CloudStorage`](MVFC.Aspire.Helpers.CloudStorage.csproj): Helpers and extensions library for Cloud Storage.
 
-- Adiciona o emulador GCS ao AppHost.
-- Permite configuração de persistência dos buckets via pasta local.
-- Métodos de extensão para facilitar a configuração no AppHost.
-- Exposição das funcionalidades do emulador na porta `4443`.
+## Features
 
-## Imagens compatíveis:
+- Adds the GCS emulator to the AppHost.
+- Allows bucket persistence configuration via a local folder.
+- Extension methods to facilitate AppHost configuration.
+- Exposes emulator functionalities on port `4443`.
+
+## Compatible Images:
  - `fsouza/fake-gcs-server`
 
-## Instalação
+## Installation
 
-Adicione o pacote NuGet ao seu projeto AppHost:
+Add the NuGet package to your AppHost project:
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.CloudStorage
 ```
 
-## Exemplo de Uso no AppHost
+## Usage Example in AppHost
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
@@ -39,66 +41,66 @@ var builder = DistributedApplication.CreateBuilder(args);
 var cloudStorage = builder.AddCloudStorage("cloud-storage")
     .WithBucketFolder("./bucket-data");
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
        .WithReference(cloudStorage)
        .WaitFor(cloudStorage);
 
 await builder.Build().RunAsync();
 ```
 
-## Métodos Fluentes
+## Fluent Methods
 
-| Método | Descrição |
+| Method | Description |
 |---|---|
-| `WithDockerImage(image, tag)` | Substitui a imagem Docker utilizada. |
-| `WithBucketFolder(localPath)` | Configura bind mount de uma pasta local para persistência dos buckets. |
+| `WithDockerImage(image, tag)` | Overrides the Docker image used. |
+| `WithBucketFolder(localPath)` | Configures a bind mount from a local folder to persist buckets. |
 
-## Parâmetros de `AddCloudStorage`
+## `AddCloudStorage` Parameters
 
-| Parâmetro | Tipo | Padrão | Descrição |
+| Parameter | Type | Default | Description |
 |---|---|---|---|
-| `name` | `string` | — | Nome do recurso. |
-| `port` | `int` | `4443` | Porta do emulador. |
+| `name` | `string` | — | Resource name. |
+| `port` | `int` | `4443` | Emulator port. |
 
-## Montagem de Bucket a partir de Pastas
+## Mounting Bucket from Folders
 
-É possível montar um bucket do emulador GCS utilizando uma pasta local para persistência dos dados. A pasta especificada será utilizada pelo emulador como armazenamento persistente dos buckets.
+It is possible to mount a GCS emulator bucket using a local folder for data persistence. The specified folder will be used by the emulator as persistent storage for the buckets.
 
-**Observação:** Certifique-se de que a pasta especificada existe e possui permissões de leitura e escrita.
+**Note:** Ensure the specified folder exists and has read and write permissions.
 
-## Estrutura de Pastas do Bucket de Teste
+## Test Bucket Folder Structure
 
 ```mermaid
 graph TD
     A["./bucket-data"]
-    B["meu-bucket"]
-    C["objeto1.txt"]
-    D["objeto2.json"]
+    B["my-bucket"]
+    C["object1.txt"]
+    D["object2.json"]
 
     A --> B
     B --> C
     B --> D
 ```
 
-## Detalhes de Visualização do Emulador GCS
+## GCS Emulator Visualization Details
 
-Listar buckets:
+List buckets:
 ```
 http://localhost:4443/storage/v1/b
 ```
 
-Listar objetos de um bucket:
+List objects in a bucket:
 ```
 http://localhost:4443/storage/v1/b/{bucket-name}/o
 ```
 
-## Variável de ambiente injetada no projeto
+## Environment Variable Injected in the Project
 
-O `WithReference` injeta automaticamente a variável `STORAGE_EMULATOR_HOST` com o endereço do emulador.
+The `WithReference` method automatically injects the `STORAGE_EMULATOR_HOST` variable with the emulator address.
 
-## Requisitos
+## Requirements
 - .NET 9+
 - Aspire.Hosting >= 9.5.0
 
-## Licença
+## License
 Apache-2.0

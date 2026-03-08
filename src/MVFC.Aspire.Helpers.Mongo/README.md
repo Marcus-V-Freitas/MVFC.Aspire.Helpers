@@ -1,48 +1,50 @@
 # MVFC.Aspire.Helpers.Mongo
 
-Helpers para integração com MongoDB em projetos .NET Aspire, incluindo suporte a Replica Set e inicialização automática.
+> 🇧🇷 [Leia em Português](README.pt-BR.md)
 
-## Visão Geral
+Helpers for integrating with MongoDB in .NET Aspire projects, including support for Replica Sets and automatic initialization.
 
-Este projeto facilita a configuração e integração do MongoDB em aplicações distribuídas .NET Aspire, fornecendo métodos de extensão para:
+## Overview
 
-- Adicionar um container MongoDB configurado como Replica Set.
-- Inicializar automaticamente o Replica Set via script.
-- Popular o banco com dados de exemplo usando dumps customizados.
+This project facilitates the configuration and integration of MongoDB in distributed .NET Aspire applications, providing extension methods to:
 
-## Por que usar Replica Set?
+- Add a MongoDB container configured as a Replica Set.
+- Automatically initialize the Replica Set via script.
+- Populate the database with sample data using custom dumps.
 
-O MongoDB só permite o uso de transações multi-documento quando está configurado como Replica Set, mesmo em ambientes locais.  
-Ao utilizar o helper com Replica Set, você pode:
+## Why use a Replica Set?
 
-- **Simular transações locais:**  
-  Permite testar operações de transação (commit/rollback) em múltiplos documentos e coleções, igual ao ambiente de produção.
-- **Alta disponibilidade e tolerância a falhas:**  
-  Replica Set é a base para recursos avançados do MongoDB, como failover e redundância (mesmo que localmente, já prepara o ambiente).
+MongoDB only allows multi-document transactions when configured as a Replica Set, even in local environments.
+By using the helper with Replica Set, you can:
 
-## Estrutura do Projeto
+- **Simulate local transactions:**
+  It allows testing transaction operations (commit/rollback) across multiple documents and collections, equal to the production environment.
+- **High availability and fault tolerance:**
+  A Replica Set is the foundation for advanced MongoDB features like failover and redundancy (even if local, it prepares the environment).
 
-- [`MVFC.Aspire.Helpers.Mongo`](MVFC.Aspire.Helpers.Mongo.csproj): Biblioteca de helpers e extensões para MongoDB.
+## Project Structure
 
-## Funcionalidades
+- [`MVFC.Aspire.Helpers.Mongo`](MVFC.Aspire.Helpers.Mongo.csproj): Helpers and extensions library for MongoDB.
 
-- Adiciona um container MongoDB com Replica Set.
-- Inicialização automática do Replica Set.
-- Suporte para popular coleções com dados de exemplo.
-- Métodos de extensão para facilitar a configuração no AppHost.
+## Features
 
-## Imagens compatíveis:
+- Adds a MongoDB container with a Replica Set.
+- Automatic Replica Set initialization.
+- Support for populating collections with sample data.
+- Extension methods to facilitate AppHost configuration.
+
+## Compatible Images:
  - `mongo`
 
-## Instalação
+## Installation
 
-Adicione o pacote NuGet ao seu projeto AppHost:
+Add the NuGet package to your AppHost project:
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.Mongo
 ```
 
-## Exemplo de Uso no AppHost
+## Usage Example in AppHost
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
@@ -60,35 +62,35 @@ var mongo = builder.AddMongoReplicaSet("mongo")
     .WithDumps(dumps)
     .WithDataVolume("mongo-data");
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
        .WithReference(mongo)
        .WaitFor(mongo);
 
 await builder.Build().RunAsync();
 ```
 
-## Métodos Fluentes
+## Fluent Methods
 
-| Método | Descrição |
+| Method | Description |
 |---|---|
-| `WithDockerImage(image, tag)` | Substitui a imagem Docker utilizada. |
-| `WithDumps(dumps)` | Configura dumps de dados a executar na inicialização. |
-| `WithDataVolume(volumeName)` | Habilita persistência com volume Docker. |
+| `WithDockerImage(image, tag)` | Overrides the Docker image used. |
+| `WithDumps(dumps)` | Configures data dumps to execute upon initialization. |
+| `WithDataVolume(volumeName)` | Enables persistence with Docker volume. |
 
-## Popular dados de exemplo
+## Populating sample data
 
-O `MongoClassDump<T>` é uma classe utilizada para facilitar a inserção automática de dados de exemplo em coleções do MongoDB durante a inicialização do ambiente. Ela serve como um "template" para popular o banco com documentos fictícios, útil para testes e desenvolvimento local.
+`MongoClassDump<T>` is a class used to facilitate the automatic insertion of sample data into MongoDB collections during environment initialization. It serves as a "template" to populate the database with fictitious documents, useful for local testing and development.
 
-**Parâmetros principais:**
-- `DatabaseName`: Nome do banco de dados.
-- `CollectionName`: Nome da coleção.
-- `Quantity`: Quantidade de documentos.
-- `Faker`: Gerador de dados (ex: usando a biblioteca **Bogus** com a classe **Faker**).
+**Main Parameters:**
+- `DatabaseName`: Database name.
+- `CollectionName`: Collection name.
+- `Quantity`: Amount of documents.
+- `Faker`: Data generator (e.g., using the **Bogus** library with the **Faker** class).
 
-## Outros parâmetros Opcionais importantes:
+## Other important Optional parameters:
 
-- **volumeName** (Opcional): Representa o nome do volume docker local para persistir dados entre as depurações. O default é nulo (volume descartado entre execuções).
-- **connectionStringSection** (Opcional): Define o caminho da variável de ambiente ou configuração que contém a string de conexão do MongoDB. O padrão é `"ConnectionStrings:mongo"`. Cada `:` indica um nível/seção dentro do arquivo `appsettings.json`:
+- **volumeName** (Optional): Represents the local docker volume name to persist data between debugging sessions. Default is null (volume discarded between executions).
+- **connectionStringSection** (Optional): Defines the path to the environment variable or configuration containing the MongoDB connection string. Default is `"ConnectionStrings:mongo"`. Each `:` indicates a level/section within the `appsettings.json` file:
 
 ```json
 {
@@ -98,18 +100,18 @@ O `MongoClassDump<T>` é uma classe utilizada para facilitar a inserção autom�
 }
 ```
 
-## Detalhes de Visualização e Porta do MongoDB
+## MongoDB Visualization and Port Details
 
-- **Porta utilizada:** `27017` (padrão do MongoDB).
-- **Visualizar bancos de dados:**  
-  Conecte-se via cliente MongoDB (ex: MongoDB Compass, Robo 3T, mongosh) usando:  
+- **Port used:** `27017` (MongoDB default).
+- **View databases:**
+  Connect via a MongoDB client (e.g., MongoDB Compass, Robo 3T, mongosh) using:
   `mongodb://localhost:27017/`
 
-## Requisitos
+## Requirements
 - .NET 9+
 - Aspire.Hosting >= 9.5.0
 - Bogus >= 35.6.0
 - MongoDB.Driver >= 3.5.0
 
-## Licença
+## License
 Apache-2.0

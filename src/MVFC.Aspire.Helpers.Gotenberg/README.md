@@ -1,76 +1,78 @@
 ﻿# MVFC.Aspire.Helpers.Gotenberg
 
-Helpers para integração com Gotenberg (API de conversão de documentos e PDFs) em projetos .NET Aspire.
+> 🇧🇷 [Leia em Português](README.pt-BR.md)
 
-## Visão Geral
+Helpers for integrating with Gotenberg (API for converting documents and PDFs) in .NET Aspire projects.
 
-Este projeto permite adicionar e integrar o Gotenberg como um recurso gerenciado em aplicações distribuídas .NET Aspire. Ele simplifica o provisionamento do container Gotenberg e fornece métodos de extensão para sua configuração no plano do AppHost.
+## Overview
 
-## Estrutura do Projeto
+This project allows you to easily add and integrate Gotenberg as a managed resource in distributed .NET Aspire applications. It simplifies provisioning the Gotenberg container and provides extension methods for configuring it in the AppHost.
 
-- [`MVFC.Aspire.Helpers.Gotenberg`](MVFC.Aspire.Helpers.Gotenberg.csproj): Biblioteca de helpers e extensões para Gotenberg.
+## Project Structure
 
-## Funcionalidades
+- [`MVFC.Aspire.Helpers.Gotenberg`](MVFC.Aspire.Helpers.Gotenberg.csproj): Helpers and extensions library for Gotenberg.
 
-- Adiciona o container Gotenberg à aplicação Aspire.
-- Gerencia o health check automático em `/health`.
-- Injeção automática da base URL do serviço no projeto consumidor.
-- Métodos de extensão para configuração rápida de portas personalizadas.
+## Features
 
-## Imagens compatíveis
+- Adds the Gotenberg container to the Aspire application.
+- Manages automatic health check at `/health`.
+- Automatically injects the service's base URL into the consuming project.
+- Extension methods for quick configuration of custom ports.
 
-- `gotenberg/gotenberg` (tag padrão `8`)
+## Compatible Images
 
-## Instalação
+- `gotenberg/gotenberg` (default tag `8`)
 
-Adicione o pacote NuGet ao seu projeto AppHost:
+## Installation
+
+Add the NuGet package to your AppHost project:
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.Gotenberg
 ```
 
-## Exemplo de Uso no AppHost
+## Usage Example in AppHost
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Adiciona o container do Gotenberg na porta host 3000
+// Adds the Gotenberg container on host port 3000
 var gotenberg = builder.AddGotenberg("gotenberg", port: 3000);
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
        .WithReference(gotenberg)
        .WaitFor(gotenberg);
 
 await builder.Build().RunAsync();
 ```
 
-## Referência no Projeto Backend (Api, Web, etc)
+## Reference in Backend Project (Api, Web, etc)
 
-Ao utilizar o `.WithReference(gotenberg)`, o AppHost injetará automaticamente uma variável de ambiente contendo o endereço acessível do Gotenberg para que a aplicação possa consumi-lo:
+When using `.WithReference(gotenberg)`, the AppHost will automatically inject an environment variable containing the accessible Gotenberg address so the consuming application can connect:
 
-`GOTENBERG__BASE_URL` = `http://localhost:<porta>`
+`GOTENBERG__BASE_URL` = `http://localhost:<port>`
 
-## Métodos Fluentes
+## Fluent Methods
 
-| Método | Descrição |
+| Method | Description |
 |---|---|
-| `WithDockerImage(image, tag)` | Substitui a imagem Docker utilizada ou sua tag. |
+| `WithDockerImage(image, tag)` | Overrides the Docker image or its tag used. |
 
-## Parâmetros de `AddGotenberg`
+## `AddGotenberg` Parameters
 
-| Parâmetro | Tipo | Padrão | Descrição |
+| Parameter | Type | Default | Description |
 |---|---|---|---|
-| `name` | `string` | — | Nome do recurso no Aspire. |
-| `port` | `int` | `3000` | Porta HTTP exposta no host para comunicação. |
+| `name` | `string` | — | Resource name in Aspire. |
+| `port` | `int` | `3000` | HTTP port exposed on the host for communication. |
 
-## Detalhes de Porta e Visualização
+## Port Details and Visualization
 
-- A porta padrão mapeada é a `3000`. Internamente, o container também continua executando na `3000`.
-- É registrado automaticamente um health check HTTP apontando para `http://localhost:<porta>/health`.
+- The default mapped port is `3000`. Internally, the container also runs on `3000`.
+- An HTTP health check is automatically registered pointing to `http://localhost:<port>/health`.
 
-## Requisitos
+## Requirements
 - .NET 9+
 - Aspire.Hosting >= 9.5.0
 
-## Licença
+## License
 Apache-2.0

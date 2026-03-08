@@ -1,35 +1,37 @@
 # MVFC.Aspire.Helpers.Mailpit
 
-Helpers para integração com o emulador de SMTP MailPit em projetos .NET Aspire, facilitando testes de envio de e-mails em ambientes de desenvolvimento.
+> 🇧🇷 [Leia em Português](README.pt-BR.md)
 
-## Visão Geral
+Helpers for integrating with the MailPit SMTP emulator in .NET Aspire projects, easing the testing of email delivery in development environments.
 
-Este projeto permite adicionar e integrar o MailPit como recurso gerenciado em aplicações distribuídas .NET Aspire. Ele simplifica o provisionamento do container MailPit, expõe a interface web para visualização dos e-mails recebidos e fornece métodos de extensão para configuração no AppHost.
+## Overview
 
-## Estrutura do Projeto
+This project allows adding and integrating MailPit as a managed resource in distributed .NET Aspire applications. It simplifies provisioning the MailPit container, exposes the web interface to view received emails, and provides extension methods for AppHost configuration.
 
-- [`MVFC.Aspire.Helpers.Mailpit`](MVFC.Aspire.Helpers.Mailpit.csproj): Biblioteca de helpers e extensões para MailPit.
+## Project Structure
 
-## Funcionalidades
+- [`MVFC.Aspire.Helpers.Mailpit`](MVFC.Aspire.Helpers.Mailpit.csproj): Helpers and extensions library for MailPit.
 
-- Adiciona o container MailPit à aplicação Aspire.
-- Exposição da interface web para visualização dos e-mails recebidos.
-- Métodos de extensão para facilitar a configuração no AppHost.
-- Permite configuração de porta, número máximo de mensagens, autenticação e persistência opcional dos dados.
+## Features
 
-## Imagens compatíveis
+- Adds the MailPit container to the Aspire application.
+- Exposes the web interface for visualizing received emails.
+- Extension methods to facilitate AppHost configuration.
+- Allows configuration of port, maximum number of messages, authentication, and optional data persistence.
+
+## Compatible Images
 
 - `axllent/mailpit`
 
-## Instalação
+## Installation
 
-Adicione o pacote NuGet ao seu projeto AppHost:
+Add the NuGet package to your AppHost project:
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.Mailpit
 ```
 
-## Exemplo de Uso no AppHost
+## Usage Example in AppHost
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
@@ -39,43 +41,43 @@ var mailpit = builder.AddMailpit("mailpit")
     .WithDataFilePath("/data/mailpit.db")
     .WithWebAuth(username: "admin", password: "secret");
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
        .WithReference(mailpit)
        .WaitFor(mailpit);
 
 await builder.Build().RunAsync();
 ```
 
-## Métodos Fluentes
+## Fluent Methods
 
-| Método | Descrição |
+| Method | Description |
 |---|---|
-| `WithDockerImage(image, tag)` | Substitui a imagem Docker utilizada. |
-| `WithMaxMessages(max)` | Define o número máximo de mensagens armazenadas. |
-| `WithMaxMessageSize(sizeInMb)` | Define o tamanho máximo de cada mensagem em MB. |
-| `WithSmtpAuth()` | Habilita autenticação SMTP (accept any + insecure). |
-| `WithSmtpHostname(hostname)` | Define o hostname do servidor SMTP. |
-| `WithDataFilePath(path)` | Define o caminho do arquivo de persistência dos e-mails. |
-| `WithWebAuth(username, password)` | Habilita autenticação na interface web. |
-| `WithVerboseLogging()` | Habilita logs detalhados do MailPit. |
+| `WithDockerImage(image, tag)` | Overrides the Docker image used. |
+| `WithMaxMessages(max)` | Defines the maximum number of stored messages. |
+| `WithMaxMessageSize(sizeInMb)` | Defines the maximum size of each message in MB. |
+| `WithSmtpAuth()` | Enables SMTP authentication (accept any + insecure). |
+| `WithSmtpHostname(hostname)` | Defines the SMTP server hostname. |
+| `WithDataFilePath(path)` | Defines the file path for email persistence. |
+| `WithWebAuth(username, password)` | Enables authentication on the web interface. |
+| `WithVerboseLogging()` | Enables verbose MailPit logs. |
 
-## Parâmetros de `AddMailpit`
+## `AddMailpit` Parameters
 
-| Parâmetro | Tipo | Padrão | Descrição |
+| Parameter | Type | Default | Description |
 |---|---|---|---|
-| `name` | `string` | — | Nome do recurso. |
-| `httpPort` | `int` | `8025` | Porta da interface web. |
-| `smtpPort` | `int` | `1025` | Porta do servidor SMTP. |
+| `name` | `string` | — | Resource name. |
+| `httpPort` | `int` | `8025` | Web interface port. |
+| `smtpPort` | `int` | `1025` | SMTP server port. |
 
-## Detalhes de Porta e Visualização
+## Port Details and Visualization
 
-- **Porta SMTP**: definida via parâmetro `smtpPort` (padrão: `1025`).
-- **Porta Web**: definida via parâmetro `httpPort` (padrão: `8025`).
-- **Acesso à interface**: A interface web do MailPit fica disponível em `http://localhost:<httpPort>/`.
+- **SMTP Port**: defined via `smtpPort` parameter (default: `1025`).
+- **Web Port**: defined via `httpPort` parameter (default: `8025`).
+- **Interface Access**: The MailPit web interface becomes available at `http://localhost:<httpPort>/`.
 
-## Requisitos
+## Requirements
 - .NET 9+
 - Aspire.Hosting >= 9.5.0
 
-## Licença
+## License
 Apache-2.0
