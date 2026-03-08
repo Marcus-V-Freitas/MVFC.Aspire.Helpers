@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.3.0] - 2026-03-08
+
+### Added
+- Added comprehensive examples for Mailpit, Redis, and RabbitMQ with credentials in the playground.
+- Added persistent data volumes to multiple services in the playground (Keycloak, Mongo, RabbitMQ, Redis).
+- Created English and Portuguese READMEs for Gotenberg integration.
+- Added XML documentation for Keycloak configuration helpers.
+- Updated main README with Gotenberg and unified usage examples.
+
 ## [6.2.0] - 2026-03-08
 
 ### Changed
