@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Playground.AppHost.Seeds;
+﻿namespace MVFC.Aspire.Helpers.Playground.AppHost.Seeds.Keycloak;
 
 internal sealed record EmptyRealmSeed : IKeycloakRealmSeed
 {

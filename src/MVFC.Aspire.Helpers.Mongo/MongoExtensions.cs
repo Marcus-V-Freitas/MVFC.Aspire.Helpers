@@ -49,9 +49,10 @@ public static class MongoExtensions
     /// </summary>
     public static IResourceBuilder<MongoReplicaSetResource> WithDumps(
         this IResourceBuilder<MongoReplicaSetResource> builder,
-        IReadOnlyCollection<IMongoClassDump> dumps)
+        params IReadOnlyCollection<IMongoClassDump> dumps)
     {
         ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(dumps);
 
         builder.Resource.Dumps = dumps;
         return builder;

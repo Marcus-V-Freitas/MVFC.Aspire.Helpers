@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Playground.AppHost.Seeds;
+﻿namespace MVFC.Aspire.Helpers.Playground.AppHost.Seeds.Keycloak;
 
 internal sealed class MyAppRealm : IKeycloakRealmSeed
 {
@@ -16,7 +16,7 @@ internal sealed class MyAppRealm : IKeycloakRealmSeed
             ClientSecret: "api-secret-1234",
             ServiceAccountsEnabled: true,
             DirectAccessGrantsEnabled: true,
-            AddAudienceMapper: true)
+            AddAudienceMapper: true),
     ];
 
     public IReadOnlyList<KeycloakGroupConfig> Groups =>

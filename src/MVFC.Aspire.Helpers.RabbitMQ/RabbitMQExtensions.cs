@@ -74,9 +74,10 @@ public static class RabbitMQExtensions
     /// </summary>
     public static IResourceBuilder<RabbitMQResource> WithExchanges(
         this IResourceBuilder<RabbitMQResource> builder,
-        IReadOnlyList<ExchangeConfig> exchanges)
+        params IReadOnlyList<ExchangeConfig> exchanges)
     {
         ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(exchanges);
 
         builder.Resource.Exchanges ??= [];
         builder.Resource.Exchanges.AddRange(exchanges);
@@ -88,9 +89,10 @@ public static class RabbitMQExtensions
     /// </summary>
     public static IResourceBuilder<RabbitMQResource> WithQueues(
         this IResourceBuilder<RabbitMQResource> builder,
-        IReadOnlyList<QueueConfig> queues)
+        params IReadOnlyList<QueueConfig> queues)
     {
         ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(queues);
 
         builder.Resource.Queues ??= [];
         builder.Resource.Queues.AddRange(queues);

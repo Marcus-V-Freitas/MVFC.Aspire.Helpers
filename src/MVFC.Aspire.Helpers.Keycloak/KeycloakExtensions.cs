@@ -52,7 +52,7 @@ public static class KeycloakExtensions
 
     public static IResourceBuilder<KeycloakResource> WithSeeds(
         this IResourceBuilder<KeycloakResource> builder,
-        IReadOnlyCollection<IKeycloakRealmSeed> seeds)
+        params IReadOnlyCollection<IKeycloakRealmSeed> seeds)
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(seeds);

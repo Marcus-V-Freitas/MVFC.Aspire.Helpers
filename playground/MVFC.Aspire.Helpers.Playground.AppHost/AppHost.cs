@@ -10,24 +10,25 @@ var messageConfig = new MessageConfig(
     AckDeadlineSeconds = 300,
 };
 
-var pubSubConfig = new PubSubConfig(
-                            projectId: "test-project",
-                            messageConfig: messageConfig);
+var emptyMessageConfig = new MessageConfig("empty-topic")
+{
+    DeadLetterTopic = null,
+};
 
-var emptyMessageConfig = new MessageConfig("empty-topic") { DeadLetterTopic = null };
-var pubSubConfig2 = new PubSubConfig("test-project-2", emptyMessageConfig);
+var pubSubConfig1 = new PubSubConfig(projectId: "test-project", messageConfig: messageConfig);
+var pubSubConfig2 = new PubSubConfig(projectId: "test-project-2", messageConfig: emptyMessageConfig);
 
 // --- MongoDB Dumps ---
-IReadOnlyCollection<IMongoClassDump> dumps = [
-    new MongoClassDump<TestDatabase>("TestDatabase", "TestCollection", 100,
-        new Faker<TestDatabase>()
-              .CustomInstantiator(f => new TestDatabase(f.Person.FirstName, f.Person.Cpf())))
-];
+var dumps = new MongoClassDump<TestDatabase>(
+    DatabaseName: "TestDatabase",
+    CollectionName: "TestCollection",
+    Quantity: 100,
+    Faker: MongoFaker.GenerateFaker());
 
 // --- Keycloak ---
 var keycloak = builder.AddKeycloak("keycloak")
                       .WithAdminCredentials("admin", "Admin@123")
-                      .WithSeeds([new MyAppRealm(), new EmptyRealmSeed()])
+                      .WithSeeds(new MyAppRealm(), new EmptyRealmSeed())
                       .WithImportStrategy(KeycloakImportStrategy.OverwriteExisting)
                       .WithDataVolume("key-cloak-data");
 
@@ -43,7 +44,7 @@ var mongo = builder.AddMongoReplicaSet("mongo")
 // --- GCP Pub/Sub ---
 var pubSub = builder.AddGcpPubSub("gcp-pubsub")
                     .WithWaitTimeout(15)
-                    .WithPubSubConfigs(pubSubConfig, pubSubConfig2);
+                    .WithPubSubConfigs(pubSubConfig1, pubSubConfig2);
 
 var pubSubUI = builder.AddGcpPubSubUI("gcp-pubsub-ui")
                       .WithReference(pubSub);
@@ -59,13 +60,13 @@ var mailpit = builder.AddMailpit("mailpit")
 // --- RabbitMQ ---
 var rabbitMQ = builder.AddRabbitMQ("rabbitmq")
                       .WithCredentials("teste", "teste")
-                      .WithExchanges([
+                      .WithExchanges(
                           new ExchangeConfig("test-exchange", "topic"),
-                          new ExchangeConfig("dead-letter", "fanout")])
-                      .WithQueues([
+                          new ExchangeConfig("dead-letter", "fanout"))
+                      .WithQueues(
                           new QueueConfig(Name: "test-queue", ExchangeName: "test-exchange", RoutingKey: "test.*", DeadLetterExchange: "dead-letter", MessageTTL: 100),
                           new QueueConfig(Name: "empty-queue", ExchangeName: "test-exchange", RoutingKey: "empty.*"),
-                          new QueueConfig(Name: "dlq", ExchangeName: "dead-letter")])
+                          new QueueConfig(Name: "dlq", ExchangeName: "dead-letter"))
                       .WithDataVolume("rabbit-mq");                    
 
 // --- Redis ---
