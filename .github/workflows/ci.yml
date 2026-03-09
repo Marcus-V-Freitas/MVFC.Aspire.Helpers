@@ -1,7 +1,9 @@
 ﻿name: CI
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   test-and-coverage:
@@ -31,6 +33,13 @@ jobs:
       - name: Publish summary
         if: always()
         run: cat CoverageReport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment on PR
+        if: always() && github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: CoverageReport/SummaryGithub.md
 
       - name: Upload HTML report
         if: always()
