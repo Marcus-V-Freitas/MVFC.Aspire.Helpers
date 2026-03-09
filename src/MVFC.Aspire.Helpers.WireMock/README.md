@@ -4,11 +4,31 @@
 
 Helpers for integrating WireMock.Net in .NET Aspire projects, facilitating API mocking for development, testing, and integration.
 
+## Motivation
+
+Mocking HTTP APIs locally often involves:
+
+- Running WireMock.Net manually or as a separate console app.
+- Scattering mock configuration across JSON files or test projects.
+- No clear place to manage the mock lifecycle with the rest of your topology.
+
+With .NET Aspire you can orchestrate resources, but you still need to:
+
+- Start/stop the mock along with your app.
+- Configure endpoints, methods and auth consistently.
+- Wire other projects to talk to the mock.
+
+`MVFC.Aspire.Helpers.WireMock` addresses this by:
+
+- `AddWireMock(...)` to run WireMock.Net as an embedded server in Aspire.
+- A fluent API to configure endpoints, auth, headers, body types and responses.
+- `WithReference(...)` to make projects wait for the mock and consume its URL.
+
 ## Overview
 
 This project allows easily adding a WireMock.Net server as a managed resource in distributed .NET Aspire applications. It simplifies provisioning, lifecycle management, and exposing mocked HTTP endpoints, while also allowing custom configuration and publishing state/log events.
 
-## WireMock Helper Advantages
+### WireMock helper advantages
 
 - Simulates external/local APIs for testing and integration.
 - Allows defining endpoints, methods, authentication, and custom responses.
@@ -29,58 +49,55 @@ This project allows easily adding a WireMock.Net server as a managed resource in
 
 ## Compatible Images
 
-- Uses WireMock.Net as an embedded server (does not depend on a Docker image).
+- Uses WireMock.Net as an embedded server (no Docker image required).
 
 ## Installation
 
-Add the NuGet package to your AppHost project:
-
-```shell
- dotnet add package MVFC.Aspire.Helpers.WireMock
+```sh
+dotnet add package MVFC.Aspire.Helpers.WireMock
 ```
 
-## Endpoints Configuration
+## Endpoint configuration examples
 
-You can configure mocked endpoints with different HTTP methods, body types, authentication, headers, and custom responses. Examples:
+You can configure mocked endpoints with different HTTP methods, body types, authentication, headers, and custom responses.
 
-- **Bearer Authentication:**
-  ```csharp
-  server.Endpoint("/api/secure")
-         .RequireBearer("mytoken", "Unauthorized", BodyType.String)
-         .OnGet(() => ("Secret Data", HttpStatusCode.OK, BodyType.String));
-  ```
-
-- **Custom Headers:**
-  ```csharp
-  server.Endpoint("/api/headers")
-        .WithResponseHeaders(new() { { "X-Test", ["v1", "v2"] } })
-        .OnGet(() => ("Headers OK", HttpStatusCode.OK, BodyType.String));
-  ```
-
-- **Supported Body Types:**  
-  String, JSON, Bytes, FormUrlEncoded, etc.
-
-## Port Details and Visualization
-
-- **Default Port:** Defined via `port` parameter (example: `8080`).
-- **Access:**  
-  Mocked endpoints are available at `http://localhost:<port>/api/...`
-
-## Public Methods
-
-- **AddWireMock**  
-  Adds the WireMock resource to the distributed application, allowing endpoint configuration.
-
-  ```csharp
-  var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: ...);
-  ```
-
-- **Custom Configuration**  
-  Allows defining endpoints, authentication, body types, headers, and responses as needed.
-
-## Complete Usage Example in AppHost
+- **Bearer authentication:**
 
 ```csharp
+server.Endpoint("/api/secure")
+       .RequireBearer("mytoken", "Unauthorized", BodyType.String)
+       .OnGet(() => ("Secret Data", HttpStatusCode.OK, BodyType.String));
+```
+
+- **Custom headers:**
+
+```csharp
+server.Endpoint("/api/headers")
+      .WithResponseHeaders(new() { { "X-Test", ["v1", "v2"] } })
+      .OnGet(() => ("Headers OK", HttpStatusCode.OK, BodyType.String));
+```
+
+Supported body types include `String`, `Json`, `Bytes`, `FormUrlEncoded`, etc.
+
+## Ports and access
+
+- **Port**: defined via `port` parameter (e.g. `8080`).  
+- Access: `http://localhost:<port>/api/...`.
+
+## Public methods
+
+- `AddWireMock` – adds the WireMock resource to the distributed application and lets you configure endpoints.
+
+```csharp
+var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: ...);
+```
+
+## Complete Aspire usage example (AppHost)
+
+```csharp
+using Aspire.Hosting;
+using MVFC.Aspire.Helpers.WireMock;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: (server) =>
@@ -152,9 +169,11 @@ await builder.Build().RunAsync();
 ```
 
 ## Requirements
+
 - .NET 9+
 - Aspire.Hosting >= 9.5.0
 - WireMock.Net.minimal >= 1.14.0
 
 ## License
+
 Apache-2.0

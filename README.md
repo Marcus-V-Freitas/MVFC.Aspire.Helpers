@@ -9,6 +9,38 @@
 
 A collection of helpers to integrate common services with .NET Aspire quickly and in a standardized way.
 
+## Motivation
+
+Orchestrating a realistic local environment for .NET distributed applications usually means:
+
+- Writing and maintaining multiple `docker-compose` files.
+- Copy‑pasting container definitions between projects.
+- Manually wiring ports, connection strings and health checks.
+- Repeating the same setup for every new service in every new solution.
+
+.NET Aspire solves part of this problem by giving you a first‑class orchestration model in C#, but you still have to model each infrastructure dependency (Mongo, Redis, Keycloak, etc.) yourself.
+
+**MVFC.Aspire.Helpers** packages capture this knowledge once and expose it as small, focused helpers:
+
+- One line to add the resource (`AddXxx`).
+- A few fluent methods to customize it (`WithDataVolume`, `WithDumps`, `WithSeeds`, `WithCommander`, etc.).
+- A single `WithReference(...)` call to link your projects to the resource with the right environment variables and dependencies.
+
+The goal is simple: make your local environment **as close as possible to production** while keeping the developer experience **clone → run**.
+
+## Extension pattern
+
+All libraries follow the same convention:
+
+- `AddXxx(...)` — registers the infrastructure resource in the `IDistributedApplicationBuilder`.
+- Fluent methods (`WithDataVolume`, `WithDumps`, `WithSeeds`, etc.) — customize the resource.
+- `project.WithReference(xxx)` — links a project to the resource, automatically configuring:
+  - `WaitFor` dependency.
+  - Environment variables (connection strings, base URLs, etc.).
+  - Initialization actions (e.g. executing Mongo dumps).
+
+Once you learn how one helper works, the others feel immediately familiar.
+
 ## Overview
 
 | Package | Service | Downloads |

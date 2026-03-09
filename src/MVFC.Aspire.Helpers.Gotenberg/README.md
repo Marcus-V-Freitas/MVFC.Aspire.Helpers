@@ -4,6 +4,25 @@
 
 Helpers for integrating with Gotenberg (API for converting documents and PDFs) in .NET Aspire projects.
 
+## Motivation
+
+Running Gotenberg locally usually means:
+
+- Pulling the correct Docker image/tag.
+- Mapping ports and exposing the HTTP endpoint to your applications.
+- Hard‑coding the base URL of the PDF service in code or configuration.
+
+With .NET Aspire you can model the container, but you still need to:
+
+- Configure image, ports and health checks.
+- Decide how to expose the base URL to each project.
+- Keep host/port details in sync between the app host and your services.
+
+`MVFC.Aspire.Helpers.Gotenberg` focuses exactly on this:
+
+- `AddGotenberg(...)` starts the official `gotenberg/gotenberg:8` image with an HTTP endpoint and health check.
+- `project.WithReference(gotenberg)` injects `GOTENBERG__BASE_URL` so your API/worker can just read it from configuration.
+
 ## Overview
 
 This project allows you to easily add and integrate Gotenberg as a managed resource in distributed .NET Aspire applications. It simplifies provisioning the Gotenberg container and provides extension methods for configuring it in the AppHost.
@@ -31,9 +50,12 @@ Add the NuGet package to your AppHost project:
 dotnet add package MVFC.Aspire.Helpers.Gotenberg
 ```
 
-## Usage Example in AppHost
+## Quick Aspire usage (AppHost)
 
 ```csharp
+using Aspire.Hosting;
+using MVFC.Aspire.Helpers.Gotenberg;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 // Adds the Gotenberg container on host port 3000
@@ -46,33 +68,37 @@ builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
 await builder.Build().RunAsync();
 ```
 
-## Reference in Backend Project (Api, Web, etc)
+## Reference in backend project (API, Web, etc.)
 
 When using `.WithReference(gotenberg)`, the AppHost will automatically inject an environment variable containing the accessible Gotenberg address so the consuming application can connect:
 
-`GOTENBERG__BASE_URL` = `http://localhost:<port>`
+- `GOTENBERG__BASE_URL` = `http://localhost:<port>`
 
-## Fluent Methods
+Use that value to configure your HTTP client pointing to Gotenberg.
 
-| Method | Description |
-|---|---|
+## Fluent methods
+
+| Method                      | Description                                 |
+|----------------------------|---------------------------------------------|
 | `WithDockerImage(image, tag)` | Overrides the Docker image or its tag used. |
 
-## `AddGotenberg` Parameters
+## `AddGotenberg` parameters
 
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `name` | `string` | — | Resource name in Aspire. |
-| `port` | `int` | `3000` | HTTP port exposed on the host for communication. |
+| Parameter | Type   | Default | Description                                  |
+|----------|--------|---------|----------------------------------------------|
+| `name`   | string | —       | Resource name in Aspire.                     |
+| `port`   | int    | `3000`  | HTTP port exposed on the host for communication. |
 
-## Port Details and Visualization
+## Port details and visualization
 
-- The default mapped port is `3000`. Internally, the container also runs on `3000`.
-- An HTTP health check is automatically registered pointing to `http://localhost:<port>/health`.
+- Default mapped port: `3000` (internally also `3000`).
+- Health check: `http://localhost:<port>/health`.
 
 ## Requirements
+
 - .NET 9+
 - Aspire.Hosting >= 9.5.0
 
 ## License
+
 Apache-2.0

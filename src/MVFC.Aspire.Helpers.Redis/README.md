@@ -1,8 +1,28 @@
-# MVFC.Aspire.Helpers.Redis
+﻿# MVFC.Aspire.Helpers.Redis
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
 Helper for integrating with Redis in .NET Aspire projects, including distributed caching and Redis Commander UI.
+
+## Motivation
+
+For local dev, Redis is often set up via an ad‑hoc container:
+
+- No clear place to centralize password configuration.
+- No built‑in UI to inspect keys/values.
+- No consistent way to mount volumes and preserve state.
+
+With .NET Aspire you can start a Redis container, but you still need to:
+
+- Decide how to expose Redis to your projects.
+- Configure Redis Commander (or similar) manually.
+- Keep connection strings aligned across services.
+
+`MVFC.Aspire.Helpers.Redis` addresses this by:
+
+- `AddRedis(...)` to provision Redis.
+- `WithPassword(...)`, `WithCommander(...)`, `WithDataVolume(...)` to cover common setups.
+- `project.WithReference(redis)` to pass the Redis connection string via configuration.
 
 ## Overview
 
@@ -19,19 +39,23 @@ This project provides extension methods to facilitate integration with Redis in 
 - Support for data persistence via Docker volume (AOF enabled).
 - Support for password.
 
-## Compatible Images:
- - `redis`
- - `rediscommander/redis-commander` (UI)
+## Compatible Images
+
+- `redis`
+- `rediscommander/redis-commander` (UI)
 
 ## Installation
 
-```bash
+```sh
 dotnet add package MVFC.Aspire.Helpers.Redis
 ```
 
-## Usage Example in AppHost
+## Quick Aspire usage (AppHost)
 
 ```csharp
+using Aspire.Hosting;
+using MVFC.Aspire.Helpers.Redis;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var redis = builder.AddRedis("redis")
@@ -46,23 +70,25 @@ builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
 await builder.Build().RunAsync();
 ```
 
-## Fluent Methods
+## Fluent methods
 
-| Method | Description |
-|---|---|
-| `WithDockerImage(image, tag)` | Overrides the Docker image used. |
-| `WithPassword(password)` | Defines the Redis password. |
-| `WithCommander(port?)` | Adds the Redis Commander UI. |
-| `WithDataVolume(volumeName)` | Enables persistence with Docker volume (AOF). |
+| Method                         | Description                                            |
+|-------------------------------|--------------------------------------------------------|
+| `WithDockerImage(image, tag)` | Overrides the Docker image used.                       |
+| `WithPassword(password)`      | Defines the Redis password.                            |
+| `WithCommander(port?)`        | Adds the Redis Commander UI.                           |
+| `WithDataVolume(volumeName)`  | Enables persistence with Docker volume (AOF).          |
 
-## Main Parameters for `AddRedis`
+## `AddRedis` parameters
 
-- `name`: Redis resource name.
-- `port` *(Optional)*: Redis Port (default: `6379`).
+- `name`: Redis resource name.  
+- `port` *(optional)*: Redis port (default `6379`).
 
-## Other important Optional parameters:
+## Other optional parameters
 
-- **connectionStringSection** (Optional): Defines the path to the environment variable or configuration containing the Redis connection string. Default is `"ConnectionStrings:redis"`. Each `:` indicates a level/section within the `appsettings.json` file:
+- **`connectionStringSection`** (optional):  
+  Path to the configuration section containing the Redis connection string.  
+  Default: `"ConnectionStrings:redis"`.
 
 ```json
 {
@@ -72,14 +98,16 @@ await builder.Build().RunAsync();
 }
 ```
 
-## Port Details
+## Port details
 
-- **Redis Port**: defined via `port` parameter (default: `6379`).
-- **Redis Commander Port**: random by default; can be defined via `commanderPort` parameter in `WithCommander`.
+- **Redis port**: defined via `port` (default `6379`).  
+- **Redis Commander port**: random by default; can be defined via `commanderPort` in `WithCommander`.
 
 ## Requirements
+
 - .NET 9+
 - Aspire.Hosting >= 9.5.0
 
 ## License
+
 Apache-2.0

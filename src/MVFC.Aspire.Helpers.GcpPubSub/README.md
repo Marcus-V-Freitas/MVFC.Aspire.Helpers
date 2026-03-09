@@ -1,8 +1,29 @@
-# MVFC.Aspire.Helpers.GcpPubSub
+﻿# MVFC.Aspire.Helpers.GcpPubSub
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
 Helpers for integrating with Google Pub/Sub in .NET Aspire projects, including support for the emulator and administration interface (UI).
+
+## Motivation
+
+Working with Google Pub/Sub locally usually means:
+
+- Spinning up an emulator container by hand.
+- Remembering ports, project IDs and environment variables.
+- Manually creating topics/subscriptions and DLQs.
+
+With .NET Aspire you can define containers, but you still need to:
+
+- Configure the emulator image and its ports.
+- Keep emulator environment variables in sync across projects.
+- Define topics/subscriptions/DLQs in a consistent way.
+
+`MVFC.Aspire.Helpers.GcpPubSub` provides:
+
+- `AddGcpPubSub(...)` to start the emulator.
+- `WithPubSubConfigs(...)` to describe topics/subscriptions in code.
+- `AddGcpPubSubUI(...)` to add a simple web UI.
+- `WithReference(...)` to wire projects to the emulator and/or UI.
 
 ## Overview
 
@@ -13,18 +34,19 @@ This project facilitates the configuration and integration of Google Pub/Sub in 
 - Support push and pull subscriptions.
 - Provide an administration interface (UI) for management.
 
-## Pub/Sub Emulator Advantages
+## Pub/Sub emulator advantages
 
-- Allows simulating the message flow between services locally.
+- Simulates message flow between services locally.
 - Supports testing push and pull subscriptions without depending on Google Cloud infrastructure.
-- Facilitates the development and debugging of asynchronous integrations.
+- Facilitates development and debugging of asynchronous integrations.
 
-## Compatible Images:
- - **Emulator**:
-   - `thekevjames/gcloud-pubsub-emulator`
-   - `messagebird/gcloud-pubsub-emulator`
- - **UI**:
-   - `echocode/gcp-pubsub-emulator-ui`
+## Compatible Images
+
+- **Emulator**:
+  - `thekevjames/gcloud-pubsub-emulator`
+  - `messagebird/gcloud-pubsub-emulator`
+- **UI**:
+  - `echocode/gcp-pubsub-emulator-ui`
 
 ## Project Structure
 
@@ -32,7 +54,7 @@ This project facilitates the configuration and integration of Google Pub/Sub in 
 
 ## Features
 
-- Adds the Google Pub/Sub emulator using the official image.
+- Adds the Google Pub/Sub emulator.
 - Creates topics and subscriptions according to configuration.
 - Supports push and pull subscriptions.
 - Provides a Pub/Sub administration interface (UI).
@@ -41,15 +63,16 @@ This project facilitates the configuration and integration of Google Pub/Sub in 
 
 ## Installation
 
-Add the NuGet package to your AppHost project:
-
 ```sh
 dotnet add package MVFC.Aspire.Helpers.GcpPubSub
 ```
 
-## Usage Example in AppHost
+## Quick Aspire usage (AppHost)
 
 ```csharp
+using Aspire.Hosting;
+using MVFC.Aspire.Helpers.GcpPubSub;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var messageConfig = new MessageConfig(
@@ -81,35 +104,35 @@ builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
 await builder.Build().RunAsync();
 ```
 
-## Topics and Subscriptions Configuration
+## Topics and subscriptions configuration
 
-### PubSubConfig
+### `PubSubConfig`
 
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `projectId` | `string` | — | GCP project ID. |
-| `messageConfig` | `MessageConfig` | — | Single message configuration (topic + subscription). |
-| `secondsDelay` | `int` | `5` | Startup delay for resources in seconds. |
+| Parameter        | Type          | Default | Description                     |
+|-----------------|---------------|---------|---------------------------------|
+| `projectId`     | string        | —       | GCP project ID.                 |
+| `messageConfig` | `MessageConfig` | —     | Message configuration.          |
+| `secondsDelay`  | int           | `5`     | Startup delay in seconds.       |
 
-### MessageConfig
+### `MessageConfig`
 
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `TopicName` | `string` | — | Message topic name. |
-| `SubscriptionName` | `string?` | `null` | Topic subscription name. |
-| `PushEndpoint` | `string?` | `null` | HTTP endpoint for push delivery. |
-| `DeadLetterTopic` | `string?` | `null` | Dead letter topic name (DLQ). |
-| `MaxDeliveryAttempts` | `int?` | `null` | Maximum attempts before sending to DLQ. |
-| `AckDeadlineSeconds` | `int?` | `null` | Confirmation time (ack) in seconds. |
+| Parameter            | Type    | Default | Description                              |
+|---------------------|---------|---------|------------------------------------------|
+| `TopicName`         | string  | —       | Topic name.                              |
+| `SubscriptionName`  | string? | `null`  | Subscription name.                       |
+| `PushEndpoint`      | string? | `null`  | HTTP endpoint for push delivery.         |
+| `DeadLetterTopic`   | string? | `null`  | Dead letter topic name (DLQ).            |
+| `MaxDeliveryAttempts` | int?  | `null`  | Max attempts before sending to DLQ.      |
+| `AckDeadlineSeconds` | int?   | `null`  | Ack deadline (seconds).                  |
 
 **Note:** If `DeadLetterTopic` is provided, the subscription `{DeadLetterTopic}-subscription` will be created automatically.
 
-## Pub/Sub Port Details
+## Ports
 
-- **Emulator Port:** `8681`
-- **UI Port:** `8680`
+- **Emulator port:** `8681`
+- **UI port:** `8680`
 
-## Topics and Subscriptions Structure
+## Topics and subscriptions diagram
 
 ```mermaid
 graph TD
@@ -127,18 +150,20 @@ C --> E
 E --> F
 ```
 
-## Public Methods
+## Public methods
 
-- **`AddGcpPubSub`**: Adds the Google Pub/Sub emulator to the distributed application.
-- **`AddGcpPubSubUI`**: Adds the Pub/Sub administration interface (UI).
-- **`WithPubSubConfigs`**: Configures emulator projects, topics, and subscriptions.
-- **`WithWaitTimeout`**: Configures the resource startup delay.
-- **`WithReference`** (on emulator or UI): Configures dependencies and environment variables in the project.
+- `AddGcpPubSub` – adds the emulator.  
+- `AddGcpPubSubUI` – adds the Pub/Sub UI.  
+- `WithPubSubConfigs` – configures projects, topics and subscriptions.  
+- `WithWaitTimeout` – sets startup delay.  
+- `WithReference` – wires projects to emulator/UI and sets env vars.
 
 ## Requirements
+
 - .NET 9+
 - Aspire.Hosting >= 9.5.0
 - Google.Cloud.PubSub.V1 >= 3.29.0
 
 ## License
+
 Apache-2.0

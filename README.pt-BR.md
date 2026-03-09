@@ -9,6 +9,38 @@
 
 Coleção de helpers para integrar serviços comuns com o .NET Aspire de forma rápida e padronizada.
 
+## Motivação
+
+Orquestrar um ambiente local realista para aplicações distribuídas em .NET normalmente significa:
+
+- Escrever e manter vários arquivos `docker-compose`.
+- Copiar e colar definições de containers entre projetos.
+- Ligar portas, connection strings e health checks na mão.
+- Repetir o mesmo setup para cada serviço novo em cada solução nova.
+
+O .NET Aspire resolve parte desse problema ao oferecer um modelo de orquestração em C#, mas você ainda precisa modelar cada dependência de infraestrutura (Mongo, Redis, Keycloak, etc.) sozinho.
+
+Os pacotes do **MVFC.Aspire.Helpers** capturam esse conhecimento uma vez e expõem como pequenos helpers focados:
+
+- Uma linha para adicionar o recurso (`AddXxx`).
+- Alguns métodos fluentes para customizar (`WithDataVolume`, `WithDumps`, `WithSeeds`, `WithCommander`, etc.).
+- Um único `WithReference(...)` para ligar seus projetos ao recurso com as variáveis de ambiente e dependências corretas.
+
+O objetivo é simples: tornar o ambiente local **o mais próximo possível de produção**, mantendo a experiência de desenvolvimento **clone → run**.
+
+## Padrão das extensões
+
+Todas as bibliotecas seguem a mesma convenção:
+
+- `AddXxx(...)` — registra o recurso de infraestrutura no `IDistributedApplicationBuilder`.
+- Métodos fluentes (`WithDataVolume`, `WithDumps`, `WithSeeds`, etc.) — customizam o recurso.
+- `project.WithReference(xxx)` — liga um projeto ao recurso, configurando automaticamente:
+  - Dependência via `WaitFor`.
+  - Variáveis de ambiente (connection strings, base URLs, etc.).
+  - Ações de inicialização (ex: executar dumps do Mongo).
+
+Depois que você aprende como um helper funciona, os demais parecem imediatamente familiares.
+
 ## Visão Geral
 
 | Pacote | Serviço | Downloads |
