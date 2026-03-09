@@ -11,9 +11,6 @@ internal static class PubSubConfigurator
             EmulatorDetection = EmulatorDetection.EmulatorOnly,
         }.Build());
 
-    private static readonly Lazy<ILogger> _logger =
-        new(() => LoggerFactory.Create(b => b.AddConsole()).CreateLogger(nameof(PubSubConfigurator)));
-
     /// <summary>
     /// Configures all topics and subscriptions for a list of Pub/Sub configs.
     /// </summary>

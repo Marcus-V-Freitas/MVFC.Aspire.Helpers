@@ -16,6 +16,10 @@
 		<PackageIcon>icon.png</PackageIcon>
 	</PropertyGroup>
 
+    <ItemGroup>
+		<InternalsVisibleTo Include="MVFC.Aspire.Helpers.Tests" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<None Include="icon.png" Pack="true" PackagePath="" />
 		<None Include="README.md" Pack="true" PackagePath="" />
@@ -24,12 +28,6 @@
 	<ItemGroup>
 		<PackageReference Include="Aspire.Hosting" />
 		<PackageReference Include="WireMock.Net.minimal" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-			<_Parameter1>MVFC.Aspire.Hosting.WireMock.AppHost.Test.Tests</_Parameter1>
-		</AssemblyAttribute>
 	</ItemGroup>
 
 </Project>

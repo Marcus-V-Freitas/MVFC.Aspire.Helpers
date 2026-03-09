@@ -47,8 +47,8 @@ public static class GotenbergExtensions
         string tag)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        ArgumentNullException.ThrowIfNullOrEmpty(image);
-        ArgumentNullException.ThrowIfNullOrEmpty(tag);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(image);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(tag);
 
         return builder.WithImage(image)
                       .WithImageTag(tag);

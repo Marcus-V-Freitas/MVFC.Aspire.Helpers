@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Tests.Fixture;
+﻿namespace MVFC.Aspire.Helpers.Tests.Integration.Fixture;
 
 public sealed class AppHostFixture : IAsyncLifetime 
 {

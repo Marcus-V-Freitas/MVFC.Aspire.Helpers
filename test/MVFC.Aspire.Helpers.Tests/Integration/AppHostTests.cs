@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Tests;
+﻿namespace MVFC.Aspire.Helpers.Tests.Integration;
 
 public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHostFixture>
 {

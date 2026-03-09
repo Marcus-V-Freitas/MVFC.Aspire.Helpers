@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Tests.HttpClients;
+﻿namespace MVFC.Aspire.Helpers.Tests.Integration.HttpClients;
 
 internal interface IPlaygroundApiClient
 {

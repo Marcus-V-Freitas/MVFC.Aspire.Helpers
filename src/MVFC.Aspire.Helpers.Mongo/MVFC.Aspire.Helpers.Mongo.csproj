@@ -19,7 +19,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<InternalsVisibleTo Include="MVFC.Aspire.Helpers.UnitTests" />
+		<InternalsVisibleTo Include="MVFC.Aspire.Helpers.Tests" />
 	</ItemGroup>
 
 	<ItemGroup>

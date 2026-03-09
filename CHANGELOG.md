@@ -5,7 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [6.4.0] - 2026-03-08
+
+### Added
+- Comprehensive unit tests for all integration modules (`GcpPubSub`, `Gotenberg`, `Keycloak`, `Mailpit`, `Mongo`, `RabbitMQ`, and `Redis`).
+- Reorganized integration tests into a dedicated `Integration/` folder for better separation of concerns.
+- Added `AppHelper` and specialized stubs (`StubRealmSeed`, `NoOpMongoDump`) to enhance the testing infrastructure.
+
+### Changed
+- Improved overall code coverage, approaching 100% in critical components.
+- Refined assembly meta-data and global usings across the test suite.
 
 ## [6.3.0] - 2026-03-08
 

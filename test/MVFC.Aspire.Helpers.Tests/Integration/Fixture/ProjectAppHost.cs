@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Tests.Fixture;
+﻿namespace MVFC.Aspire.Helpers.Tests.Integration.Fixture;
 
 internal sealed class ProjectAppHost() : DistributedApplicationFactory(typeof(MVFC_Aspire_Helpers_Playground_AppHost)) 
 {

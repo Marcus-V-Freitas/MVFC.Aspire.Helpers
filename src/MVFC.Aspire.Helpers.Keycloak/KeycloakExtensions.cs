@@ -26,8 +26,8 @@ public static class KeycloakExtensions
         string image,
         string tag)
     {
-        ArgumentNullException.ThrowIfNullOrEmpty(image);
-        ArgumentNullException.ThrowIfNullOrEmpty(tag);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(image);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(tag);
         ArgumentNullException.ThrowIfNull(builder);
 
         return builder.WithImage(image).WithImageTag(tag);

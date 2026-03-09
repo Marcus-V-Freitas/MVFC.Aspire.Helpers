@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Tests.Extensions;
+﻿namespace MVFC.Aspire.Helpers.Tests.Integration.Extensions;
 
 internal static class HttpTestExtensions 
 {

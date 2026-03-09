@@ -36,8 +36,8 @@ public static class PubSubEmulatorExtensions
         string image,
         string tag)
     {
-        ArgumentNullException.ThrowIfNullOrEmpty(image);
-        ArgumentNullException.ThrowIfNullOrEmpty(tag);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(image);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(tag);
         ArgumentNullException.ThrowIfNull(builder);
 
         return builder.WithImage(image).WithImageTag(tag);
@@ -51,10 +51,9 @@ public static class PubSubEmulatorExtensions
         params PubSubConfig[] configs)
     {
         ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configs);
 
-        var list = builder.Resource.PubSubConfigs as List<PubSubConfig> ?? [.. builder.Resource.PubSubConfigs];
-        list.AddRange(configs);
-        builder.Resource.PubSubConfigs = list;
+        builder.Resource.PubSubConfigs = [.. builder.Resource.PubSubConfigs, .. configs];
         return builder;
     }
 
