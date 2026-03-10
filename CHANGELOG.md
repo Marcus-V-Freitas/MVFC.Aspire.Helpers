@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.4.1] - 2026-03-10
+
+### Added
+- Simplified the playground example and simplified collection dump configuration. (commit e02f73f)  
+  https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/commit/e02f73f30605268e4d4dad76c6406758e4468c50
+
+### Documentation
+- Updated documentation. (commit 4e8028f)  
+  https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/commit/4e8028f90735da5fd0c260af6ea119270920bd9b
+  
 ## [6.4.0] - 2026-03-08
 
 ### Added
