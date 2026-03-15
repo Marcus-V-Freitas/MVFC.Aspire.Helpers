@@ -1,10 +1,10 @@
 ﻿<Project>
-	<PropertyGroup>
-		<LangVersion>13.0</LangVersion>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-	</PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>13.0</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
 
-    <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
+  <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
     <Authors>Marcus V. Freitas</Authors>
     <Company>MVFC</Company>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
@@ -17,5 +17,9 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(MSBuildProjectDirectory.Contains(playground))' == 'true'">
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
+  </ItemGroup>
 
 </Project>

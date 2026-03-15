@@ -1,5 +1,4 @@
 ﻿global using System.Net;
-global using System.Text;
 global using System.Net.Http.Headers;
 global using Aspire.Hosting;
 global using Aspire.Hosting.Testing;
@@ -38,3 +37,4 @@ global using MVFC.Aspire.Helpers.Mailpit.Resources;
 global using MVFC.Aspire.Helpers.Tests.Unit.Extensions;
 global using MVFC.Aspire.Helpers.Gotenberg;
 global using MVFC.Aspire.Helpers.Gotenberg.Resources;
+global using Google.Cloud.PubSub.V1;

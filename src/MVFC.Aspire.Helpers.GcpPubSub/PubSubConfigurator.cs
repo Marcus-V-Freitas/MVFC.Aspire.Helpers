@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.GcpPubSub;
+namespace MVFC.Aspire.Helpers.GcpPubSub;
 
 /// <summary>
 /// Responsible for configuring topics and subscriptions in the Pub/Sub emulator at runtime.
@@ -33,7 +33,7 @@ internal static class PubSubConfigurator
     /// <summary>
     /// Modifies the push endpoint of a Pub/Sub subscription to the correct container address.
     /// </summary>
-    private static async Task ModifyPushEndpoint(
+    internal static async Task ModifyPushEndpoint(
         string projectId, MessageConfig messageConfig, string pushEndpoint, CancellationToken ct)
     {
         var subscriptionName = SubscriptionName.FormatProjectSubscription(projectId, messageConfig.SubscriptionName);
@@ -49,7 +49,7 @@ internal static class PubSubConfigurator
     /// Builds the dead letter policy for a subscription, if configured.
     /// Returns <see langword="null"/> if no dead letter topic is defined.
     /// </summary>
-    private static DeadLetterPolicy? BuildDeadLetterPolicy(string projectId, MessageConfig messageConfig)
+    internal static DeadLetterPolicy? BuildDeadLetterPolicy(string projectId, MessageConfig messageConfig)
     {
         return string.IsNullOrWhiteSpace(messageConfig.DeadLetterTopic)
             ? null
@@ -63,7 +63,7 @@ internal static class PubSubConfigurator
     /// <summary>
     /// Builds the <see cref="FieldMask"/> for the subscription update, including only the fields to change.
     /// </summary>
-    private static FieldMask BuildFieldMaskUpdate(MessageConfig messageConfig)
+    internal static FieldMask BuildFieldMaskUpdate(MessageConfig messageConfig)
     {
         var paths = new List<string> { "ack_deadline_seconds" };
         if (!string.IsNullOrEmpty(messageConfig.PushEndpoint))
@@ -77,7 +77,7 @@ internal static class PubSubConfigurator
     /// Builds the push configuration for a subscription, combining the base endpoint with the message endpoint suffix.
     /// Returns <see langword="null"/> if no push endpoint is defined.
     /// </summary>
-    private static PushConfig? BuildPushEndpoint(MessageConfig messageConfig, string pushEndpoint)
+    internal static PushConfig? BuildPushEndpoint(MessageConfig messageConfig, string pushEndpoint)
     {
         return string.IsNullOrWhiteSpace(messageConfig.PushEndpoint)
             ? null

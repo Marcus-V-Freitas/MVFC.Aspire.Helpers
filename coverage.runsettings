@@ -5,7 +5,7 @@
       <DataCollector friendlyName="XPlat Code Coverage">
         <Configuration>
           <Format>cobertura</Format>
-          <Include>[MVFC.Aspire.Helpers.*]*</Include>
+          <Include>[MVFC.Aspire.Helpers*]*</Include>
           <Exclude>[*.Tests]*,[*.Playground]*,[*.AppHost]*</Exclude>
           <ExcludeByAttribute>ExcludeFromCodeCoverage,GeneratedCode,CompilerGenerated</ExcludeByAttribute>
           <SingleHit>false</SingleHit>

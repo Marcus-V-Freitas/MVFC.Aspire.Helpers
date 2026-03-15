@@ -131,7 +131,7 @@ src/
   MVFC.Aspire.Helpers.RabbitMQ/
   MVFC.Aspire.Helpers.Redis/
   MVFC.Aspire.Helpers.WireMock/
-test/
+tests/
   MVFC.Aspire.Helpers.Tests/
 playground/
   MVFC.Aspire.Helpers.Playground.Api/

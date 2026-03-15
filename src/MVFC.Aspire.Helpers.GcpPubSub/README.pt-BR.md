@@ -1,6 +1,14 @@
-﻿# MVFC.Aspire.Helpers.GcpPubSub
+# MVFC.Aspire.Helpers.GcpPubSub
 
 > 🇺🇸 [Read in English](README.md)
+
+[![CI](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml/badge.svg)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers/branch/main/graph/badge.svg)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](../../LICENSE)
+![Platform](https://img.shields.io/badge/.NET-9%20%7C%2010-blue)
+![NuGet Version](https://img.shields.io/nuget/v/MVFC.Aspire.Helpers.GcpPubSub)
+![NuGet Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpPubSub)
+
 
 Helpers para integração com Google Pub/Sub em projetos .NET Aspire, incluindo suporte ao emulador e interface de administração (UI).
 

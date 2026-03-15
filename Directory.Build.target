@@ -1,6 +1,6 @@
-<Project>
+﻿<Project>
   <ItemGroup Condition="!$(MSBuildProjectName.Contains('Test'))">
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.15.0.120848">
+    <PackageReference Include="SonarAnalyzer.CSharp">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

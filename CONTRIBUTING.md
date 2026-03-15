@@ -20,7 +20,7 @@ dotnet build MVFC.Aspire.Helpers.slnx --configuration Release
 The tests use `Aspire.Hosting.Testing` and require Docker to be running.
 
 ```sh
-dotnet test test/MVFC.Aspire.Helpers.Tests/MVFC.Aspire.Helpers.Tests.csproj --configuration Release
+dotnet test tests/MVFC.Aspire.Helpers.Tests/MVFC.Aspire.Helpers.Tests.csproj --configuration Release
 ```
 
 ## Adding a new helper
@@ -29,7 +29,7 @@ dotnet test test/MVFC.Aspire.Helpers.Tests/MVFC.Aspire.Helpers.Tests.csproj --co
 2. Follow the structure of an existing helper (e.g. `MVFC.Aspire.Helpers.Redis`)
 3. Add the new project to `MVFC.Aspire.Helpers.slnx`
 4. Add the package version to `Directory.Packages.props`
-5. Add integration tests in `test/MVFC.Aspire.Helpers.Tests/`
+5. Add integration tests in `tests/MVFC.Aspire.Helpers.Tests/`
 6. Update `README.md` and `README.pt-BR.md` with the new package entry
 
 ## Branch naming

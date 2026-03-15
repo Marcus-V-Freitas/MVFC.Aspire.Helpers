@@ -248,7 +248,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     public async Task WireMockEndpoint_Bytes_ShouldReturnBytes()
     {
         // Arrange
-        var bytes = Encoding.UTF8.GetBytes("AspireBytes");
+        var bytes = System.Text.Encoding.UTF8.GetBytes("AspireBytes");
         var content = new ByteArrayContent(bytes);
         content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 

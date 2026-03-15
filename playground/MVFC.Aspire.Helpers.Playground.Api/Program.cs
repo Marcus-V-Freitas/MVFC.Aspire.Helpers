@@ -1,4 +1,4 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 var storageClient = await InstanceHelpers.CreateStorageClientAsync().ConfigureAwait(false);
 var pubSubClient = await InstanceHelpers.CreatePubSubClientAsync().ConfigureAwait(false);
