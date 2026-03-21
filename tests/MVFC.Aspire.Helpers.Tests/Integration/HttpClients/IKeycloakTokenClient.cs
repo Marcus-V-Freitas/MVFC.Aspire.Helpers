@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Tests.Integration.HttpClients; 
+﻿namespace MVFC.Aspire.Helpers.Tests.Integration.HttpClients;
 
 internal interface IKeycloakTokenClient
 {
