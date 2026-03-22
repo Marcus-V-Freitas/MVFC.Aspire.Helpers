@@ -17,8 +17,13 @@ global using System.Security.Claims;
 global using Microsoft.AspNetCore.Authentication;
 global using MVFC.Aspire.Helpers.Playground.Api.Internals;
 global using RabbitMQ.Client;
+global using MVFC.Aspire.Helpers.Playground.Api.Options;
 global using Refit;
 global using Scalar.AspNetCore;
 global using StackExchange.Redis;
 global using Microsoft.AspNetCore.Authentication.JwtBearer;
 global using System.Net;
+global using Google.Cloud.Spanner.Common.V1;
+global using Google.Cloud.Spanner.Data;
+global using MVFC.Aspire.Helpers.Playground.Api.Spanner;
+

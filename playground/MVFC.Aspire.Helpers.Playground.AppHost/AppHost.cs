@@ -1,5 +1,21 @@
 ﻿var builder = DistributedApplication.CreateBuilder(args);
 
+// --- GCP Spanner Configs ---
+var spannerConfig = new SpannerConfig(
+    ProjectId: "test-project",
+    InstanceId: "dev-instance",
+    DatabaseId: "dev-db",
+    DdlStatements:
+    [
+        """
+        CREATE TABLE Users (
+            UserId STRING(36) NOT NULL,
+            Name STRING(256) NOT NULL,
+            CreatedAt TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true)
+        ) PRIMARY KEY (UserId)
+        """
+    ]);
+
 // --- GCP Pub/Sub Configs ---
 var messageConfig = new MessageConfig(
                             TopicName: "test-topic",
@@ -24,6 +40,12 @@ var dumps = new MongoClassDump<TestDatabase>(
     CollectionName: "TestCollection",
     Quantity: 100,
     Faker: MongoFaker.GenerateFaker());
+
+
+// --- GCP Spanner ---
+var spanner = builder.AddGcpSpanner("gcp-spanner")
+                     .WithSpannerConfigs(spannerConfig)
+                     .WithWaitTimeout(30);
 
 // --- Keycloak ---
 var keycloak = builder.AddKeycloak("keycloak")
@@ -95,12 +117,14 @@ var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-e
                  .WithReference(pubSubUI)
                  .WaitFor(pubSubUI)
                  .WithReference(gotenberg)
-                 .WaitFor(gotenberg)
+                 .WaitFor(gotenberg)                 
                  .WaitFor(keycloak)
                  .WithReference(keycloak,
                          realmName: "my-app",
                          clientId: "my-api",
-                         clientSecret: "api-secret-1234");
+                         clientSecret: "api-secret-1234")
+                 .WaitFor(spanner)
+                 .WithReference(spanner);
 
 var wireMock = builder.AddWireMock("wireMock", port: 7070, configure: (server) => {
     server.Endpoint("/api/echo")

@@ -20,5 +20,7 @@ global using MVFC.Aspire.Helpers.WireMock;
 global using MVFC.Aspire.Helpers.Gotenberg;
 global using Refit;
 global using WireMock.Types;
+global using MVFC.Aspire.Helpers.GcpSpanner.Models;
+global using MVFC.Aspire.Helpers.GcpSpanner;
 global using MVFC.Aspire.Helpers.Playground.AppHost.Seeds.Mongo;
 global using MVFC.Aspire.Helpers.Playground.AppHost.Seeds.Keycloak;

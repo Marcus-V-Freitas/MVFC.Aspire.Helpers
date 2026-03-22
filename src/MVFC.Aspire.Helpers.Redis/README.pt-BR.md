@@ -1,4 +1,4 @@
-﻿# MVFC.Aspire.Helpers.Redis
+# MVFC.Aspire.Helpers.Redis
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -76,6 +76,20 @@ builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
        .WaitFor(redis);
 
 await builder.Build().RunAsync();
+```
+
+## Diagrama de provisionamento
+
+```mermaid
+sequenceDiagram
+    participant Aspire as .NET Aspire
+    participant Container as Redis Container
+    participant UI as Redis Commander
+    
+    Aspire->>Container: Start container (redis)
+    Container-->>Aspire: Ready (port 6379 available)
+    Aspire->>UI: Start Redis Commander (if configured)
+    Aspire->>App: Start App with Redis ConnectionString
 ```
 
 ## Métodos Fluentes

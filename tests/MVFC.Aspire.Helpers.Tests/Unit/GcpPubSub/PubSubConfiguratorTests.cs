@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Tests.Unit.GcpPubSub;
+namespace MVFC.Aspire.Helpers.Tests.Unit.GcpPubSub;
 
 public sealed class PubSubConfiguratorTests
 {
@@ -97,5 +97,38 @@ public sealed class PubSubConfiguratorTests
 
         // Assert
         result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ConfigureAsync_WhenConfigsEmpty_ShouldCompleteSuccessfully()
+    {
+        // Arrange
+        var configs = Array.Empty<PubSubConfig>();
+
+        // Act & Assert
+        await PubSubConfigurator.ConfigureAsync(configs, 8080, CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task ConfigureAsync_WhenConfigHasNoSubscription_ShouldSkip()
+    {
+        // Arrange
+        var configs = new[] { new PubSubConfig("project", new MessageConfig("topic", null)) };
+
+        // Act & Assert
+        await PubSubConfigurator.ConfigureAsync(configs, 8080, CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task ModifyPushEndpoint_WhenNoEmulator_ShouldThrowRpcException()
+    {
+        // Arrange
+        var messageConfig = new MessageConfig("topic", "sub");
+        
+        // Act
+        var act = () => PubSubConfigurator.ModifyPushEndpoint("project", messageConfig, "http://localhost:1234", CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<Exception>(); // Grpc exception since there's no emulator on default host
     }
 }

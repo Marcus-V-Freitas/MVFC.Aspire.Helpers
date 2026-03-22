@@ -1,4 +1,4 @@
-﻿# MVFC.Aspire.Helpers.WireMock
+# MVFC.Aspire.Helpers.WireMock
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -86,6 +86,22 @@ server.Endpoint("/api/headers")
 ```
 
 Tipos de corpo suportados: `String`, `Json`, `Bytes`, `FormUrlEncoded`, etc.
+
+## Diagrama de provisionamento
+
+```mermaid
+sequenceDiagram
+    participant Aspire as .NET Aspire
+    participant Container as WireMock Container
+    participant Configurator as WireMock Configurator
+    
+    Aspire->>Container: Start container (wiremock/wiremock)
+    Container-->>Aspire: Ready (HTTP port available)
+    Aspire->>Configurator: Trigger OnResourceReady
+    Configurator->>Container: Setup Stubs/Endpoints
+    Configurator-->>Aspire: Provisioning Completed
+    Aspire->>App: Start App with WireMock Base URL
+```
 
 ## Detalhes de Porta e Visualização
 

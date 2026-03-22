@@ -44,4 +44,16 @@ internal interface IPlaygroundApiClient
 
     [Get("/api/key-cloak")]
     internal Task<ApiResponse<string>> GetSecretDataWithTokenAsync([Authorize("Bearer")] string token);
+
+    // Spanner
+    [Get("/api/spanner")]
+    internal Task<ApiResponse<string>> GetSpannerPingAsync();
+
+    [Post("/api/spanner/users")]
+    [Headers("Content-Type: application/json")]
+    internal Task<ApiResponse<string>> CreateSpannerUserAsync([Body] JsonNode requestBody);
+
+    [Get("/api/spanner/users")]
+    internal Task<ApiResponse<string>> GetSpannerUsersAsync();
+
 }

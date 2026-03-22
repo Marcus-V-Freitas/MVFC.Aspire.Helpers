@@ -1,4 +1,4 @@
-﻿# MVFC.Aspire.Helpers.CloudStorage
+# MVFC.Aspire.Helpers.CloudStorage
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -76,6 +76,22 @@ builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
        .WaitFor(cloudStorage);
 
 await builder.Build().RunAsync();
+```
+
+## Diagrama de provisionamento
+
+```mermaid
+sequenceDiagram
+    participant Aspire as .NET Aspire
+    participant Container as GCP Storage Emulator
+    participant Configurator as Cloud Storage Processor
+    
+    Aspire->>Container: Start container (fsouza/fake-gcs-server)
+    Container-->>Aspire: Ready (port 4443 available)
+    Aspire->>Configurator: Trigger OnResourceReady
+    Configurator->>Container: Create Buckets
+    Configurator-->>Aspire: Provisioning Completed
+    Aspire->>App: Start App with STORAGE_EMULATOR_HOST
 ```
 
 ## Métodos Fluentes

@@ -1,4 +1,4 @@
-﻿# MVFC.Aspire.Helpers.GcpPubSub
+# MVFC.Aspire.Helpers.GcpPubSub
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
@@ -156,6 +156,23 @@ B --> C
 B --> D
 C --> E
 E --> F
+```
+
+## Provisioning diagram
+
+```mermaid
+sequenceDiagram
+    participant Aspire as .NET Aspire
+    participant Container as Pub/Sub Emulator
+    participant Configurator as Pub/Sub Processor
+    
+    Aspire->>Container: Start container (gcloud-pubsub-emulator)
+    Container-->>Aspire: Ready (port 8681 available)
+    Aspire->>Configurator: Trigger OnResourceReady
+    Configurator->>Container: Create Topics
+    Configurator->>Container: Create Subscriptions
+    Configurator-->>Aspire: Provisioning Completed
+    Aspire->>App: Start App with PUBSUB_EMULATOR_HOST
 ```
 
 ## Public methods

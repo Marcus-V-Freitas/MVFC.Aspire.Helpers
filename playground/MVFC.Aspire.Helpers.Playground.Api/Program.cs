@@ -1,19 +1,22 @@
-var builder = WebApplication.CreateBuilder(args);
+﻿var builder = WebApplication.CreateBuilder(args);
 
 var storageClient = await InstanceHelpers.CreateStorageClientAsync().ConfigureAwait(false);
 var pubSubClient = await InstanceHelpers.CreatePubSubClientAsync().ConfigureAwait(false);
 var redis = await builder.CreateRedisAsync().ConfigureAwait(false);
 var rabbit = await builder.CreateRabbitAsync().ConfigureAwait(false);
+var spannerConnection = builder.Configuration.CreateSpannerConnection();
 
 builder.Services.AddKeycloak(builder.Configuration);
 builder.Services.AddGotenberg();
+builder.Services.AddScoped<SpannerConnection>(_ => spannerConnection);
 builder.Services.AddSingleton(pubSubClient);
 builder.Services.AddSingleton(storageClient);
 builder.Services.AddSingleton(builder.CreateSmtp());
 builder.Services.AddSingleton(redis);
 builder.Services.AddSingleton(rabbit);
-builder.Services.AddSingleton<IStorageService, GoogleCloudStorageAdapter>();
-builder.Services.AddSingleton<IMessagePublisher, GooglePubSubMessagePublisher>();
+builder.Services.AddScoped<ISpannerService, SpannerService>();
+builder.Services.AddScoped<IStorageService, GoogleCloudStorageAdapter>();
+builder.Services.AddScoped<IMessagePublisher, GooglePubSubMessagePublisher>();
 builder.Services.AddScoped<IGotenbergService, GotenbergService>();
 builder.Services.AddTransient<IClaimsTransformation, KeycloakRolesClaimsTransformer>();
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer((document, context, cancellationToken) =>

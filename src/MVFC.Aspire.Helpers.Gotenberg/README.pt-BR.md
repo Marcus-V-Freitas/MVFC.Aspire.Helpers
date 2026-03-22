@@ -1,4 +1,4 @@
-﻿# MVFC.Aspire.Helpers.Gotenberg
+# MVFC.Aspire.Helpers.Gotenberg
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -83,6 +83,18 @@ Ao utilizar `.WithReference(gotenberg)`, o AppHost injetará automaticamente uma
 - `GOTENBERG__BASE_URL` = `http://localhost:<porta>`
 
 Use esse valor para configurar o cliente HTTP que aponta para o Gotenberg.
+
+## Diagrama de provisionamento
+
+```mermaid
+sequenceDiagram
+    participant Aspire as .NET Aspire
+    participant Container as Gotenberg Container
+    
+    Aspire->>Container: Start container (gotenberg/gotenberg)
+    Container-->>Aspire: Ready (port 3000 available)
+    Aspire->>App: Start App with GOTENBERG__BASE_URL
+```
 
 ## Métodos Fluentes
 

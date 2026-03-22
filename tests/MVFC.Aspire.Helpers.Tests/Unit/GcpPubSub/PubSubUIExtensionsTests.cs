@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Tests.Utils.GcpPubSub;
+namespace MVFC.Aspire.Helpers.Tests.Utils.GcpPubSub;
 
 public sealed class PubSubUIExtensionsTests
 {
@@ -29,6 +29,19 @@ public sealed class PubSubUIExtensionsTests
 
         // Assert
         act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void AddGcpPubSubUI_ShouldThrow_WhenPortIsInvalid()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+
+        // Act
+        var act = () => builder.AddGcpPubSubUI("pubsub-ui", -1);
+
+        // Assert
+        act.Should().Throw<ArgumentOutOfRangeException>();
     }
 
     [Fact]

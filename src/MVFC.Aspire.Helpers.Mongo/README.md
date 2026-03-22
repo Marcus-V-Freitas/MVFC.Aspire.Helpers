@@ -1,4 +1,4 @@
-﻿# MVFC.Aspire.Helpers.Mongo
+# MVFC.Aspire.Helpers.Mongo
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
@@ -117,6 +117,23 @@ What this setup gives you:
 - A persistent Docker volume `mongo-data` (if configured).
 - Database/collection automatically populated with fake data at startup.
 - A connection string injected into the project configuration.
+
+## Provisioning diagram
+
+```mermaid
+sequenceDiagram
+    participant Aspire as .NET Aspire
+    participant Container as MongoDB Container
+    participant Configurator as Mongo Replica Set Processor
+    
+    Aspire->>Container: Start container (mongo)
+    Container-->>Aspire: Ready (port 27017 available)
+    Aspire->>Configurator: Trigger OnResourceReady
+    Configurator->>Container: Initialize Replica Set
+    Configurator->>Container: Execute Dumps (if configured)
+    Configurator-->>Aspire: Provisioning Completed
+    Aspire->>App: Start App with ConnectionString
+```
 
 ## Fluent methods
 

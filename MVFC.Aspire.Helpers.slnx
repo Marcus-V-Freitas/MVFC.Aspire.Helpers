@@ -1,4 +1,4 @@
-﻿<Solution>
+<Solution>
   <Configurations>
     <Platform Name="Any CPU" />
     <Platform Name="x64" />
@@ -11,6 +11,7 @@
   <Folder Name="/src/">
     <Project Path="src/MVFC.Aspire.Helpers.CloudStorage/MVFC.Aspire.Helpers.CloudStorage.csproj" />
     <Project Path="src/MVFC.Aspire.Helpers.GcpPubSub/MVFC.Aspire.Helpers.GcpPubSub.csproj" />
+    <Project Path="src/MVFC.Aspire.Helpers.GcpSpanner/MVFC.Aspire.Helpers.GcpSpanner.csproj" Id="87e1f935-ed4d-426d-99df-2f5d824111cc" />
     <Project Path="src/MVFC.Aspire.Helpers.Gotenberg/MVFC.Aspire.Helpers.Gotenberg.csproj" />
     <Project Path="src/MVFC.Aspire.Helpers.Keycloak/MVFC.Aspire.Helpers.Keycloak.csproj" />
     <Project Path="src/MVFC.Aspire.Helpers.Mailpit/MVFC.Aspire.Helpers.Mailpit.csproj" />

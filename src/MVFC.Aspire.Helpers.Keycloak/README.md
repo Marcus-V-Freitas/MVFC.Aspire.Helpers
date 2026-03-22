@@ -1,4 +1,4 @@
-﻿# MVFC.Aspire.Helpers.Keycloak
+# MVFC.Aspire.Helpers.Keycloak
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
@@ -115,6 +115,24 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
+```
+
+## Provisioning diagram
+
+```mermaid
+sequenceDiagram
+    participant Aspire as .NET Aspire
+    participant Container as Keycloak Container
+    participant Configurator as Keycloak Seed Processor
+    
+    Aspire->>Container: Start container (quay.io/keycloak/keycloak)
+    Container-->>Aspire: Ready (port 8080 available)
+    Aspire->>Configurator: Trigger OnResourceReady
+    Configurator->>Container: Authenticate as Admin
+    Configurator->>Container: Import Realms & Clients
+    Configurator->>Container: Import Users & Roles
+    Configurator-->>Aspire: Provisioning Completed
+    Aspire->>App: Start App
 ```
 
 ## `AddKeycloak()` options

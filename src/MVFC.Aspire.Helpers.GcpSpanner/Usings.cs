@@ -1,0 +1,19 @@
+﻿global using System.Net;
+global using Aspire.Hosting;
+global using Aspire.Hosting.ApplicationModel;
+global using MVFC.Aspire.Helpers.GcpSpanner.Models;
+global using MVFC.Aspire.Helpers.GcpSpanner.Resources;
+global using MVFC.Aspire.Helpers.GcpSpanner;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Diagnostics.HealthChecks;
+global using MVFC.Aspire.Helpers.GcpSpanner.Annotations;
+global using MVFC.Aspire.Helpers.GcpSpanner.HealthChecks;
+global using Google.Api.Gax;
+global using Google.Api.Gax.ResourceNames;
+global using Google.Cloud.Spanner.Admin.Database.V1;
+global using Google.Cloud.Spanner.Admin.Instance.V1;
+global using Google.Cloud.Spanner.Common.V1;
+global using Grpc.Core;
+global using System.Net.Sockets;
+global using MVFC.Aspire.Helpers.GcpSpanner.Processors;
+

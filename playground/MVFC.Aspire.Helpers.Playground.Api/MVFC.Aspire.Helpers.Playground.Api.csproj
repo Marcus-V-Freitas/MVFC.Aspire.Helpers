@@ -18,6 +18,7 @@
 		<PackageReference Include="Google.Cloud.PubSub.V1" />
 		<PackageReference Include="Google.Cloud.Storage.V1" />
 		<PackageReference Include="MongoDB.Driver" />
+        <PackageReference Include="Google.Cloud.Spanner.Data" />
 	</ItemGroup>
 
 </Project>

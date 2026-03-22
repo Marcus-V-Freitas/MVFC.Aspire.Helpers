@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Tests.Unit.GcpPubSub;
+namespace MVFC.Aspire.Helpers.Tests.Unit.GcpPubSub;
 
 public sealed class PubSubEmulatorExtensionsTests
 {
@@ -29,6 +29,19 @@ public sealed class PubSubEmulatorExtensionsTests
 
         // Assert
         act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void AddGcpPubSub_ShouldThrow_WhenPortIsInvalid()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+
+        // Act
+        var act = () => builder.AddGcpPubSub("pubsub", -1);
+
+        // Assert
+        act.Should().Throw<ArgumentOutOfRangeException>();
     }
 
     [Fact]

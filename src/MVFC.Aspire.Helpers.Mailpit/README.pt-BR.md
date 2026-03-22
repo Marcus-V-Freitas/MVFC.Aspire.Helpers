@@ -1,4 +1,4 @@
-﻿# MVFC.Aspire.Helpers.Mailpit
+# MVFC.Aspire.Helpers.Mailpit
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -75,6 +75,18 @@ builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
        .WaitFor(mailpit);
 
 await builder.Build().RunAsync();
+```
+
+## Diagrama de provisionamento
+
+```mermaid
+sequenceDiagram
+    participant Aspire as .NET Aspire
+    participant Container as Mailpit Container
+    
+    Aspire->>Container: Start container (axllent/mailpit)
+    Container-->>Aspire: Ready (SMTP and UI ports available)
+    Aspire->>App: Start App with SMTP ConnectionString
 ```
 
 ## Métodos Fluentes

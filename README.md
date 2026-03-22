@@ -1,4 +1,4 @@
-﻿# MVFC.Aspire.Helpers
+# MVFC.Aspire.Helpers
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
@@ -48,6 +48,7 @@ Once you learn how one helper works, the others feel immediately familiar.
 | [MVFC.Aspire.Helpers.CloudStorage](src/MVFC.Aspire.Helpers.CloudStorage/README.md) | Google Cloud Storage (GCS emulator) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.CloudStorage) |
 | [MVFC.Aspire.Helpers.Mongo](src/MVFC.Aspire.Helpers.Mongo/README.md) | MongoDB with Replica Set | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Mongo) |
 | [MVFC.Aspire.Helpers.GcpPubSub](src/MVFC.Aspire.Helpers.GcpPubSub/README.md) | Google Pub/Sub (emulator + UI) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpPubSub) |
+| [MVFC.Aspire.Helpers.GcpSpanner](src/MVFC.Aspire.Helpers.GcpSpanner/README.md) | Google Cloud Spanner (emulator) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpSpanner) |
 | [MVFC.Aspire.Helpers.Gotenberg](src/MVFC.Aspire.Helpers.Gotenberg/README.md) | Gotenberg (PDF conversion) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Gotenberg) |
 | [MVFC.Aspire.Helpers.WireMock](src/MVFC.Aspire.Helpers.WireMock/README.md) | WireMock.Net (API mocking) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.WireMock) |
 | [MVFC.Aspire.Helpers.Mailpit](src/MVFC.Aspire.Helpers.Mailpit/README.md) | Mailpit (SMTP emulator) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Mailpit) |
@@ -63,6 +64,7 @@ Once you learn how one helper works, the others feel immediately familiar.
 dotnet add package MVFC.Aspire.Helpers.CloudStorage
 dotnet add package MVFC.Aspire.Helpers.Mongo
 dotnet add package MVFC.Aspire.Helpers.GcpPubSub
+dotnet add package MVFC.Aspire.Helpers.GcpSpanner
 dotnet add package MVFC.Aspire.Helpers.Gotenberg
 dotnet add package MVFC.Aspire.Helpers.WireMock
 dotnet add package MVFC.Aspire.Helpers.Mailpit
@@ -86,6 +88,9 @@ var mongo = builder.AddMongoReplicaSet("mongo")
 
 var pubSub = builder.AddGcpPubSub("gcp-pubsub")
     .WithPubSubConfigs(pubSubConfig);
+
+var spanner = builder.AddGcpSpanner("spanner")
+    .WithSpannerConfigs(spannerConfig);
 
 var mailpit = builder.AddMailpit("mailpit");
 
@@ -124,6 +129,7 @@ await builder.Build().RunAsync().ConfigureAwait(false);
 src/
   MVFC.Aspire.Helpers.CloudStorage/
   MVFC.Aspire.Helpers.GcpPubSub/
+  MVFC.Aspire.Helpers.GcpSpanner/
   MVFC.Aspire.Helpers.Gotenberg/
   MVFC.Aspire.Helpers.Keycloak/
   MVFC.Aspire.Helpers.Mailpit/

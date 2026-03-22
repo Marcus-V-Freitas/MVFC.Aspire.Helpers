@@ -1,4 +1,4 @@
-﻿# MVFC.Aspire.Helpers.RabbitMQ
+# MVFC.Aspire.Helpers.RabbitMQ
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
@@ -87,6 +87,24 @@ builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
        .WaitFor(rabbitMQ);
 
 await builder.Build().RunAsync();
+```
+
+## Provisioning diagram
+
+```mermaid
+sequenceDiagram
+    participant Aspire as .NET Aspire
+    participant Container as RabbitMQ Container
+    participant Configurator as RabbitMQ Processor
+    
+    Aspire->>Container: Start container (rabbitmq:management)
+    Container-->>Aspire: Ready (AMQP port 5672 available)
+    Aspire->>Configurator: Trigger OnResourceReady
+    Configurator->>Container: Create Exchanges
+    Configurator->>Container: Create Queues
+    Configurator->>Container: Bind Queues to Exchanges
+    Configurator-->>Aspire: Provisioning Completed
+    Aspire->>App: Start App with AMQP ConnectionString
 ```
 
 ## `AddRabbitMQ` parameters

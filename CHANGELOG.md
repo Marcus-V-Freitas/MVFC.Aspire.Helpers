@@ -1,9 +1,16 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [7.0.0] - 2026-03-22
+
+### Added
+- Created GCP Spanner helper integration (`AddGcpSpanner`) with health check and emulator extensions.
+- Added comprehensive unit tests for `GcpPubSub`, `Mongo`, and `GcpSpanner`, increasing overall line coverage to 97.6%.
+- Added Mermaid sequence diagrams for provisioning flow to all helper project READMEs.
 
 ## [6.4.4] - 2026-03-21
 
@@ -218,6 +225,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[7.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v6.4.4...v7.0.0
 [6.4.4]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v6.4.3...v6.4.4
 [6.4.3]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v6.4.2...v6.4.3
 [6.4.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v6.4.1...v6.4.2

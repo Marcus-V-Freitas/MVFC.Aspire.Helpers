@@ -2,6 +2,27 @@
 
 public static class InstanceHelpers
 {
+    public static SpannerConnection CreateSpannerConnection(this IConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        var options = configuration.GetSection("Spanner").Get<SpannerOptions>()
+                      ?? throw new InvalidOperationException("Spanner configuration is missing.");
+
+        var dataSource = DatabaseName.FormatProjectInstanceDatabase(
+            options.ProjectId,
+            options.InstanceId,
+            options.DatabaseId);
+
+        var builder = new SpannerConnectionStringBuilder()
+        {
+            EmulatorDetection = EmulatorDetection.EmulatorOnly,
+            DataSource = dataSource,
+        };
+
+        return new SpannerConnection(builder.ConnectionString);
+    }
+
     public static async Task<PublisherServiceApiClient> CreatePubSubClientAsync() =>
         await new PublisherServiceApiClientBuilder
         {
