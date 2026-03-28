@@ -43,6 +43,8 @@ public static class ApigeeEmulatorExtensions
             resourceBuilder = resourceBuilder
                 .WithContainerRuntimeArgs(ctx => ctx.Args.Add("--add-host=host.docker.internal:host-gateway"));
         }
+
+        return resourceBuilder;
     }
 
     /// <summary>
