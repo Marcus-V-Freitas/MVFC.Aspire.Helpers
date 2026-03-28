@@ -1,0 +1,16 @@
+<TargetEndpoint name="default">
+  <!-- Referencia o TargetServer injetado dinamicamente pelo ApigeeDeployLifecycleHook -->
+  <HTTPTargetConnection>
+    <LoadBalancer>
+      <Server name="aspire-backend"/>
+    </LoadBalancer>
+  </HTTPTargetConnection>
+
+  <!-- FaultRules: tratamento global de erros do backend -->
+  <DefaultFaultRule name="DefaultFault">
+    <AlwaysEnforce>true</AlwaysEnforce>
+    <Step>
+      <Name>AM-DefaultFaultResponse</Name>
+    </Step>
+  </DefaultFaultRule>
+</TargetEndpoint>

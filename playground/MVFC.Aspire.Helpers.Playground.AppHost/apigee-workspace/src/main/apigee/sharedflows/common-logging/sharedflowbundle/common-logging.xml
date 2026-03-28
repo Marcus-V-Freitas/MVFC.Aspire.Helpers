@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SharedFlowBundle name="common-logging" revision="1">
+  <Description>SharedFlow reutilizável para logging de request/response</Description>
+  <Policies>
+    <Policy>JS-LogRequestResponse</Policy>
+  </Policies>
+  <Resources>
+    <Resource>jsc://log-request-response.js</Resource>
+  </Resources>
+  <SharedFlows>
+    <SharedFlow>default</SharedFlow>
+  </SharedFlows>
+</SharedFlowBundle>

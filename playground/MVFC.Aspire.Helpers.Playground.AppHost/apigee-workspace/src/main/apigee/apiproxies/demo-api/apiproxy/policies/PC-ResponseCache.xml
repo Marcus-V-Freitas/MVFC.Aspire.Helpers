@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PopulateCache name="PC-ResponseCache">
+  <DisplayName>Populate Response Cache</DisplayName>
+  <CacheKey>
+    <Prefix>demo-api</Prefix>
+    <KeyFragment ref="request.uri"/>
+  </CacheKey>
+  <Scope>Exclusive</Scope>
+  <Source>response.content</Source>
+  <ExpirySettings>
+    <TimeoutInSec>30</TimeoutInSec>
+  </ExpirySettings>
+</PopulateCache>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage name="AM-CacheHit">
+  <DisplayName>Set Cache Hit Response</DisplayName>
+  <Set>
+    <Payload contentType="application/json">{responseCacheData}</Payload>
+    <StatusCode>200</StatusCode>
+    <ReasonPhrase>OK</ReasonPhrase>
+    <Headers>
+      <Header name="Content-Type">application/json</Header>
+      <Header name="X-Cache">HIT</Header>
+    </Headers>
+  </Set>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <AssignTo createNew="false" transport="http" type="response"/>
+</AssignMessage>

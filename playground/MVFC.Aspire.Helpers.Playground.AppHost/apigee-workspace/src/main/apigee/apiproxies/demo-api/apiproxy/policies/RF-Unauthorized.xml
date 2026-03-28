@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RaiseFault name="RF-Unauthorized">
+  <DisplayName>Raise 401 Unauthorized</DisplayName>
+  <FaultResponse>
+    <Set>
+      <StatusCode>401</StatusCode>
+      <ReasonPhrase>Unauthorized</ReasonPhrase>
+      <Headers>
+        <Header name="Content-Type">application/json</Header>
+        <Header name="WWW-Authenticate">Basic realm="demo-api"</Header>
+      </Headers>
+      <Payload contentType="application/json">{
+  "error": "Unauthorized",
+  "code": 401,
+  "message": "{credentials.errorMessage}",
+  "proxy": "demo-api"
+}</Payload>
+    </Set>
+  </FaultResponse>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</RaiseFault>

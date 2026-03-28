@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Quota name="QU-RateLimit">
+  <DisplayName>Quota - 5 per minute</DisplayName>
+  <Allow count="5"/>
+  <Interval>1</Interval>
+  <TimeUnit>minute</TimeUnit>
+  <Distributed>false</Distributed>
+  <Synchronous>true</Synchronous>
+  <Identifier ref="request.header.X-Forwarded-For"/>
+</Quota>

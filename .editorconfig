@@ -366,7 +366,7 @@ dotnet_diagnostic.IDE0032.severity = suggestion
 dotnet_diagnostic.IDE0033.severity = suggestion
 
 # Usar expressão condicional no lugar de if/return
-dotnet_diagnostic.IDE0046.severity = suggestion
+dotnet_diagnostic.IDE0046.severity = none
 
 # File-scoped namespace
 dotnet_diagnostic.IDE0161.severity = warning
@@ -413,7 +413,7 @@ dotnet_diagnostic.CA1063.severity = warning
 dotnet_diagnostic.CA1852.severity = suggestion
 
 # Não capturar Exception genérica
-dotnet_diagnostic.CA1031.severity = suggestion
+dotnet_diagnostic.CA1031.severity = none
 
 # Não usar string literals repetidos (magic strings)
 dotnet_diagnostic.CA1707.severity = warning

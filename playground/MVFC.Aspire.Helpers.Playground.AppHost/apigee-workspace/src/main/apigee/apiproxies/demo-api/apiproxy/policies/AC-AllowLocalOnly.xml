@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AccessControl name="AC-AllowLocalOnly">
+  <DisplayName>Allow Local IPs Only</DisplayName>
+  <IPRules noRuleMatchAction="DENY">
+    <MatchRule action="ALLOW">
+      <SourceAddress mask="32">127.0.0.1</SourceAddress>
+    </MatchRule>
+    <MatchRule action="ALLOW">
+      <SourceAddress mask="8">10.0.0.0</SourceAddress>
+    </MatchRule>
+    <MatchRule action="ALLOW">
+      <SourceAddress mask="12">172.16.0.0</SourceAddress>
+    </MatchRule>
+    <MatchRule action="ALLOW">
+      <SourceAddress mask="16">192.168.0.0</SourceAddress>
+    </MatchRule>
+  </IPRules>
+</AccessControl>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RaiseFault name="RF-NotFound">
+  <DisplayName>Raise 404 Not Found</DisplayName>
+  <FaultResponse>
+    <Set>
+      <StatusCode>404</StatusCode>
+      <ReasonPhrase>Not Found</ReasonPhrase>
+      <Headers>
+        <Header name="Content-Type">application/json</Header>
+      </Headers>
+      <Payload contentType="application/json">{
+  "error": "Not Found",
+  "code": 404,
+  "message": "O recurso solicitado não existe neste proxy.",
+  "proxy": "demo-api",
+  "path": "{request.path}"
+}</Payload>
+    </Set>
+  </FaultResponse>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</RaiseFault>

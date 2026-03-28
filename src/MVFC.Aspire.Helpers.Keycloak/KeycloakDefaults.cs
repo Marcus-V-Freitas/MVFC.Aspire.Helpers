@@ -1,10 +1,10 @@
-﻿namespace MVFC.Aspire.Helpers.Keycloak;
+namespace MVFC.Aspire.Helpers.Keycloak;
 
 internal static class KeycloakDefaults
 {    
     internal const string DEFAULT_IMAGE = "quay.io/keycloak/keycloak";
     internal const string DEFAULT_TAG = "26.1";
-    internal const int HOST_PORT = 8080;
+    internal const int HOST_PORT = 8081;
     internal const string ADMIN_USERNAME_ENV = "KEYCLOAK_ADMIN";
     internal const string ADMIN_PASSWORD_ENV = "KEYCLOAK_ADMIN_PASSWORD";
     internal const string DEFAULT_ADMIN_USER = "admin";

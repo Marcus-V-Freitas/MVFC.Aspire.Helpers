@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage name="AM-CacheMissHeader">
+  <DisplayName>Set Cache Miss Header</DisplayName>
+  <Add>
+    <Headers>
+      <Header name="X-Cache">MISS</Header>
+    </Headers>
+  </Add>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <AssignTo createNew="false" transport="http" type="response"/>
+</AssignMessage>

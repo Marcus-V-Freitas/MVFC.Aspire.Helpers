@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<FlowCallout name="FC-CallLogging">
+  <DisplayName>Call Logging SharedFlow</DisplayName>
+  <SharedFlowBundle>common-logging</SharedFlowBundle>
+</FlowCallout>

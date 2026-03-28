@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ExtractVariables name="EV-HealthStatus">
+  <DisplayName>Extract Health Status</DisplayName>
+  <Source>healthCheckResponse</Source>
+  <VariablePrefix>health</VariablePrefix>
+  <HeaderPattern>
+    <Pattern ignoreCase="true">{statusValue}</Pattern>
+    <Variable name="Content-Type"/>
+  </HeaderPattern>
+  <Variable name="healthCheckResponse.content">
+    <Pattern>{healthBody}</Pattern>
+  </Variable>
+</ExtractVariables>
