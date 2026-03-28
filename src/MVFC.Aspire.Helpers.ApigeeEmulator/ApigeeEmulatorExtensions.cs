@@ -29,11 +29,20 @@ public static class ApigeeEmulatorExtensions
 
         builder.Services.TryAddEventingSubscriber<ApigeeEmulatorLifecycleHook>();
 
-        return builder.AddResource(resource)
+        var resourceBuilder = builder.AddResource(resource)
             .WithDockerImage(
                 image: ApigeeEmulatorDefaults.DEFAULT_IMAGE,
                 tag: ApigeeEmulatorDefaults.DEFAULT_IMAGE_TAG)
             .WithApigeeEndpoints(controlPort, trafficPort);
+
+        // On Linux (e.g. GitHub Actions), Docker Engine does not inject host.docker.internal
+        // automatically. Add it manually so the Apigee proxy can reach Aspire-managed backends.
+        // On macOS/Windows, Docker Desktop already provides host.docker.internal.
+        if (OperatingSystem.IsLinux())
+        {
+            resourceBuilder = resourceBuilder
+                .WithContainerRuntimeArgs(ctx => ctx.Args.Add("--add-host=host.docker.internal:host-gateway"));
+        }
     }
 
     /// <summary>
