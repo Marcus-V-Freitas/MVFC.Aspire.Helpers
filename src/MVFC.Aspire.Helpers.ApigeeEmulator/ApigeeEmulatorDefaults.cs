@@ -30,10 +30,10 @@ internal static class ApigeeEmulatorDefaults
 
     // Emulator readiness check
     internal const string EMULATOR_READY_PATH = "/v1/emulator/tree";
-    internal const int EMULATOR_READY_MAX_RETRIES = 60; // 5 minutes (300 * 1s)
+    internal const int EMULATOR_READY_MAX_RETRIES = 300;
     internal const int EMULATOR_READY_DELAY_SECONDS = 1;
 
     // Proxy readiness check (after deploy)
-    internal const int PROXY_READY_MAX_RETRIES = 60; // 3 minutes (180 * 1s)
+    internal const int PROXY_READY_MAX_RETRIES = 180;
     internal const int PROXY_READY_DELAY_SECONDS = 1;
 }
