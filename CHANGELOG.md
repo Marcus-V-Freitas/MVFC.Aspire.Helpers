@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.2.0] - 2026-03-29
+
+### Added
+- Created Google Apigee Emulator helper integration (`AddApigeeEmulator`) with extensions for workspace configuration, bundle deployment, and dynamic TargetServer wiring.
+- Added a comprehensive `demo-api` workspace equipped with complete proxy policies and flows.
+- Added unit and integration tests for the Apigee Emulator helper.
+- Integrated the Apigee Emulator into the Playground with relevant example endpoints.
+
+### Changed
+- Adjusted Keycloak ports and overall playground configuration.
+- Updated the solution structure to accommodate the new Apigee module and tests.
+
 ## [7.1.0] - 2026-03-22
 
 ### Changed
@@ -230,6 +242,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[7.2.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.1.0...v7.2.0
 [7.1.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.0.0...v7.1.0
 [7.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v6.4.4...v7.0.0
 [6.4.4]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v6.4.3...v6.4.4

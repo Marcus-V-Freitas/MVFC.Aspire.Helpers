@@ -125,8 +125,8 @@ sequenceDiagram
     participant Container as Keycloak Container
     participant Configurator as Keycloak Seed Processor
     
-    Aspire->>Container: Start container (quay.io/keycloak/keycloak)
-    Container-->>Aspire: Ready (port 8080 available)
+    Aspire->>Container: Start container (keycloak)
+    Container-->>Aspire: Ready (port 8081 available)
     Aspire->>Configurator: Trigger OnResourceReady
     Configurator->>Container: Authenticate as Admin
     Configurator->>Container: Import Realms & Clients
