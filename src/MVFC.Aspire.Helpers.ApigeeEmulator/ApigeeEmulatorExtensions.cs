@@ -35,6 +35,12 @@ public static class ApigeeEmulatorExtensions
                 tag: ApigeeEmulatorDefaults.DEFAULT_IMAGE_TAG)
             .WithApigeeEndpoints(controlPort, trafficPort);
 
+        if (OperatingSystem.IsLinux())
+        {
+            return resourceBuilder
+                .WithContainerRuntimeArgs("--add-host=host.docker.internal:host-gateway");
+        }
+
         return resourceBuilder;
     }
 

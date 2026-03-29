@@ -308,7 +308,7 @@ public sealed class ApigeeEmulatorLifecycleHook(
         new
         {
             name = targetServerName,
-            host = ApigeeEmulatorDefaults.DockerInternalHost,
+            host = ApigeeEmulatorDefaults.DOCKER_INTERNAL_HOST,
             port,
             isEnabled = true
         }

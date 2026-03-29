@@ -23,8 +23,7 @@ internal static class ApigeeEmulatorDefaults
     internal const string DEFAULT_ENVIRONMENT = "local";
 
     // Docker DNS for host machine access from container
-    internal static string DockerInternalHost =>
-        OperatingSystem.IsLinux() ? "172.17.0.1" : "host.docker.internal";
+    internal const string DOCKER_INTERNAL_HOST = "host.docker.internal";
 
     // Default TargetServer name used in targets/default.xml
     internal const string DEFAULT_TARGET_SERVER_NAME = "aspire-backend";
