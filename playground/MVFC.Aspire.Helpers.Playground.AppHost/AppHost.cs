@@ -214,7 +214,7 @@ var wireMock = builder.AddWireMock("wireMock", port: 7070, configure: (server) =
 
 // --- Apigee Emulator ---
 builder.AddApigeeEmulator("apigee-emulator")
-       .WithWorkspace(apigeeWorkspace, "/demo/health")
+       .WithWorkspace(apigeeWorkspace, "demo/health")
        .WithEnvironment("local")
        .WithBackend(api);
 
