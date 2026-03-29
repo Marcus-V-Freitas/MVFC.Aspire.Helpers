@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <SpikeArrest name="SA-SpikeArrest">
-  <DisplayName>Spike Arrest - 10ps</DisplayName>
-  <Rate>10ps</Rate>
-  <Identifier ref="request.header.X-Forwarded-For"/>
+  <DisplayName>Spike Arrest - 2pm</DisplayName>
+  <Rate>2pm</Rate>
   <UseEffectiveCount>true</UseEffectiveCount>
 </SpikeArrest>

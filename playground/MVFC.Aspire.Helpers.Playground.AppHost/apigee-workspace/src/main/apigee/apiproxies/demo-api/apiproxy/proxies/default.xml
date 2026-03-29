@@ -1,15 +1,23 @@
-<ProxyEndpoint name="default">
+﻿<ProxyEndpoint name="default">
   <PreFlow name="PreFlow">
-    <Request>
-      <Step>
-        <Name>SA-SpikeArrest</Name>
-      </Step>
-    </Request>
+    <Request/>
     <Response/>
   </PreFlow>
 
   <!-- Conditional Flows -->
   <Flows>
+    
+    <!-- Spike Arrest Test -->
+    <Flow name="Spike Arrest Test">
+      <Condition>(proxy.pathsuffix MatchesPath "/spike-arrest")</Condition>
+      <Request>
+        <Step>
+          <Name>SA-SpikeArrest</Name>
+        </Step>
+      </Request>
+      <Response/>
+    </Flow>
+
     <!-- CORS Preflight: responde OPTIONS sem ir ao backend -->
     <Flow name="CORS Preflight">
       <Condition>(request.verb = "OPTIONS")</Condition>

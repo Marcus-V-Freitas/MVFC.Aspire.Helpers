@@ -559,6 +559,23 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     [Fact]
+    public async Task Apigee_SpikeArrest_ShouldReturnTooManyRequests_WhenLimitExceeded()
+    {
+        // Arrange
+        var requestCount = 5;
+
+        // Act
+        var tasks = Enumerable.Range(0, requestCount)
+                              .Select(_ => _fixture.ApigeeApi.GetSpikeArrestAsync());
+
+        var responses = await Task.WhenAll(tasks);
+
+        // Assert
+        responses.Should().Contain(r => r.StatusCode == HttpStatusCode.TooManyRequests,
+            "O Spike Arrest deveria ter barrado as requisições simultâneas.");
+    }
+
+    [Fact]
     public async Task Apigee_Admin_ShouldReturnOk_WhenLocalIp()
     {
         // Arrange & Act — AccessControl allows local IPs

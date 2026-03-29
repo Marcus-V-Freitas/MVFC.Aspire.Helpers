@@ -2,6 +2,10 @@
 
 internal interface IApigeeApiClient
 {
+    // Spike Arrest — GET /demo/spike-arrest (rate limited via SpikeArrest policy)
+    [Get("/demo/spike-arrest")]
+    internal Task<HttpResponseMessage> GetSpikeArrestAsync();
+
     // Root — GET /demo/
     [Get("/demo/")]
     internal Task<ApiResponse<string>> GetRootAsync();
