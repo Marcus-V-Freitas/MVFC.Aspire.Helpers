@@ -85,6 +85,10 @@ public sealed class ApigeeEmulatorLifecycleHook(
         var zipPath = await EnsureBundleAsync(resource, backendAnnotation).ConfigureAwait(false);
         await DeployZipAsync(controlClient, zipPath, resource.ApigeeEnvironment, ct).ConfigureAwait(false);
 
+        // Cleanup after successful deploy
+        if (FileSystem.FileExists(zipPath))
+            FileSystem.FileDelete(zipPath);
+
         var trafficPort = ResolveBackendPort(resource, ApigeeEmulatorResource.TRAFFIC_PORT_NAME);
         using var trafficClient = HttpClientFactory(trafficPort);
 
@@ -190,7 +194,12 @@ public sealed class ApigeeEmulatorLifecycleHook(
         {
             var existingContent = FileSystem.FileReadAllText(tsPath);
             var existing = JsonSerializer.Deserialize<JsonElement>(existingContent);
-            foreach (var item in existing.EnumerateArray()) merged.Add(item);
+
+            if (existing.ValueKind != JsonValueKind.Array)
+                throw new InvalidOperationException($"[Apigee] '{tsPath}' must be a JSON array. Got: {existing.ValueKind}.");
+
+            foreach (var item in existing.EnumerateArray())
+                merged.Add(item);
         }
 
         var incoming = JsonSerializer.Deserialize<JsonElement>(incomingJson);

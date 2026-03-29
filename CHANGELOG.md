@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.2.1] - 2026-03-30
+
+### Changed
+- Minor Apigee improvements: fixed documentation typo for control port, added bundle zip cleanup post-deployment, and added strict JSON validation for target servers.
+- Improved unit test robustness in `ApigeeEmulatorLifecycleHookTests` by replacing `Arg.Any` catch-all matchers with exact parameter validations (such as verifying strict file/directory paths and zip names).
+
 ## [7.2.0] - 2026-03-29
 
 ### Added
@@ -242,6 +248,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[7.2.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.2.0...v7.2.1
 [7.2.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.1.0...v7.2.0
 [7.1.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.0.0...v7.1.0
 [7.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v6.4.4...v7.0.0

@@ -13,7 +13,7 @@ public static class ApigeeEmulatorExtensions
     /// </summary>
     /// <param name="builder">Distributed application builder.</param>
     /// <param name="name">Logical resource name for the Apigee Emulator.</param>
-    /// <param name="controlPort">Host-side port for the control API. Default: 7070.</param>
+    /// <param name="controlPort">Host-side port for the control API. Default: 7071.</param>
     /// <param name="trafficPort">Host-side port for the traffic gateway. Default: 8998.</param>
     /// <returns>A resource builder for the <see cref="ApigeeEmulatorResource"/>.</returns>
     public static IResourceBuilder<ApigeeEmulatorResource> AddApigeeEmulator(

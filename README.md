@@ -1,4 +1,4 @@
-﻿# MVFC.Aspire.Helpers
+# MVFC.Aspire.Helpers
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
@@ -117,6 +117,8 @@ var wireMock = builder.AddWireMock("wireMock", port: 7070, configure: (server) =
           .WithDefaultBodyType(BodyType.String)
           .OnGet<string>(() => ("OK", HttpStatusCode.OK, null));
 });
+
+var api = builder.AddProject<Projects.MyApi>("api");
 
 var apigee = builder.AddApigeeEmulator("apigee-emulator")
     .WithWorkspace("./apigee-workspace")
