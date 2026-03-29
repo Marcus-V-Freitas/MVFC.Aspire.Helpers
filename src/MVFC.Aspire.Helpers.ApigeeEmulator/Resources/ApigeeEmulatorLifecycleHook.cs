@@ -307,8 +307,7 @@ public sealed class ApigeeEmulatorLifecycleHook(
 
     private static string? BuildTargetServersJsonOrNull(ApigeeTargetBackendAnnotation? annotation)
     {
-        if (annotation is null)
-            return null;
+        if (annotation is null) return null;
 
         var (host, port) = ResolveBackendEndpoint(annotation.Backend, annotation.EndpointName);
 
@@ -322,8 +321,8 @@ public sealed class ApigeeEmulatorLifecycleHook(
             new
             {
                 name = targetServerName,
-                host = host, // Agora dinâmico
-                port = port, // Agora dinâmico (TargetPort ou AllocatedPort)
+                host = host, // Agora dinâmico (resolve o nome do container ou o IP do host)
+                port = port, // Usa a TargetPort para containers
                 isEnabled = true
             }
         };
@@ -339,24 +338,24 @@ public sealed class ApigeeEmulatorLifecycleHook(
             ? allEndpoints[0]
             : allEndpoints.FirstOrDefault(e => e.Name.Contains(endpointName, StringComparison.OrdinalIgnoreCase))) ?? throw new InvalidOperationException($"[Apigee] Nenhum endpoint encontrado para o recurso '{resource.Name}' com nome '{endpointName}'.");
 
-        // Verifica se o backend é um container (ex: WireMock) ou um executável no Host (ex: ProjectResource)
+        // Verifica se o backend é um container (ex: WireMock, Keycloak, Redis)
         var isContainer = resource.Annotations.OfType<ContainerImageAnnotation>().Any();
 
         if (isContainer)
         {
-            // Container-to-Container: Usa a rede interna do Aspire
-            // Usa o TargetPort (porta do app dentro do container) e o nome do recurso como DNS
-            var port = endpoint.TargetPort ?? endpoint.Port ?? 80;
-            return (resource.Name, port);
+            // Container-to-Container: Usa a rede interna do Aspire.
+            // O DNS do Docker usa o nome do recurso em minúsculas e a porta interna da imagem.
+            var containerHost = resource.Name.ToLowerInvariant();
+            var targetPort = endpoint.TargetPort ?? endpoint.Port ?? 80;
+            return (containerHost, targetPort);
         }
         else
         {
-            // Host-to-Container: O backend está rodando direto no runner (ex: dotnet run)
-            // Usa o host.docker.internal e a porta alocada no host
-            var port = endpoint.AllocatedEndpoint?.Port ?? endpoint.Port
-                ?? throw new InvalidOperationException($"[Apigee] O endpoint '{endpoint.Name}' do recurso '{resource.Name}' não tem porta configurada.");
+            // Host-to-Container: Se for um Projeto .NET (builder.AddProject)
+            var hostPort = endpoint.AllocatedEndpoint?.Port ?? endpoint.Port
+                ?? throw new InvalidOperationException($"[Apigee] O endpoint '{endpoint.Name}' não tem porta configurada.");
 
-            return (ApigeeEmulatorDefaults.DOCKER_INTERNAL_HOST, port);
+            return (ApigeeEmulatorDefaults.DOCKER_INTERNAL_HOST, hostPort);
         }
     }
 }
