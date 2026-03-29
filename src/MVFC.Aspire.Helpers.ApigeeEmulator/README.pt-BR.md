@@ -131,9 +131,7 @@ sequenceDiagram
 
 Após validar o projeto base e a configuração final presente em `proxies/default.xml`, este documento foi atualizado para apresentar a real estrutura de rotas, o diagrama do fluxo da requisição e todas as **22 políticas** com suas funções aplicadas corretamente as suas respectivas rotas.
 
-## Diagrama Geral dos Fluxos (Atualizado)
-
-Nesta configuração, o SpikeArrest não atua mais no `PreFlow` global, tendo sido isolado para testes na rota `/spike-arrest`.
+## Diagrama Geral dos Fluxos
 
 ```mermaid
 flowchart TD
@@ -164,7 +162,7 @@ flowchart TD
 
 ## Políticas Implementadas Diretamente nos Fluxos
 
-Abaixo estão detalhadas as aplicabilidades e o exato local de uso de cada política configurada nos arquivos XML do emulador. Diferente do rascunho inicial, cada policy se encontra associada apenas à sua condição específica:
+Abaixo estão detalhadas as aplicabilidades e o exato local de uso de cada política configurada nos arquivos XML do emulador:
 
 | Rota / Fluxo | Políticas Utilizadas | Objetivo prático no projeto atual |
 |---|---|---|

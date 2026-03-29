@@ -1,9 +1,15 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [7.2.2] - 2026-03-30
+
+### Changed
+- Changed `HealthCheckPath` accessibility in `ApigeeEmulatorResource` from `public` to `internal`.
+- Updated flow diagrams and policy applicability documentation in Apigee Emulator READMEs.
 
 ## [7.2.1] - 2026-03-30
 
@@ -248,6 +254,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[7.2.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.2.1...v7.2.2
 [7.2.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.2.0...v7.2.1
 [7.2.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.1.0...v7.2.0
 [7.1.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.0.0...v7.1.0

@@ -131,9 +131,7 @@ sequenceDiagram
 
 After validating the base project and the final configuration present in `proxies/default.xml`, this document was updated to present the real routing structure, the request flow diagram, and all **22 policies** with their functions correctly applied to their respective routes.
 
-## General Flow Diagram (Updated)
-
-In this configuration, SpikeArrest no longer acts in the global `PreFlow`; it has been isolated for testing in the `/spike-arrest` route.
+## General Flow Diagram
 
 ```mermaid
 flowchart TD
@@ -164,7 +162,7 @@ flowchart TD
 
 ## Policies Implemented directly in Flows
 
-Below are detailed the applicabilities and the exact usage location of each policy configured in the emulator's XML files. Unlike the initial draft, each policy is associated only with its specific condition:
+Below are detailed the applicabilities and the exact usage location of each policy configured in the emulator's XML files:
 
 | Route / Flow | Used Policies | Practical Goal in Current Project |
 |---|---|---|

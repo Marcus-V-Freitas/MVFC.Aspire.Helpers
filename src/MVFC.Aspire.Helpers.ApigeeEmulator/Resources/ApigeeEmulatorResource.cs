@@ -23,7 +23,7 @@ public sealed class ApigeeEmulatorResource(string name) : ContainerResource(name
     /// <summary>
     /// Gets or sets the health check path used to verify the emulator's readiness.
     /// </summary>
-    public string? HealthCheckPath { get; set; }
+    internal string? HealthCheckPath { get; set; }
 
     /// <summary>
     /// Gets or sets the Apigee environment name for deployment. Defaults to <see cref="ApigeeEmulatorDefaults.DEFAULT_ENVIRONMENT"/>.
