@@ -305,25 +305,58 @@ public sealed class ApigeeEmulatorLifecycleHook(
     private static ApigeeTargetBackendAnnotation? GetBackendAnnotation(ApigeeEmulatorResource resource) =>
         resource.Annotations.OfType<ApigeeTargetBackendAnnotation>().FirstOrDefault();
 
-    private static string? BuildTargetServersJsonOrNull(ApigeeTargetBackendAnnotation? annotation) =>
-        annotation is not null
-            ? BuildTargetServersJson(
-                annotation.TargetServerName,
-                ResolveBackendPort(annotation.Backend, annotation.EndpointName))
-            : null;
+    private static string? BuildTargetServersJsonOrNull(ApigeeTargetBackendAnnotation? annotation)
+    {
+        if (annotation is null)
+            return null;
 
-    internal static string BuildTargetServersJson(string targetServerName, int port)
+        var (host, port) = ResolveBackendEndpoint(annotation.Backend, annotation.EndpointName);
+
+        return BuildTargetServersJson(annotation.TargetServerName, host, port);
+    }
+
+    internal static string BuildTargetServersJson(string targetServerName, string host, int port)
     {
         var servers = new[]
         {
-        new
-        {
-            name = targetServerName,
-            host = ApigeeEmulatorDefaults.DOCKER_INTERNAL_HOST,
-            port,
-            isEnabled = true
-        }
-    };
+            new
+            {
+                name = targetServerName,
+                host = host, // Agora dinâmico
+                port = port, // Agora dinâmico (TargetPort ou AllocatedPort)
+                isEnabled = true
+            }
+        };
         return JsonSerializer.Serialize(servers, _jsonOptions);
+    }
+
+    // Substitui o antigo ResolveBackendPort e ExtractPort
+    internal static (string Host, int Port) ResolveBackendEndpoint(IResource resource, string endpointName)
+    {
+        var allEndpoints = resource.Annotations.OfType<EndpointAnnotation>().ToList();
+
+        var endpoint = (allEndpoints.Count == 1
+            ? allEndpoints[0]
+            : allEndpoints.FirstOrDefault(e => e.Name.Contains(endpointName, StringComparison.OrdinalIgnoreCase))) ?? throw new InvalidOperationException($"[Apigee] Nenhum endpoint encontrado para o recurso '{resource.Name}' com nome '{endpointName}'.");
+
+        // Verifica se o backend é um container (ex: WireMock) ou um executável no Host (ex: ProjectResource)
+        var isContainer = resource.Annotations.OfType<ContainerImageAnnotation>().Any();
+
+        if (isContainer)
+        {
+            // Container-to-Container: Usa a rede interna do Aspire
+            // Usa o TargetPort (porta do app dentro do container) e o nome do recurso como DNS
+            var port = endpoint.TargetPort ?? endpoint.Port ?? 80;
+            return (resource.Name, port);
+        }
+        else
+        {
+            // Host-to-Container: O backend está rodando direto no runner (ex: dotnet run)
+            // Usa o host.docker.internal e a porta alocada no host
+            var port = endpoint.AllocatedEndpoint?.Port ?? endpoint.Port
+                ?? throw new InvalidOperationException($"[Apigee] O endpoint '{endpoint.Name}' do recurso '{resource.Name}' não tem porta configurada.");
+
+            return (ApigeeEmulatorDefaults.DOCKER_INTERNAL_HOST, port);
+        }
     }
 }

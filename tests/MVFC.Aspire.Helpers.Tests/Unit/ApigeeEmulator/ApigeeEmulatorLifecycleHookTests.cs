@@ -302,7 +302,7 @@ public sealed class ApigeeEmulatorLifecycleHookTests : IDisposable
     [Fact]
     public void BuildTargetServersJson_CorrectFormat()
     {
-        var json = ApigeeEmulatorLifecycleHook.BuildTargetServersJson("my-ts", 1234);
+        var json = ApigeeEmulatorLifecycleHook.BuildTargetServersJson("my-ts", "test", 1234);
 
         json.Should().Contain("\"name\": \"my-ts\"");
         json.Should().Contain("\"port\": 1234");
