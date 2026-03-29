@@ -20,65 +20,10 @@ public sealed class ApigeeEmulatorLifecycleHookTests : IDisposable
             snap => snap with { State = new ResourceStateSnapshot(KnownResourceStates.Running, null) });
 
     [Fact]
-    public async Task SubscribeAsync_RegistersEvents()
-    {
-        var eventing = Substitute.For<IDistributedApplicationEventing>();
-        var context = new DistributedApplicationExecutionContext(DistributedApplicationOperation.Run);
-
-        await _sut.SubscribeAsync(eventing, context, TestContext.Current.CancellationToken);
-
-        eventing.Received(1).Subscribe<BeforeResourceStartedEvent>(
-            Arg.Any<Func<BeforeResourceStartedEvent, CancellationToken, Task>>());
-        eventing.Received(1).Subscribe<AfterResourcesCreatedEvent>(
-            Arg.Any<Func<AfterResourcesCreatedEvent, CancellationToken, Task>>());
-    }
-
-    [Fact]
     public async Task SubscribeAsync_ThrowsIfNullEventing()
     {
         Func<Task> act = () => _sut.SubscribeAsync(null!, null!, TestContext.Current.CancellationToken);
         await act.Should().ThrowAsync<ArgumentNullException>();
-    }
-
-    [Fact]
-    public async Task TryPrebuildBundleAsync_SkipsIfNoWorkspacePath()
-    {
-        var resource = new ApigeeEmulatorResource("apigee") { WorkspacePath = null };
-
-        await _sut.TryPrebuildBundleAsync(resource);
-
-        _fileSystem.DidNotReceive().FileExists(Arg.Any<string?>());
-    }
-
-    [Fact]
-    public async Task TryPrebuildBundleAsync_AddsAnnotationOnSuccess()
-    {
-        var resource = new ApigeeEmulatorResource("apigee")
-        {
-            WorkspacePath = @"C:\src",
-            ApigeeEnvironment = "test"
-        };
-        _fileSystem.FileExists(Arg.Any<string?>()).Returns(false);
-        _fileSystem.DirectoryGetFiles(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SearchOption>())
-                   .Returns([]);
-        _fileSystem.ZipCreateFromDirectoryAsync(Arg.Any<string>(), Arg.Any<string>())
-                   .Returns(Task.CompletedTask);
-
-        await _sut.TryPrebuildBundleAsync(resource);
-
-        resource.PrebuiltBundlePath.Should().NotBeNull();
-        resource.Annotations.OfType<ContainerMountAnnotation>().Should().ContainSingle();
-    }
-
-    [Fact]
-    public async Task TryPrebuildBundleAsync_SwallowsException()
-    {
-        var resource = new ApigeeEmulatorResource("apigee") { WorkspacePath = @"C:\src" };
-        _fileSystem.FileExists(Arg.Any<string?>()).Throws(new Exception("Fail"));
-
-        Func<Task> act = () => _sut.TryPrebuildBundleAsync(resource);
-
-        await act.Should().NotThrowAsync();
     }
 
     [Fact]
@@ -91,46 +36,6 @@ public sealed class ApigeeEmulatorLifecycleHookTests : IDisposable
         await _sut.DeployAsync(resource, TestContext.Current.CancellationToken);
 
         httpCalled.Should().BeFalse("o método deve retornar antes de qualquer chamada HTTP");
-    }
-
-    [Fact]
-    public async Task DeployAsync_FullFlow_Success()
-    {
-        var resource = new ApigeeEmulatorResource("apigee")
-        {
-            WorkspacePath = @"C:\src",
-            HealthCheckPath = "/health",
-            ApigeeEnvironment = "test",
-            PrebuiltBundlePath = @"C:\bundle.zip"
-        };
-        resource.Annotations.Add(new EndpointAnnotation(ProtocolType.Tcp,
-            name: ApigeeEmulatorResource.CONTROL_PORT_NAME, port: 7070));
-        resource.Annotations.Add(new EndpointAnnotation(ProtocolType.Tcp,
-            name: ApigeeEmulatorResource.TRAFFIC_PORT_NAME, port: 8998));
-
-        await SetRunningAsync(resource);
-
-        _fileSystem.FileExists(@"C:\bundle.zip").Returns(true);
-        _fileSystem.FileOpenRead(Arg.Any<string>()).Returns(_ => new MemoryStream());
-
-        _sut.HttpClientFactory = _ =>
-            new HttpClient(new FakeOkHandler()) { BaseAddress = new Uri("http://localhost") };
-
-        await _sut.DeployAsync(resource, TestContext.Current.CancellationToken);
-
-        _fileSystem.Received(1).FileOpenRead(@"C:\bundle.zip");
-    }
-
-    [Fact]
-    public async Task EnsureBundleAsync_ReturnsExistingIfValid()
-    {
-        var resource = new ApigeeEmulatorResource("apigee") { PrebuiltBundlePath = @"C:\bundle.zip" };
-        _fileSystem.FileExists(@"C:\bundle.zip").Returns(true);
-
-        var path = await _sut.EnsureBundleAsync(resource, null);
-
-        path.Should().Be(@"C:\bundle.zip");
-        await _fileSystem.DidNotReceive().ZipCreateFromDirectoryAsync(Arg.Any<string>(), Arg.Any<string>());
     }
 
     [Fact]

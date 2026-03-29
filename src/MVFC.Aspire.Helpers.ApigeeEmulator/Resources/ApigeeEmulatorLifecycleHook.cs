@@ -31,20 +31,9 @@ public sealed class ApigeeEmulatorLifecycleHook(
     {
         ArgumentNullException.ThrowIfNull(eventing);
 
-        eventing.Subscribe<BeforeResourceStartedEvent>(OnBeforeResourceStartedAsync);
         eventing.Subscribe<AfterResourcesCreatedEvent>(OnAfterResourcesCreatedAsync);
 
         return Task.CompletedTask;
-    }
-
-    private async Task OnBeforeResourceStartedAsync(
-        BeforeResourceStartedEvent @event,
-        CancellationToken ct = default)
-    {
-        if (@event.Resource is not ApigeeEmulatorResource resource)
-            return;
-
-        await TryPrebuildBundleAsync(resource).ConfigureAwait(false);
     }
 
     private async Task OnAfterResourcesCreatedAsync(
@@ -53,33 +42,6 @@ public sealed class ApigeeEmulatorLifecycleHook(
     {
         foreach (var resource in @event.Model.Resources.OfType<ApigeeEmulatorResource>())
             await DeployAsync(resource, ct).ConfigureAwait(false);
-    }
-
-    internal async Task TryPrebuildBundleAsync(ApigeeEmulatorResource resource)
-    {
-        if (string.IsNullOrWhiteSpace(resource.WorkspacePath))
-            return;
-
-        try
-        {
-            var zipPath = GetBundlePath(resource);
-            var targetServersJson = BuildTargetServersJsonOrNull(GetBackendAnnotation(resource));
-
-            await BuildZipAsync(resource.WorkspacePath, zipPath, targetServersJson, resource.ApigeeEnvironment)
-                .ConfigureAwait(false);
-
-            resource.PrebuiltBundlePath = zipPath;
-            resource.Annotations.Add(new ContainerMountAnnotation(
-                source: zipPath,
-                target: ApigeeEmulatorDefaults.CONTAINER_BUNDLE_PATH,
-                type: ContainerMountType.BindMount,
-                isReadOnly: true));
-        }
-        catch
-        {
-            // Portas dinâmicas em testes podem não estar resolvíveis aqui.
-            // O DeployAsync reconstruirá o bundle após o container subir.
-        }
     }
 
     internal async Task DeployAsync(ApigeeEmulatorResource resource, CancellationToken ct)
@@ -134,16 +96,10 @@ public sealed class ApigeeEmulatorLifecycleHook(
         }
     }
 
-    /// <summary>
-    /// Reutiliza o bundle pré-construído se ainda for válido; caso contrário, reconstrói.
-    /// </summary>
     internal async Task<string> EnsureBundleAsync(
         ApigeeEmulatorResource resource,
         ApigeeTargetBackendAnnotation? backendAnnotation)
     {
-        if (FileSystem.FileExists(resource.PrebuiltBundlePath))
-            return resource.PrebuiltBundlePath!;
-
         var zipPath = GetBundlePath(resource);
         var targetServersJson = BuildTargetServersJsonOrNull(backendAnnotation);
 
