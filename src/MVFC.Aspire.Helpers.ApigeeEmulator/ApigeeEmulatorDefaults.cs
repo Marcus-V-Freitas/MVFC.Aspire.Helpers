@@ -34,6 +34,6 @@ internal static class ApigeeEmulatorDefaults
     internal const int EMULATOR_READY_DELAY_SECONDS = 1;
 
     // Proxy readiness check (after deploy)
-    internal const int PROXY_READY_MAX_RETRIES = 60;
-    internal const int PROXY_READY_DELAY_SECONDS = 1;
+    internal const int PROXY_READY_MAX_RETRIES = 30;
+    internal const int PROXY_READY_DELAY_SECONDS = 3;
 }

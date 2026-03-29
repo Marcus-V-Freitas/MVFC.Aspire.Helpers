@@ -22,7 +22,7 @@ public sealed class ApigeeEmulatorLifecycleHook(
     /// Gets or sets the HTTP client factory.
     /// </summary>
     internal Func<int, HttpClient> HttpClientFactory { get; set; } = port =>
-        new HttpClient { BaseAddress = new Uri($"http://localhost:{port}") };
+        new HttpClient { BaseAddress = new Uri($"http://127.0.0.1:{port}") };
 
     public Task SubscribeAsync(
         IDistributedApplicationEventing eventing,
@@ -241,26 +241,37 @@ public sealed class ApigeeEmulatorLifecycleHook(
     }
 
     private static async Task PollUntilReadyAsync(
-        HttpClient client,
-        string path,
-        int maxRetries,
-        int delaySeconds,
-        CancellationToken ct)
+    HttpClient client,
+    string path,
+    int maxRetries,
+    int delaySeconds,
+    CancellationToken ct)
     {
+        var lastError = "Nenhuma tentativa realizada.";
+
         for (var i = 0; i < maxRetries; i++)
         {
             ct.ThrowIfCancellationRequested();
             try
             {
-                var resp = await client.GetAsync(path, ct).ConfigureAwait(false);
+                using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                timeoutCts.CancelAfter(TimeSpan.FromSeconds(5)); // Evita hangs infinitos no CI
+
+                var resp = await client.GetAsync(path, timeoutCts.Token).ConfigureAwait(false);
                 if (resp.IsSuccessStatusCode) return;
+
+                // Se chegou aqui, não é sucesso (ex: 404, 500, 503)
+                lastError = $"Status Code HTTP: {(int)resp.StatusCode} ({resp.StatusCode})";
             }
-            catch { /* serviço ainda não está pronto */ }
+            catch (Exception ex)
+            {
+                lastError = $"Exceção: {ex.Message}";
+            }
 
             await Task.Delay(TimeSpan.FromSeconds(delaySeconds), ct).ConfigureAwait(false);
         }
 
-        throw new TimeoutException($"Timeout aguardando '{client.BaseAddress}{path}'");
+        throw new TimeoutException($"Timeout aguardando '{client.BaseAddress}{path}'. Último erro reportado: {lastError}");
     }
 
     internal async Task DeployZipAsync(
