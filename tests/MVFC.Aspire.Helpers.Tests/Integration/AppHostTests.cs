@@ -474,4 +474,243 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     #endregion
+
+    #region Apigee Emulator
+
+    [Fact]
+    public async Task Apigee_Root_ShouldReturnOk()
+    {
+        // Arrange & Act
+        using var response = await _fixture.ApigeeApi.GetRootAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Should().Contain("Hello from BackendApi");
+    }
+
+    [Fact]
+    public async Task Apigee_Health_ShouldReturnOk()
+    {
+        // Arrange & Act
+        using var response = await _fixture.ApigeeApi.GetHealthAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Should().Contain("healthy");
+    }
+
+    [Fact]
+    public async Task Apigee_Echo_ShouldReturnRequestMetadata()
+    {
+        // Arrange & Act
+        using var response = await _fixture.ApigeeApi.GetEchoAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Should().Contain("method");
+        response.Content.Should().Contain("path");
+    }
+
+    [Fact]
+    public async Task Apigee_Transform_ShouldReturnEnvelopedResponse()
+    {
+        // Arrange & Act
+        using var response = await _fixture.ApigeeApi.GetTransformAsync();
+
+        // Assert — JS-TransformResponse wraps in envelope with status/code/data/metadata
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Should().Contain("status");
+        response.Content.Should().Contain("metadata");
+        response.Content.Should().Contain("transformedBy");
+    }
+
+    [Fact]
+    public async Task Apigee_QuotaTest_ShouldReturnOk()
+    {
+        // Arrange & Act
+        using var response = await _fixture.ApigeeApi.GetQuotaTestAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Should().Contain("Quota test endpoint");
+    }
+
+    [Fact]
+    public async Task Apigee_Info_ShouldReturnServerMetadata()
+    {
+        // Arrange & Act
+        using var response = await _fixture.ApigeeApi.GetInfoAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Should().Contain("BackendApi");
+        response.Content.Should().Contain("ASP.NET Minimal API");
+    }
+
+    [Fact]
+    public async Task Apigee_Cached_ShouldReturnOkOnFirstCall()
+    {
+        // Arrange & Act
+        using var response = await _fixture.ApigeeApi.GetCachedAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Should().Contain("generatedAt");
+    }
+
+    [Fact]
+    public async Task Apigee_SpikeArrest_ShouldReturnTooManyRequests_WhenLimitExceeded()
+    {
+        // Arrange
+        var requestCount = 5;
+
+        // Act
+        var tasks = Enumerable.Range(0, requestCount)
+                              .Select(_ => _fixture.ApigeeApi.GetSpikeArrestAsync());
+
+        var responses = await Task.WhenAll(tasks);
+
+        // Assert
+        responses.Should().Contain(r => r.StatusCode == HttpStatusCode.TooManyRequests,
+            "O Spike Arrest deveria ter barrado as requisições simultâneas.");
+    }
+
+    [Fact]
+    public async Task Apigee_Admin_ShouldReturnOk_WhenLocalIp()
+    {
+        // Arrange & Act — AccessControl allows local IPs
+        using var response = await _fixture.ApigeeApi.GetAdminAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Should().Contain("Admin Dashboard");
+    }
+
+    [Fact]
+    public async Task Apigee_Secure_ShouldReturnUnauthorized_WhenNoAuth()
+    {
+        // Arrange — errado:errado
+        var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes("errado:errado"));
+        var authHeader = $"Basic {credentials}";
+
+        using var response = await _fixture.ApigeeApi.GetSecureWithAuthAsync(authHeader);
+
+        // Assert — RF-Unauthorized raises 401 when no credentials
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Apigee_Secure_ShouldReturnOk_WhenValidBasicAuth()
+    {
+        // Arrange — admin:secret123
+        var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes("admin:secret123"));
+        var authHeader = $"Basic {credentials}";
+
+        // Act
+        using var response = await _fixture.ApigeeApi.GetSecureWithAuthAsync(authHeader);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Should().Contain("authenticatedUser");
+    }
+
+    [Fact]
+    public async Task Apigee_Secure_ShouldReturnUnauthorized_WhenInvalidBasicAuth()
+    {
+        // Arrange — wrong credentials
+        var credentials = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("wrong:creds"));
+        var authHeader = $"Basic {credentials}";
+
+        // Act
+        using var response = await _fixture.ApigeeApi.GetSecureWithAuthAsync(authHeader);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Apigee_Xml_ShouldReturnJsonConvertedResponse()
+    {
+        // Arrange & Act — X2J-ConvertResponse converts XML to JSON
+        using var response = await _fixture.ApigeeApi.GetXmlAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Should().Contain("catalog");
+        response.Content.Should().Contain("book");
+    }
+
+    [Fact]
+    public async Task Apigee_NotFound_ShouldReturn404()
+    {
+        // Arrange & Act — RF-NotFound raises 404
+        using var response = await _fixture.ApigeeApi.GetNotFoundAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Apigee_HealthCheck_ShouldReturnOkWithHealthHeader()
+    {
+        // Arrange & Act — SC-HealthCheck + EV-HealthStatus + AM-SetHealthHeader
+        using var response = await _fixture.ApigeeApi.GetHealthCheckAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Apigee_Delete_ShouldReturnMethodNotAllowed()
+    {
+        // Arrange & Act — RF-MethodNotAllowed blocks DELETE
+        using var response = await _fixture.ApigeeApi.DeleteRootAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.MethodNotAllowed);
+    }
+
+    [Fact]
+    public async Task Apigee_Put_ShouldReturnMethodNotAllowed()
+    {
+        // Arrange & Act — RF-MethodNotAllowed blocks PUT
+        using var response = await _fixture.ApigeeApi.PutRootAsync("test");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.MethodNotAllowed);
+    }
+
+    [Fact]
+    public async Task Apigee_Patch_ShouldReturnMethodNotAllowed()
+    {
+        // Arrange & Act — RF-MethodNotAllowed blocks PATCH
+        using var response = await _fixture.ApigeeApi.PatchRootAsync("test");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.MethodNotAllowed);
+    }
+
+    [Fact]
+    public async Task Apigee_CustomHeaders_ShouldBePresentInResponse()
+    {
+        // Arrange & Act — AM-AddCustomHeaders adds X-Proxy-Name and X-Request-Id
+        using var response = await _fixture.ApigeeApi.GetRootAsync();
+
+        // Assert — PostFlow adds custom headers
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Headers.Should().ContainKey("X-Proxy-Name");
+    }
+
+    [Fact]
+    public async Task Apigee_CorsHeaders_ShouldBePresentInResponse()
+    {
+        // Arrange & Act — AM-AddCorsHeaders adds CORS headers in PostFlow
+        using var response = await _fixture.ApigeeApi.GetRootAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Headers.Should().ContainKey("Access-Control-Allow-Origin");
+    }
+
+    #endregion
 }

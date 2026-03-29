@@ -4,6 +4,8 @@ public static class DefaultEndpoints
 {
     public static void MapAllEndpoints(this IEndpointRouteBuilder app) 
     {
+        app.MapApigeeEndpoints();
+
         var apiGroup = app.MapGroup("/api");
 
         apiGroup.MapCloudStorageEndpoints();

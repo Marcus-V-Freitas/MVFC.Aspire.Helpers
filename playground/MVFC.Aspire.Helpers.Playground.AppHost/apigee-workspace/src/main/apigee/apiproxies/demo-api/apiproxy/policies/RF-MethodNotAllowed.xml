@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RaiseFault name="RF-MethodNotAllowed">
+  <DisplayName>Raise 405 Method Not Allowed</DisplayName>
+  <FaultResponse>
+    <Set>
+      <StatusCode>405</StatusCode>
+      <ReasonPhrase>Method Not Allowed</ReasonPhrase>
+      <Headers>
+        <Header name="Content-Type">application/json</Header>
+        <Header name="Allow">GET, POST, OPTIONS</Header>
+      </Headers>
+      <Payload contentType="application/json">{
+  "error": "Method Not Allowed",
+  "code": 405,
+  "message": "Este proxy aceita apenas GET, POST e OPTIONS.",
+  "method": "{request.verb}",
+  "proxy": "demo-api"
+}</Payload>
+    </Set>
+  </FaultResponse>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</RaiseFault>

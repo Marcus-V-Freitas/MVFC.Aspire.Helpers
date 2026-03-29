@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage name="AM-AddCustomHeaders">
+  <DisplayName>Add Custom Headers</DisplayName>
+  <Set>
+    <Headers>
+      <Header name="X-Proxy-Name">demo-api</Header>
+      <Header name="X-Powered-By">Apigee-Emulator-Aspire</Header>
+    </Headers>
+  </Set>
+  <Add>
+    <Headers>
+      <Header name="X-Request-Id">{messageid}</Header>
+    </Headers>
+  </Add>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <AssignTo createNew="false" transport="http" type="response"/>
+</AssignMessage>

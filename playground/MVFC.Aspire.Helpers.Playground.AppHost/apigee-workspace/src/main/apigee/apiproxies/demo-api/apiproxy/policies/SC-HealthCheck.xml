@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceCallout name="SC-HealthCheck">
+  <DisplayName>Service Callout - Backend Health Check</DisplayName>
+  <Request clearPayload="true" variable="healthCheckRequest">
+    <Set>
+      <Verb>GET</Verb>
+    </Set>
+  </Request>
+  <Response>healthCheckResponse</Response>
+  <HTTPTargetConnection>
+    <LoadBalancer>
+      <Server name="aspire-backend"/>
+    </LoadBalancer>
+    <Path>/health</Path>
+  </HTTPTargetConnection>
+</ServiceCallout>

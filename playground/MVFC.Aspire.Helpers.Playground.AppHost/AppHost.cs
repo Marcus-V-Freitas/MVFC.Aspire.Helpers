@@ -41,6 +41,8 @@ var dumps = new MongoClassDump<TestDatabase>(
     Quantity: 100,
     Faker: MongoFaker.GenerateFaker());
 
+// --- Apigee Workspace ---
+var apigeeWorkspace = Path.Combine(Directory.GetCurrentDirectory(), "apigee-workspace");
 
 // --- GCP Spanner ---
 var spanner = builder.AddGcpSpanner("gcp-spanner")
@@ -89,7 +91,7 @@ var rabbitMQ = builder.AddRabbitMQ("rabbitmq")
                           new QueueConfig(Name: "test-queue", ExchangeName: "test-exchange", RoutingKey: "test.*", DeadLetterExchange: "dead-letter", MessageTTL: 100),
                           new QueueConfig(Name: "empty-queue", ExchangeName: "test-exchange", RoutingKey: "empty.*"),
                           new QueueConfig(Name: "dlq", ExchangeName: "dead-letter"))
-                      .WithDataVolume("rabbit-mq");                    
+                      .WithDataVolume("rabbit-mq");
 
 // --- Redis ---
 var redis = builder.AddRedis("redis")
@@ -117,14 +119,14 @@ var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-e
                  .WithReference(pubSubUI)
                  .WaitFor(pubSubUI)
                  .WithReference(gotenberg)
-                 .WaitFor(gotenberg)                 
+                 .WaitFor(gotenberg)
                  .WaitFor(keycloak)
                  .WithReference(keycloak,
                          realmName: "my-app",
                          clientId: "my-api",
                          clientSecret: "api-secret-1234")
-                 .WaitFor(spanner)
-                 .WithReference(spanner);
+                  .WaitFor(spanner)
+                  .WithReference(spanner);
 
 var wireMock = builder.AddWireMock("wireMock", port: 7070, configure: (server) => {
     server.Endpoint("/api/echo")
@@ -208,5 +210,11 @@ var wireMock = builder.AddWireMock("wireMock", port: 7070, configure: (server) =
               return (null!, HttpStatusCode.Accepted, BodyType.Json);
           });
 });
+
+// --- Apigee Emulator ---
+builder.AddApigeeEmulator("apigee-emulator")
+       .WithWorkspace(apigeeWorkspace, "demo/health")
+       .WithEnvironment("local")
+       .WithBackend(api, "aspire-backend");
 
 await builder.Build().RunAsync().ConfigureAwait(false);

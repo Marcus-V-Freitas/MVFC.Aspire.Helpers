@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<XMLToJSON name="X2J-ConvertResponse">
+  <DisplayName>Convert XML Response to JSON</DisplayName>
+  <Source>response</Source>
+  <OutputVariable>response</OutputVariable>
+  <Options>
+    <RecognizeNumber>true</RecognizeNumber>
+    <RecognizeBoolean>true</RecognizeBoolean>
+    <RecognizeNull>true</RecognizeNull>
+    <NullValue>NULL</NullValue>
+    <NamespaceBlockName>#namespaces</NamespaceBlockName>
+    <DefaultNamespaceNodeName>&amp;</DefaultNamespaceNodeName>
+    <NamespaceSeparator>***</NamespaceSeparator>
+    <TextNodeName>#text</TextNodeName>
+    <AttributeBlockName>#attrs</AttributeBlockName>
+    <AttributePrefix>@</AttributePrefix>
+    <OutputPrefix></OutputPrefix>
+    <OutputSuffix></OutputSuffix>
+  </Options>
+</XMLToJSON>

@@ -1,0 +1,40 @@
+<APIProxy name="demo-api" revision="1">
+  <Description>Demo proxy completo com SpikeArrest, CORS, Custom Headers, RaiseFault, JavaScript Transform, Quota, SharedFlow Logging, ServiceCallout, Cache, AccessControl, BasicAuth e XMLToJSON</Description>
+  <ProxyEndpoints>
+    <ProxyEndpoint>default</ProxyEndpoint>
+  </ProxyEndpoints>
+  <TargetEndpoints>
+    <TargetEndpoint>default</TargetEndpoint>
+    <TargetEndpoint>public</TargetEndpoint>
+  </TargetEndpoints>
+  <Resources>
+    <Resource>jsc://transform-response.js</Resource>
+    <Resource>jsc://validate-credentials.js</Resource>
+  </Resources>
+  <Policies>
+    <!-- Fase 1 -->
+    <Policy>SA-SpikeArrest</Policy>
+    <Policy>AM-AddCorsHeaders</Policy>
+    <Policy>AM-CorsPreflightResponse</Policy>
+    <Policy>AM-AddCustomHeaders</Policy>
+    <Policy>RF-NotFound</Policy>
+    <Policy>RF-MethodNotAllowed</Policy>
+    <Policy>JS-TransformResponse</Policy>
+    <Policy>QU-RateLimit</Policy>
+    <!-- Fase 2 -->
+    <Policy>FC-CallLogging</Policy>
+    <Policy>SC-HealthCheck</Policy>
+    <Policy>EV-HealthStatus</Policy>
+    <Policy>AM-SetHealthHeader</Policy>
+    <Policy>LC-ResponseCache</Policy>
+    <Policy>PC-ResponseCache</Policy>
+    <Policy>AM-CacheHit</Policy>
+    <Policy>AM-CacheMissHeader</Policy>
+    <Policy>AC-AllowLocalOnly</Policy>
+    <Policy>BA-DecodeBasicAuth</Policy>
+    <Policy>JS-ValidateCredentials</Policy>
+    <Policy>RF-Unauthorized</Policy>
+    <Policy>X2J-ConvertResponse</Policy>
+    <Policy>AM-DefaultFaultResponse</Policy>
+  </Policies>
+</APIProxy>

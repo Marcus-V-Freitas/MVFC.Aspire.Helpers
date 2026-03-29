@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<LookupCache name="LC-ResponseCache">
+  <DisplayName>Lookup Response Cache</DisplayName>
+  <CacheKey>
+    <Prefix>demo-api</Prefix>
+    <KeyFragment ref="request.uri"/>
+  </CacheKey>
+  <Scope>Exclusive</Scope>
+  <AssignTo>responseCacheData</AssignTo>
+</LookupCache>

@@ -1,0 +1,199 @@
+﻿<ProxyEndpoint name="default">
+  <PreFlow name="PreFlow">
+    <Request/>
+    <Response/>
+  </PreFlow>
+
+  <!-- Conditional Flows -->
+  <Flows>
+    
+    <!-- Spike Arrest Test -->
+    <Flow name="Spike Arrest Test">
+      <Condition>(proxy.pathsuffix MatchesPath "/spike-arrest")</Condition>
+      <Request>
+        <Step>
+          <Name>SA-SpikeArrest</Name>
+        </Step>
+      </Request>
+      <Response/>
+    </Flow>
+
+    <!-- CORS Preflight: responde OPTIONS sem ir ao backend -->
+    <Flow name="CORS Preflight">
+      <Condition>(request.verb = "OPTIONS")</Condition>
+      <Request/>
+      <Response>
+        <Step>
+          <Name>AM-CorsPreflightResponse</Name>
+        </Step>
+      </Response>
+    </Flow>
+
+    <!-- Método não permitido: bloqueia DELETE, PUT, PATCH -->
+    <Flow name="Block Unsupported Methods">
+      <Condition>(request.verb = "DELETE") or (request.verb = "PUT") or (request.verb = "PATCH")</Condition>
+      <Request>
+        <Step>
+          <Name>RF-MethodNotAllowed</Name>
+        </Step>
+      </Request>
+      <Response/>
+    </Flow>
+
+    <!-- Not Found: rota de demonstração -->
+    <Flow name="Not Found Demo">
+      <Condition>(proxy.pathsuffix MatchesPath "/notfound")</Condition>
+      <Request>
+        <Step>
+          <Name>RF-NotFound</Name>
+        </Step>
+      </Request>
+      <Response/>
+    </Flow>
+
+    <!-- Transform: envelopa response via JavaScript -->
+    <Flow name="Transform Response">
+      <Condition>(proxy.pathsuffix MatchesPath "/transform") or (proxy.pathsuffix MatchesPath "/transform/**")</Condition>
+      <Request/>
+      <Response>
+        <Step>
+          <Name>JS-TransformResponse</Name>
+        </Step>
+      </Response>
+    </Flow>
+
+    <!-- Quota Test: limita a 5 chamadas/minuto -->
+    <Flow name="Quota Test">
+      <Condition>(proxy.pathsuffix MatchesPath "/quota-test") or (proxy.pathsuffix MatchesPath "/quota-test/**")</Condition>
+      <Request>
+        <Step>
+          <Name>QU-RateLimit</Name>
+        </Step>
+      </Request>
+      <Response/>
+    </Flow>
+
+    <!-- Health Check Aggregation: ServiceCallout + ExtractVariables -->
+    <Flow name="Health Check Aggregation">
+      <Condition>(proxy.pathsuffix MatchesPath "/health-check")</Condition>
+      <Request>
+        <Step>
+          <Name>SC-HealthCheck</Name>
+        </Step>
+        <Step>
+          <Name>EV-HealthStatus</Name>
+        </Step>
+      </Request>
+      <Response>
+        <Step>
+          <Name>AM-SetHealthHeader</Name>
+        </Step>
+      </Response>
+    </Flow>
+
+    <!-- Response Cache: LookupCache + PopulateCache -->
+    <Flow name="Cached Response">
+      <Condition>(proxy.pathsuffix MatchesPath "/cached") or (proxy.pathsuffix MatchesPath "/cached/**")</Condition>
+      <Request>
+        <Step>
+          <Name>LC-ResponseCache</Name>
+        </Step>
+        <!-- Se cache HIT, retorna direto sem ir ao backend -->
+        <Step>
+          <Name>AM-CacheHit</Name>
+          <Condition>(lookupcache.LC-ResponseCache.cachehit = true)</Condition>
+        </Step>
+      </Request>
+      <Response>
+        <!-- Se cache MISS, popula cache e marca header -->
+        <Step>
+          <Name>PC-ResponseCache</Name>
+          <Condition>(lookupcache.LC-ResponseCache.cachehit = false)</Condition>
+        </Step>
+        <Step>
+          <Name>AM-CacheMissHeader</Name>
+          <Condition>(lookupcache.LC-ResponseCache.cachehit = false)</Condition>
+        </Step>
+      </Response>
+    </Flow>
+
+    <!-- Admin: AccessControl por IP -->
+    <Flow name="Admin Panel (IP Restricted)">
+      <Condition>(proxy.pathsuffix MatchesPath "/admin") or (proxy.pathsuffix MatchesPath "/admin/**")</Condition>
+      <Request>
+        <Step>
+          <Name>AC-AllowLocalOnly</Name>
+        </Step>
+      </Request>
+      <Response/>
+    </Flow>
+
+    <!-- Secure: Basic Auth -->
+    <Flow name="Secure Resource (Basic Auth)">
+      <Condition>(proxy.pathsuffix MatchesPath "/secure") or (proxy.pathsuffix MatchesPath "/secure/**")</Condition>
+      <Request>
+        <Step>
+          <Name>BA-DecodeBasicAuth</Name>
+        </Step>
+        <Step>
+          <Name>JS-ValidateCredentials</Name>
+        </Step>
+        <Step>
+          <Name>RF-Unauthorized</Name>
+          <Condition>(credentials.isValid != "true")</Condition>
+        </Step>
+      </Request>
+      <Response/>
+    </Flow>
+
+    <!-- XML to JSON: converte response XML para JSON -->
+    <Flow name="XML to JSON Conversion">
+      <Condition>(proxy.pathsuffix MatchesPath "/xml") or (proxy.pathsuffix MatchesPath "/xml/**")</Condition>
+      <Request/>
+      <Response>
+        <Step>
+          <Name>X2J-ConvertResponse</Name>
+        </Step>
+      </Response>
+    </Flow>
+  </Flows>
+
+  <PostFlow name="PostFlow">
+    <Request/>
+    <Response>
+      <Step>
+        <Name>AM-AddCorsHeaders</Name>
+      </Step>
+      <Step>
+        <Name>AM-AddCustomHeaders</Name>
+      </Step>
+      <Step>
+        <Name>FC-CallLogging</Name>
+      </Step>
+    </Response>
+  </PostFlow>
+
+  <HTTPProxyConnection>
+    <BasePath>/demo</BasePath>
+  </HTTPProxyConnection>
+
+  <!-- Route Rules (ordem importa: primeira que casar ganha) -->
+  <RouteRule name="cors-preflight-noroute">
+    <Condition>(request.verb = "OPTIONS")</Condition>
+    <!-- Sem TargetEndpoint: responde direto do proxy -->
+  </RouteRule>
+
+  <!-- Cache HIT: não precisa ir ao backend -->
+  <RouteRule name="cache-hit-noroute">
+    <Condition>(lookupcache.LC-ResponseCache.cachehit = true)</Condition>
+  </RouteRule>
+
+  <RouteRule name="to-public-target">
+    <Condition>(proxy.pathsuffix MatchesPath "/status") or (proxy.pathsuffix MatchesPath "/status/**")</Condition>
+    <TargetEndpoint>public</TargetEndpoint>
+  </RouteRule>
+
+  <RouteRule name="to-default-target">
+    <TargetEndpoint>default</TargetEndpoint>
+  </RouteRule>
+</ProxyEndpoint>

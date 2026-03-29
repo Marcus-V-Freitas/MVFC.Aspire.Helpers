@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage name="AM-SetHealthHeader">
+  <DisplayName>Set X-Backend-Health Header</DisplayName>
+  <Add>
+    <Headers>
+      <Header name="X-Backend-Health">{healthCheckResponse.content}</Header>
+    </Headers>
+  </Add>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <AssignTo createNew="false" transport="http" type="response"/>
+</AssignMessage>

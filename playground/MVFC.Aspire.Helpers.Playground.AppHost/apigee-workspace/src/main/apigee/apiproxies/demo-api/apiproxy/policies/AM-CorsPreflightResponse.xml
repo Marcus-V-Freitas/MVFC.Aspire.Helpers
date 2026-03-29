@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage name="AM-CorsPreflightResponse">
+  <DisplayName>CORS Preflight Response</DisplayName>
+  <Set>
+    <StatusCode>200</StatusCode>
+    <ReasonPhrase>OK</ReasonPhrase>
+    <Headers>
+      <Header name="Access-Control-Allow-Origin">*</Header>
+      <Header name="Access-Control-Allow-Methods">GET, POST, OPTIONS</Header>
+      <Header name="Access-Control-Allow-Headers">Content-Type, Authorization, X-Api-Key</Header>
+      <Header name="Access-Control-Max-Age">3600</Header>
+    </Headers>
+    <Payload contentType="application/json">{"message": "CORS preflight OK"}</Payload>
+  </Set>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <AssignTo createNew="false" transport="http" type="response"/>
+</AssignMessage>

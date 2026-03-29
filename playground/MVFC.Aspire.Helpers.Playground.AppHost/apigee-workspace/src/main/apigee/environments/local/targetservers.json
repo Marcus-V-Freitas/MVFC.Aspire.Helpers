@@ -1,0 +1,8 @@
+[
+  {
+    "name": "public-server",
+    "host": "httpbin.org",
+    "port": 80,
+    "isEnabled": true
+  }
+]

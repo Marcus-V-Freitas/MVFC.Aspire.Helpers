@@ -55,6 +55,7 @@ Once you learn how one helper works, the others feel immediately familiar.
 | [MVFC.Aspire.Helpers.RabbitMQ](src/MVFC.Aspire.Helpers.RabbitMQ/README.md) | RabbitMQ | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.RabbitMQ) |
 | [MVFC.Aspire.Helpers.Redis](src/MVFC.Aspire.Helpers.Redis/README.md) | Redis + Redis Commander | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Redis) |
 | [MVFC.Aspire.Helpers.Keycloak](src/MVFC.Aspire.Helpers.Keycloak/README.md) | Keycloak | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Keycloak) |
+| [MVFC.Aspire.Helpers.ApigeeEmulator](src/MVFC.Aspire.Helpers.ApigeeEmulator/README.md) | Apigee Emulator (API proxy) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.ApigeeEmulator) |
 
 ---
 
@@ -71,6 +72,7 @@ dotnet add package MVFC.Aspire.Helpers.Mailpit
 dotnet add package MVFC.Aspire.Helpers.RabbitMQ
 dotnet add package MVFC.Aspire.Helpers.Redis
 dotnet add package MVFC.Aspire.Helpers.Keycloak
+dotnet add package MVFC.Aspire.Helpers.ApigeeEmulator
 ```
 
 ---
@@ -116,6 +118,11 @@ var wireMock = builder.AddWireMock("wireMock", port: 7070, configure: (server) =
           .OnGet<string>(() => ("OK", HttpStatusCode.OK, null));
 });
 
+var apigee = builder.AddApigeeEmulator("apigee-emulator")
+    .WithWorkspace("./apigee-workspace")
+    .WithEnvironment("local")
+    .WithBackend(api);
+
 await builder.Build().RunAsync().ConfigureAwait(false);
 ```
 
@@ -137,6 +144,7 @@ src/
   MVFC.Aspire.Helpers.RabbitMQ/
   MVFC.Aspire.Helpers.Redis/
   MVFC.Aspire.Helpers.WireMock/
+  MVFC.Aspire.Helpers.ApigeeEmulator/
 tests/
   MVFC.Aspire.Helpers.Tests/
 playground/

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage name="AM-DefaultFaultResponse">
+  <DisplayName>Default Fault Response (JSON)</DisplayName>
+  <Set>
+    <Headers>
+      <Header name="Content-Type">application/json</Header>
+    </Headers>
+    <Payload contentType="application/json">{
+  "error": "{fault.name}",
+  "code": "{response.status.code}",
+  "message": "{fault.reason}",
+  "detail": "{fault.detail}",
+  "proxy": "demo-api",
+  "timestamp": "{system.timestamp}"
+}</Payload>
+  </Set>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <AssignTo createNew="false" transport="http" type="response"/>
+</AssignMessage>

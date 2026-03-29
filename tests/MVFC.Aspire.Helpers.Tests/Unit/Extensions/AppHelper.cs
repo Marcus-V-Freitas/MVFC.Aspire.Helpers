@@ -15,4 +15,23 @@ internal static class AppHelper
 
         return executionConfig.EnvironmentVariables.ToDictionary();
     }
+
+    internal static ResourceNotificationService GetResourceNotificationService()
+    {
+        var services = new ServiceCollection();
+
+        services.AddLogging();
+        services.AddSingleton<ResourceLoggerService>();
+
+        var provider = services.BuildServiceProvider();
+        var lifetime = new FakeHostApplicationLifetime();
+
+        var resourceLogger = provider.GetRequiredService<ResourceLoggerService>();
+
+        return new ResourceNotificationService(
+            NullLogger<ResourceNotificationService>.Instance,
+            lifetime,
+            provider,
+            resourceLogger);
+    }
 }
