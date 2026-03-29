@@ -308,35 +308,11 @@ public sealed class ApigeeEmulatorLifecycleHook(
         new
         {
             name = targetServerName,
-            host = GetDockerHostAddress(),
+            host = ApigeeEmulatorDefaults.DockerInternalHost,
             port,
             isEnabled = true
         }
     };
         return JsonSerializer.Serialize(servers, _jsonOptions);
-    }
-
-    internal static string GetDockerHostAddress()
-    {
-        if (!OperatingSystem.IsLinux())
-            return ApigeeEmulatorDefaults.DOCKER_INTERNAL_HOST;
-
-        // No Linux, enumera interfaces de bridge do Docker para obter o gateway real
-        foreach (var iface in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces())
-        {
-            if (iface.OperationalStatus != System.Net.NetworkInformation.OperationalStatus.Up)
-                continue;
-
-            if (!iface.Name.StartsWith("br-", StringComparison.Ordinal) && iface.Name != "docker0")
-                continue;
-
-            var ip = iface.GetIPProperties().UnicastAddresses
-                .FirstOrDefault(a => a.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                ?.Address.ToString();
-
-            if (ip is not null) return ip;
-        }
-
-        return "172.17.0.1"; // fallback: gateway padrão da bridge docker0
     }
 }

@@ -104,6 +104,7 @@ var gotenberg = builder.AddGotenberg("gotenberg", port: 3000);
 
 // Referenciar recursos no projeto
 var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+                 .WithEndpoint("http", e => e.IsProxied = false)
                  .WithReference(cloudStorage)
                  .WaitFor(cloudStorage)
                  .WithReference(mongo)

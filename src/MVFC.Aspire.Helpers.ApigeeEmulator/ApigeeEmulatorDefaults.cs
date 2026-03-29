@@ -23,17 +23,18 @@ internal static class ApigeeEmulatorDefaults
     internal const string DEFAULT_ENVIRONMENT = "local";
 
     // Docker DNS for host machine access from container
-    internal const string DOCKER_INTERNAL_HOST = "host.docker.internal";
+    internal static string DockerInternalHost =>
+        OperatingSystem.IsLinux() ? "172.17.0.1" : "host.docker.internal";
 
     // Default TargetServer name used in targets/default.xml
     internal const string DEFAULT_TARGET_SERVER_NAME = "aspire-backend";
 
     // Emulator readiness check
     internal const string EMULATOR_READY_PATH = "/v1/emulator/tree";
-    internal const int EMULATOR_READY_MAX_RETRIES = 300;
+    internal const int EMULATOR_READY_MAX_RETRIES = 60;
     internal const int EMULATOR_READY_DELAY_SECONDS = 1;
 
     // Proxy readiness check (after deploy)
-    internal const int PROXY_READY_MAX_RETRIES = 180;
+    internal const int PROXY_READY_MAX_RETRIES = 60;
     internal const int PROXY_READY_DELAY_SECONDS = 1;
 }
