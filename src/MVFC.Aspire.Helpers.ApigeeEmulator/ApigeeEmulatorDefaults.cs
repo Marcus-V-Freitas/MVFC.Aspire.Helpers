@@ -7,7 +7,6 @@ internal static class ApigeeEmulatorDefaults
 {
     // Docker image
     internal const string DEFAULT_IMAGE_REGISTRY = "gcr.io/apigee-release/hybrid";
-    internal const string CONTAINER_BUNDLE_PATH = "/bundle/proxy.zip";
     internal const string DEFAULT_IMAGE = "apigee-emulator";
     internal const string DEFAULT_IMAGE_TAG = "1.12.4";
 
@@ -24,9 +23,6 @@ internal static class ApigeeEmulatorDefaults
 
     // Docker DNS for host machine access from container
     internal const string DOCKER_INTERNAL_HOST = "host.docker.internal";
-
-    // Default TargetServer name used in targets/default.xml
-    internal const string DEFAULT_TARGET_SERVER_NAME = "aspire-backend";
 
     // Emulator readiness check
     internal const string EMULATOR_READY_PATH = "/v1/emulator/tree";

@@ -82,13 +82,12 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var apigeeWorkspace = Path.Combine(Directory.GetCurrentDirectory(), "apigee-workspace");
 
-var api = builder.AddProject<Projects.MyApi>("my-api")
-                 .WithHttpEndpoint(port: 5050);
+var api = builder.AddProject<Projects.MyApi>("my-api");
 
 var apigee = builder.AddApigeeEmulator("apigee-emulator")
                     .WithWorkspace(apigeeWorkspace)
                     .WithEnvironment("local")
-                    .WithBackend(api);
+                    .WithBackend(api, "origin");
 
 await builder.Build().RunAsync();
 ```
@@ -128,6 +127,69 @@ sequenceDiagram
 - `WithDockerImage` – overrides the Docker image and tag.
 - `WithBackend` – configures an Aspire backend as a TargetServer for the proxy.
 
+## Architecture and Policies of the Apigee Proxy
+
+After validating the base project and the final configuration present in `proxies/default.xml`, this document was updated to present the real routing structure, the request flow diagram, and all **22 policies** with their functions correctly applied to their respective routes.
+
+## General Flow Diagram (Updated)
+
+In this configuration, SpikeArrest no longer acts in the global `PreFlow`; it has been isolated for testing in the `/spike-arrest` route.
+
+```mermaid
+flowchart TD
+    A["Request → /demo/*"] --> B{"Method / Route?"}
+    
+    B -->|OPTIONS| C["CORS Preflight (AM-Cors) → 200 No Backend"]
+    B -->|DELETE/PUT/PATCH| D["Method Not Allowed (RF) → 405"]
+    
+    B -->|/spike-arrest| E["Spike Arrest Test (SA-SpikeArrest)"]
+    B -->|/notfound| F["Not Found Demo (RF-NotFound) → 404"]
+    B -->|/transform| G["Transform Envelope (JS-TransformResponse)"]
+    B -->|/quota-test| H["Quota Rate Limit (QU-RateLimit)"]
+    B -->|/health-check| I["Health Check (ServiceCallout + AM)"]
+    B -->|/cached| J{"Cache Hit? (LookupCache)"}
+    B -->|/admin| K["Admin Panel (AccessControl IP)"]
+    B -->|/secure| L["Secure Resource (BasicAuth + JS Valid.)"]
+    B -->|/xml| M["XML to JSON Format Convert"]
+    B -->|/status/**| N["TargetRule: public (httpbin)"]
+    B -->|Others| O["TargetRule: default (origin)"]
+
+    J -->|Yes| J1["AM-CacheHit → Responds 200"]
+    J -->|No| J2["Target Backend → Populates PC-Cache + AM-Miss"]
+
+    E & G & H & I & J2 & K & L & M & N & O --> P["PostFlow: Adds CORS + Custom Headers + FC-CallLogging"]
+```
+
+---
+
+## Policies Implemented directly in Flows
+
+Below are detailed the applicabilities and the exact usage location of each policy configured in the emulator's XML files. Unlike the initial draft, each policy is associated only with its specific condition:
+
+| Route / Flow | Used Policies | Practical Goal in Current Project |
+|---|---|---|
+| **`/spike-arrest`** | `SA-SpikeArrest.xml` | Blocks interactions that exceed immediate static volumetry (sudden spikes). |
+| **`OPTIONS` (All)** | `AM-CorsPreflightResponse.xml` | Validates requests without a verb (preflight), returning simulated data directly and blocking access to the target. |
+| **`DELETE, PUT, PATCH`** | `RF-MethodNotAllowed.xml` | Acts as an error interceptor triggering a "Raise Fault" if someone tries to perform data deletion in this demo proxy. |
+| **`/notfound`** | `RF-NotFound.xml` | Maps broken paths to generate an artificial and fast 404 response via RaiseFault. |
+| **`/transform`** | `JS-TransformResponse.xml` | Awaits responses in the output pipeline and triggers a JSON wrapper script via JavaScript. |
+| **`/quota-test`** | `QU-RateLimit.xml` | Regulates how many transactions this route receives per capita under a restrictive time window (5 calls/min). |
+| **`/health-check`** | `SC-HealthCheck.xml` <br> `EV-HealthStatus.xml` <br> `AM-SetHealthHeader.xml` | Makes a parallel request to validate backend dependencies. Fetches the dependency, captures it using variable extraction, and injects notification Headers using AssignMessage. |
+| **`/cached`** | `LC-ResponseCache.xml` <br> `AM-CacheHit.xml` <br> `PC-ResponseCache.xml` <br> `AM-CacheMissHeader.xml` | Triggers lookups and populations of optimized response Caches. In case of a hit, responds without a backend route; if it doesn't exist, advances, registers the value (*Populate*), and marks the outcome. |
+| **`/admin`** | `AC-AllowLocalOnly.xml`| Emits a denial (via firewall policy) barring outsider accesses. Strictly limited by IP ranges of the machine where the Aspire container runs. |
+| **`/secure`** | `BA-DecodeBasicAuth.xml` <br> `JS-ValidateCredentials.xml`<br> `RF-Unauthorized.xml`| Hard authentication routine that decrypts Base64, checks against internal JS, and blows up into an "Unauthorized" error if it fails. |
+| **`/xml`** | `X2J-ConvertResponse.xml` | Restrictive conversion rule on the return gateway that ingests obsolete XML and returns well-formatted JSON to the end user. |
+
+### PostFlow Policies (Applied to all that survive and reach the response):
+
+Whether an intercepted return, a planned error, or a successful call to the backend, the PostFlow policies enrich the output message:
+- `AM-AddCorsHeaders.xml`: Guarantees specifications to avoid browser CORS errors (Allow-Origins).
+- `AM-AddCustomHeaders.xml`: Reinforces additional ID information.
+- `FC-CallLogging.xml`: A delegated callout that isolates our complex logging code, passing it to the `common-logging` SharedFlow.
+
+### Global Faults (Fault Rules Override)
+- `AM-DefaultFaultResponse.xml`: An AssignMessage policy invoked by the Fault Rule when some systemic error happens in Apigee without a specific RaiseFault, modifying the ugly default output to our standard API JSON layout scope.
+
 ## Requirements
 
 - .NET 9+
@@ -137,3 +199,4 @@ sequenceDiagram
 ## License
 
 Apache-2.0
+

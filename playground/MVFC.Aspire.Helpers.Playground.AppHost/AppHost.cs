@@ -104,12 +104,6 @@ var gotenberg = builder.AddGotenberg("gotenberg", port: 3000);
 
 // Referenciar recursos no projeto
 var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
-                 .WithArgs("--urls", "http://0.0.0.0:5050")
-                 .WithEndpoint("http", e =>
-                 {
-                     e.Port = 5050;
-                     e.IsProxied = false;
-                 }, true)
                  .WithReference(cloudStorage)
                  .WaitFor(cloudStorage)
                  .WithReference(mongo)
@@ -221,6 +215,6 @@ var wireMock = builder.AddWireMock("wireMock", port: 7070, configure: (server) =
 builder.AddApigeeEmulator("apigee-emulator")
        .WithWorkspace(apigeeWorkspace, "demo/health")
        .WithEnvironment("local")
-       .WithBackend(api);
+       .WithBackend(api, "aspire-backend");
 
 await builder.Build().RunAsync().ConfigureAwait(false);

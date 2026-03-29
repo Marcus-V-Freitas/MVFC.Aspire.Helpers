@@ -15,10 +15,6 @@ public sealed class ApigeeEmulatorLifecycleHookTests : IDisposable
     public void Dispose() =>
         _notifications.Dispose();
 
-    private Task SetRunningAsync(IResource resource) =>
-        _notifications.PublishUpdateAsync(resource,
-            snap => snap with { State = new ResourceStateSnapshot(KnownResourceStates.Running, null) });
-
     [Fact]
     public async Task SubscribeAsync_ThrowsIfNullEventing()
     {

@@ -14,5 +14,5 @@ internal sealed class ApigeeTargetBackendAnnotation : IResourceAnnotation
     /// <summary>
     /// TargetServer name referenced in targets/default.xml of the proxy.
     /// </summary>
-    public string TargetServerName { get; init; } = ApigeeEmulatorDefaults.DEFAULT_TARGET_SERVER_NAME;
+    public required string TargetServerName { get; init; }
 }

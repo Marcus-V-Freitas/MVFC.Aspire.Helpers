@@ -1,13 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <IsAspireSharedProject>true</IsAspireSharedProject>
+    <Version>0.0.0</Version>
+    <Authors>Marcus Vinicius de Freitas Costa</Authors>
+    <Description>Helpers para integração com o emulador Apigee em projetos .NET Aspire, facilitando o uso de proxies de API em ambientes de desenvolvimento.</Description>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/tree/master/src/MVFC.Aspire.Helpers.ApigeeEmulator</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://www.nuget.org/packages/MVFC.Aspire.Helpers.ApigeeEmulator</PackageProjectUrl>
+    <PackageTags>aspire;dotnet;helpers;apigee;emulator;api;proxy;csharp;net;microservicos</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IsPackable>true</IsPackable>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="MVFC.Aspire.Helpers.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,10 +30,6 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
 </Project>

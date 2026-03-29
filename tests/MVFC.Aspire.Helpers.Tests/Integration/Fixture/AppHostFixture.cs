@@ -22,7 +22,7 @@ public sealed class AppHostFixture : IAsyncLifetime
         _keycloakHttpClient = _appHost.CreateHttpClient("keycloak");
         _appHttpClient = _appHost.CreateHttpClient("api-exemplo");
         _wireMockHttpClient = await HttpTestExtensions.CreateHttpClient(_appHost, "wireMock").ConfigureAwait(false);
-        _apigeeHttpClient = _appHost.CreateHttpClient("apigee-emulator", "http");
+        _apigeeHttpClient = _appHost.CreateHttpClient("apigee-emulator", ApigeeEmulatorResource.TRAFFIC_PORT_NAME);
         PlaygroundApi = RestService.For<IPlaygroundApiClient>(_appHttpClient);
         WireMockApi = RestService.For<IWireMockApiClient>(_wireMockHttpClient);
         KeycloakApi = RestService.For<IKeycloakTokenClient>(_keycloakHttpClient);

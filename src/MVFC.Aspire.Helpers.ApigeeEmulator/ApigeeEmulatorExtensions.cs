@@ -37,8 +37,7 @@ public static class ApigeeEmulatorExtensions
 
         if (OperatingSystem.IsLinux())
         {
-            return resourceBuilder
-                .WithContainerRuntimeArgs("--add-host", "host.docker.internal:host-gateway");
+            return resourceBuilder.WithContainerRuntimeArgs("--add-host", "host.docker.internal:host-gateway");
         }
 
         return resourceBuilder;
@@ -62,6 +61,7 @@ public static class ApigeeEmulatorExtensions
 
         builder.Resource.WorkspacePath = workspacePath;
         builder.Resource.HealthCheckPath = healthCheckPath;
+
         return builder;
     }
 
@@ -115,18 +115,28 @@ public static class ApigeeEmulatorExtensions
     /// <typeparam name="T">Type of the backend resource.</typeparam>
     /// <param name="builder">Builder for the Apigee Emulator resource.</param>
     /// <param name="backend">Builder for the backend resource that exposes endpoints.</param>
+    /// <param name="targetServerName">TargetServer name referenced in targets/default.xml.</param>
     /// <param name="endpointName">Name of the endpoint exposed by the backend resource. Default: <c>"http"</c>.</param>
-    /// <param name="targetServerName">TargetServer name referenced in targets/default.xml. Default: <c>"aspire-backend"</c>.</param>
     /// <returns>The same builder, for fluent chaining.</returns>
     public static IResourceBuilder<ApigeeEmulatorResource> WithBackend<T>(
         this IResourceBuilder<ApigeeEmulatorResource> builder,
         IResourceBuilder<T> backend,
-        string endpointName = "http",
-        string targetServerName = ApigeeEmulatorDefaults.DEFAULT_TARGET_SERVER_NAME)
-            where T : IResourceWithEndpoints
+        string targetServerName,
+        string endpointName = "http")
+            where T : IResourceWithEndpoints, IResourceWithEnvironment
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(backend);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(targetServerName);
+
+        // Ensure the backend endpoint bypasses the Aspire proxy to allow direct Docker access
+        backend.WithEndpoint(endpointName, e => e.IsProxied = false);
+
+        var endpoint = backend.GetEndpoint(endpointName);
+
+        // Force ASP.NET Core apps to bind to 0.0.0.0 instead of localhost, which is required
+        // when IsProxied = false for Docker containers to reach it via host.docker.internal
+        backend.WithEnvironment("ASPNETCORE_URLS", ReferenceExpression.Create($"http://0.0.0.0:{endpoint.Property(EndpointProperty.Port)}"));
 
         builder.Resource.Annotations.Add(new ApigeeTargetBackendAnnotation
         {
