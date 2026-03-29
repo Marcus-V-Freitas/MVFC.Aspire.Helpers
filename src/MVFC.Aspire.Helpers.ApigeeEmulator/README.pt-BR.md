@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.ApigeeEmulator
+﻿# MVFC.Aspire.Helpers.ApigeeEmulator
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -96,7 +96,7 @@ await builder.Build().RunAsync();
 
 | Porta | Padrão | Descrição |
 |---|---|---|
-| Controle | `7070` → `8080` (container) | API de gerenciamento/deploy |
+| Controle | `7071` → `8080` (container) | API de gerenciamento/deploy |
 | Tráfego | `8998` → `8998` (container) | Tráfego do API gateway |
 
 ## Diagrama de provisionamento
