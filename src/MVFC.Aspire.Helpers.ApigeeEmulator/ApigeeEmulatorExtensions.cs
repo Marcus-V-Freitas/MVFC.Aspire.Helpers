@@ -38,7 +38,7 @@ public static class ApigeeEmulatorExtensions
         if (OperatingSystem.IsLinux())
         {
             return resourceBuilder
-                .WithContainerRuntimeArgs("--add-host=host.docker.internal:host-gateway");
+                .WithContainerRuntimeArgs("--add-host", "host.docker.internal:host-gateway");
         }
 
         return resourceBuilder;
