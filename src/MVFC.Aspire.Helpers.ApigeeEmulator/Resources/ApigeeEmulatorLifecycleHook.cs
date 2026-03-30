@@ -69,8 +69,8 @@ public sealed class ApigeeEmulatorLifecycleHook(
             return;
         }
 
-        var backendAnnotation = GetBackendAnnotation(resource);
-        await WaitForDependenciesAsync(resource, backendAnnotation, ct).ConfigureAwait(false);
+        var backendAnnotations = GetBackendAnnotations(resource);
+        await WaitForDependenciesAsync(resource, backendAnnotations, ct).ConfigureAwait(false);
 
         var controlPort = ResolveBackendPort(resource, ApigeeEmulatorResource.CONTROL_PORT_NAME);
         using var controlClient = HttpClientFactory(controlPort);
@@ -82,7 +82,8 @@ public sealed class ApigeeEmulatorLifecycleHook(
             ApigeeEmulatorDefaults.EMULATOR_READY_DELAY_SECONDS,
             ct).ConfigureAwait(false);
 
-        var zipPath = await EnsureBundleAsync(resource, backendAnnotation).ConfigureAwait(false);
+        var entries = ResolveEntries(backendAnnotations);
+        var zipPath = await EnsureBundleAsync(resource, entries).ConfigureAwait(false);
         await DeployZipAsync(controlClient, zipPath, resource.ApigeeEnvironment, ct).ConfigureAwait(false);
 
         // Cleanup after successful deploy
@@ -104,21 +105,21 @@ public sealed class ApigeeEmulatorLifecycleHook(
     /// Waits for the Apigee emulator and its backend dependencies to reach the running state.
     /// </summary>
     /// <param name="resource">The Apigee emulator resource.</param>
-    /// <param name="backendAnnotation">The backend annotation, if any.</param>
+    /// <param name="backendAnnotations">The backend annotation, if any.</param>
     /// <param name="ct">A cancellation token.</param>
     private async Task WaitForDependenciesAsync(
         ApigeeEmulatorResource resource,
-        ApigeeTargetBackendAnnotation? backendAnnotation,
+        IReadOnlyList<ApigeeTargetBackendAnnotation> backendAnnotations,
         CancellationToken ct)
     {
         await _notifications
             .WaitForResourceAsync(resource.Name, KnownResourceStates.Running, ct)
             .ConfigureAwait(false);
 
-        if (backendAnnotation is not null)
+        foreach (var annotation in backendAnnotations)
         {
             await _notifications
-                .WaitForResourceAsync(backendAnnotation.Backend.Name, KnownResourceStates.Running, ct)
+                .WaitForResourceAsync(annotation.Backend.Name, KnownResourceStates.Running, ct)
                 .ConfigureAwait(false);
         }
     }
@@ -127,14 +128,14 @@ public sealed class ApigeeEmulatorLifecycleHook(
     /// Ensures the Apigee proxy bundle zip file is created and ready for deployment.
     /// </summary>
     /// <param name="resource">The Apigee emulator resource.</param>
-    /// <param name="backendAnnotation">The backend annotation, if any.</param>
+    /// <param name="entries">The list of target server entries.</param>
     /// <returns>The path to the created zip file.</returns>
     internal async Task<string> EnsureBundleAsync(
         ApigeeEmulatorResource resource,
-        ApigeeTargetBackendAnnotation? backendAnnotation)
+        IReadOnlyList<TargetServerEntry> entries)
     {
         var zipPath = GetBundlePath(resource);
-        var targetServersJson = BuildTargetServersJsonOrNull(backendAnnotation);
+        var targetServersJson = BuildTargetServersJsonOrNull(entries);
 
         await BuildZipAsync(resource.WorkspacePath!, zipPath, targetServersJson, resource.ApigeeEnvironment)
             .ConfigureAwait(false);
@@ -342,7 +343,7 @@ public sealed class ApigeeEmulatorLifecycleHook(
     }
 
     /// <summary>
-    /// Gets the path to the Apigee proxy bundle zip file for the specified resource.
+    /// Returns the path to the Apigee proxy bundle zip file for the specified resource.
     /// </summary>
     /// <param name="resource">The Apigee emulator resource.</param>
     /// <returns>The path to the zip file.</returns>
@@ -350,47 +351,48 @@ public sealed class ApigeeEmulatorLifecycleHook(
         Path.Combine(Path.GetTempPath(), $"apigee-{resource.Name}-bundle.zip");
 
     /// <summary>
-    /// Gets the backend annotation from the specified resource, if present.
+    /// Retrieves the backend annotations from the specified resource, if present.
     /// </summary>
     /// <param name="resource">The Apigee emulator resource.</param>
-    /// <returns>The backend annotation, or <c>null</c> if not present.</returns>
-    private static ApigeeTargetBackendAnnotation? GetBackendAnnotation(ApigeeEmulatorResource resource) =>
-        resource.Annotations.OfType<ApigeeTargetBackendAnnotation>().FirstOrDefault();
+    /// <returns>A list of backend annotations, or an empty list if none are present.</returns>
+    private static IReadOnlyList<ApigeeTargetBackendAnnotation> GetBackendAnnotations(ApigeeEmulatorResource resource) =>
+        [.. resource.Annotations.OfType<ApigeeTargetBackendAnnotation>()];
 
     /// <summary>
-    /// Builds the target servers JSON string from the backend annotation, if present.
+    /// Builds the target servers JSON string from the provided entries, if any.
     /// </summary>
-    /// <param name="annotation">The backend annotation.</param>
-    /// <returns>The target servers JSON string, or <c>null</c> if not applicable.</returns>
-    private static string? BuildTargetServersJsonOrNull(ApigeeTargetBackendAnnotation? annotation)
+    /// <param name="entries">The list of target server entries.</param>
+    /// <returns>The target servers JSON string, or <c>null</c> if the list is empty.</returns>
+    internal static string? BuildTargetServersJsonOrNull(
+        IReadOnlyList<TargetServerEntry> entries)
     {
-        if (annotation is null) return null;
+        if (entries.Count == 0)
+            return null;
 
-        var (host, port) = ResolveBackendEndpoint(annotation.Backend, annotation.EndpointName);
+        var servers = entries.Select(e => new
+        {
+            name = e.Name,
+            host = e.Host,
+            port = e.Port,
+            isEnabled = true
+        });
 
-        return BuildTargetServersJson(annotation.TargetServerName, host, port);
+        return JsonSerializer.Serialize(servers, _jsonOptions);
     }
 
     /// <summary>
-    /// Builds a JSON string representing the target servers configuration.
+    /// Resolves the list of <see cref="TargetServerEntry"/> from the provided backend annotations.
     /// </summary>
-    /// <param name="targetServerName">The name of the target server.</param>
-    /// <param name="host">The host of the target server.</param>
-    /// <param name="port">The port of the target server.</param>
-    /// <returns>The JSON string representing the target servers.</returns>
-    internal static string BuildTargetServersJson(string targetServerName, string host, int port)
+    /// <param name="annotations">The backend annotations.</param>
+    /// <returns>A list of resolved <see cref="TargetServerEntry"/> objects.</returns>
+    private static IReadOnlyList<TargetServerEntry> ResolveEntries(
+        IReadOnlyList<ApigeeTargetBackendAnnotation> annotations)
     {
-        var servers = new[]
+        return [.. annotations.Select(a =>
         {
-            new
-            {
-                name = targetServerName,
-                host,
-                port,
-                isEnabled = true
-            }
-        };
-        return JsonSerializer.Serialize(servers, _jsonOptions);
+            var (host, port) = ResolveBackendEndpoint(a.Backend, a.EndpointName);
+            return new TargetServerEntry(a.TargetServerName, host, port);
+        })];
     }
 
     /// <summary>

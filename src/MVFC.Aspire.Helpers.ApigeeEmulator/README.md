@@ -1,4 +1,4 @@
-﻿# MVFC.Aspire.Helpers.ApigeeEmulator
+# MVFC.Aspire.Helpers.ApigeeEmulator
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
@@ -140,6 +140,7 @@ flowchart TD
     B -->|OPTIONS| C["CORS Preflight (AM-Cors) → 200 No Backend"]
     B -->|DELETE/PUT/PATCH| D["Method Not Allowed (RF) → 405"]
     
+    B -->|/sharedflow-check| Q["SharedFlow Check (FC-CallLogging)"]
     B -->|/spike-arrest| E["Spike Arrest Test (SA-SpikeArrest)"]
     B -->|/notfound| F["Not Found Demo (RF-NotFound) → 404"]
     B -->|/transform| G["Transform Envelope (JS-TransformResponse)"]
@@ -155,7 +156,7 @@ flowchart TD
     J -->|Yes| J1["AM-CacheHit → Responds 200"]
     J -->|No| J2["Target Backend → Populates PC-Cache + AM-Miss"]
 
-    E & G & H & I & J2 & K & L & M & N & O --> P["PostFlow: Adds CORS + Custom Headers + FC-CallLogging"]
+    E & G & H & I & J2 & K & L & M & N & O & Q --> P["PostFlow: Adds CORS + Custom Headers + FC-CallLogging"]
 ```
 
 ---
@@ -166,6 +167,7 @@ Below are detailed the applicabilities and the exact usage location of each poli
 
 | Route / Flow | Used Policies | Practical Goal in Current Project |
 |---|---|---|
+| **`/sharedflow-check`** | `FC-CallLogging.xml` | Verifies integration with the `common-logging` SharedFlow by triggering the injection of execution headers and metadata. |
 | **`/spike-arrest`** | `SA-SpikeArrest.xml` | Blocks interactions that exceed immediate static volumetry (sudden spikes). |
 | **`OPTIONS` (All)** | `AM-CorsPreflightResponse.xml` | Validates requests without a verb (preflight), returning simulated data directly and blocking access to the target. |
 | **`DELETE, PUT, PATCH`** | `RF-MethodNotAllowed.xml` | Acts as an error interceptor triggering a "Raise Fault" if someone tries to perform data deletion in this demo proxy. |

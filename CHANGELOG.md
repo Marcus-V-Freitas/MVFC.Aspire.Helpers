@@ -5,13 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [7.2.2] - 2026-03-30
+## [7.3.0] - 2026-03-29
+
+### Added
+- Added support for multiple backend TargetServers in the Apigee Emulator lifecycle hook, dynamically mapping multiple Aspire backend resources.
+- Added a new `/sharedflow-check` validation endpoint in the playground API and `demo-api` proxy to verify SharedFlow integrations.
+- Added comprehensive unit and integration tests covering multiple TargetServers generation and the new SharedFlow endpoint.
+
+### Changed
+- Refactored the `common-logging` SharedFlow by replacing the deprecated `JS-LogRequestResponse` policy with an `AssignMessage` policy (`AM-InjectLoggingHeaders`) to inject correlation IDs and metadata natively.
+- Updated flow diagrams and policy applicability tables in the Apigee Emulator READMEs to reflect the new `/sharedflow-check` interaction.
+
+## [7.2.2] - 2026-03-29
 
 ### Changed
 - Changed `HealthCheckPath` accessibility in `ApigeeEmulatorResource` from `public` to `internal`.
 - Updated flow diagrams and policy applicability documentation in Apigee Emulator READMEs.
 
-## [7.2.1] - 2026-03-30
+## [7.2.1] - 2026-03-29
 
 ### Changed
 - Minor Apigee improvements: fixed documentation typo for control port, added bundle zip cleanup post-deployment, and added strict JSON validation for target servers.
@@ -254,6 +265,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[7.3.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.2.2...v7.3.0
 [7.2.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.2.1...v7.2.2
 [7.2.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.2.0...v7.2.1
 [7.2.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.1.0...v7.2.0

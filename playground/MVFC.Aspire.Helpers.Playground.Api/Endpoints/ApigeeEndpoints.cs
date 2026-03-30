@@ -7,6 +7,14 @@ public static class ApigeeEndpoints
           "/info", "/cached", "/admin", "/secure", "/xml" ];
 
     private static readonly string[] _permissions = ["read", "write", "admin"];
+    private static readonly string[] _headers =
+    [
+        "X-Correlation-Id",
+        "X-Request-Id",
+        "X-Apigee-Env",
+        "X-Apigee-Proxy",
+        "X-Logging-Timestamp",
+    ];
 
     public static void MapApigeeEndpoints(this IEndpointRouteBuilder apiGroup)
     {
@@ -146,5 +154,26 @@ public static class ApigeeEndpoints
             version = "1.0.0",
             timestamp = DateTime.UtcNow,
         }));
+
+        apiGroup.MapGet("/sharedflow-check", (HttpRequest request) =>
+        {
+            var headersPresentes = _headers
+                .Select(h => new
+                {
+                    Header = h,
+                    Valor = request.Headers.TryGetValue(h, out var v) ? v.ToString() : null,
+                    Presente = request.Headers.ContainsKey(h)
+                })
+                .ToList();
+
+            var sharedFlowAtivo = headersPresentes.Any(h => h.Presente);
+
+            return Results.Ok(new
+            {
+                SharedFlowDetectado = sharedFlowAtivo,
+            });
+        })
+        .WithName("SharedFlowCheck")
+        .WithTags("SharedFlow");
     }
 }

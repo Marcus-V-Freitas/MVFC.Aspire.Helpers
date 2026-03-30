@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.Tests.Unit.ApigeeEmulator;
+﻿namespace MVFC.Aspire.Helpers.Tests.Unit.ApigeeEmulator;
 
 public sealed class ApigeeEmulatorLifecycleHookTests : IDisposable
 {
@@ -58,7 +58,7 @@ public sealed class ApigeeEmulatorLifecycleHookTests : IDisposable
                    .Returns(Task.CompletedTask);
 
         // Act
-        var path = await _sut.EnsureBundleAsync(resource, null);
+        var path = await _sut.EnsureBundleAsync(resource, []);
 
         // Assert
         path.Should().Be(expectedZipPath);
@@ -287,14 +287,53 @@ public sealed class ApigeeEmulatorLifecycleHookTests : IDisposable
     }
 
     [Fact]
-    public void BuildTargetServersJson_CorrectFormat()
+    public void BuildTargetServersJson_SingleEntry_CorrectFormat()
     {
-        // Arrange & Act
-        var json = ApigeeEmulatorLifecycleHook.BuildTargetServersJson("my-ts", "test", 1234);
+        // Arrange
+        var entries = new List<TargetServerEntry>
+        {
+            new("my-ts", "test", 1234),
+        };
+
+        // Act
+        var json = ApigeeEmulatorLifecycleHook.BuildTargetServersJsonOrNull(entries);
 
         // Assert
+        json.Should().NotBeNull();
         json.Should().Contain("\"name\": \"my-ts\"");
         json.Should().Contain("\"port\": 1234");
         json.Should().Contain("\"isEnabled\": true");
+    }
+
+    [Fact]
+    public void BuildTargetServersJson_MultipleEntries_ContainsAllAndIsArray()
+    {
+        // Arrange
+        var entries = new List<TargetServerEntry>
+        {
+            new("origin",         "host-a", 5050),
+            new("legacy-backend", "host-b", 5051),
+        };
+
+        // Act
+        var json = ApigeeEmulatorLifecycleHook.BuildTargetServersJsonOrNull(entries);
+
+        // Assert
+        json.Should().NotBeNull();
+        json!.TrimStart().Should().StartWith("[");
+        json.Should().Contain("\"name\": \"origin\"");
+        json.Should().Contain("\"port\": 5050");
+        json.Should().Contain("\"name\": \"legacy-backend\"");
+        json.Should().Contain("\"port\": 5051");
+    }
+
+    [Fact]
+    public void BuildTargetServersJson_EmptyList_ReturnsNull()
+    {
+        // Arrange & Act
+        var json = ApigeeEmulatorLifecycleHook.BuildTargetServersJsonOrNull([]);
+
+        // Assert
+        json.Should().BeNull();
     }
 }

@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Javascript name="JS-LogRequestResponse" timeLimit="200">
-  <DisplayName>Log Request and Response</DisplayName>
-  <ResourceURL>jsc://log-request-response.js</ResourceURL>
-</Javascript>

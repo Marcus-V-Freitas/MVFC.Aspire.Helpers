@@ -1,7 +1,11 @@
-﻿namespace MVFC.Aspire.Helpers.Tests.Integration.HttpClients;
+namespace MVFC.Aspire.Helpers.Tests.Integration.HttpClients;
 
 internal interface IApigeeApiClient
 {
+    // Shared Flow Check — GET /demo/sharedflow-check (verifies common-logging SharedFlow integration by injecting correlation and execution metadata headers)
+    [Get("/demo/sharedflow-check")]
+    internal Task<ApiResponse<string>> GetSharedFlowAsync();
+
     // Spike Arrest — GET /demo/spike-arrest (rate limited via SpikeArrest policy)
     [Get("/demo/spike-arrest")]
     internal Task<HttpResponseMessage> GetSpikeArrestAsync();

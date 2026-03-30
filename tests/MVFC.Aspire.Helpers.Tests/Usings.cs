@@ -52,4 +52,5 @@ global using Microsoft.Extensions.Http.Resilience;
 global using Microsoft.Extensions.Logging.Abstractions;
 global using NSubstitute;
 global using MVFC.Aspire.Helpers.ApigeeEmulator.Files;
+global using MVFC.Aspire.Helpers.ApigeeEmulator.Models;
 global using Encoding = System.Text.Encoding;

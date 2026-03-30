@@ -9,3 +9,4 @@ global using System.Net.Http.Headers;
 global using Aspire.Hosting.Eventing;
 global using System.Net;
 global using MVFC.Aspire.Helpers.ApigeeEmulator.Files;
+global using MVFC.Aspire.Helpers.ApigeeEmulator.Models;

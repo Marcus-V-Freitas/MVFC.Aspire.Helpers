@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Tests.Integration;
+namespace MVFC.Aspire.Helpers.Tests.Integration;
 
 public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHostFixture>
 {
@@ -52,7 +52,6 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     }
 
     #endregion
-
 
     #region Gotenberg
 
@@ -476,6 +475,18 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     #endregion
 
     #region Apigee Emulator
+
+    [Fact]
+    public async Task Apigee_SharedFlowCheck_ShouldReturnOk()
+    {
+        // Arrange & Act
+        using var response = await _fixture.ApigeeApi.GetSharedFlowAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Should().ContainEquivalentOf("SharedFlowDetectado");
+        response.Content.Should().Contain("true");
+    }
 
     [Fact]
     public async Task Apigee_Root_ShouldReturnOk()

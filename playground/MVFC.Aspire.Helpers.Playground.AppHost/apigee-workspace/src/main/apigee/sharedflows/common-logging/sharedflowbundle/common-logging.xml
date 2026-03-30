@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <SharedFlowBundle name="common-logging" revision="1">
-  <Description>SharedFlow reutilizável para logging de request/response</Description>
+  <Description>SharedFlow centralizado para injeção de headers de rastreabilidade (Correlation ID, Timestamp) e informações de contexto do Apigee em requisições e respostas.</Description>
   <Policies>
-    <Policy>JS-LogRequestResponse</Policy>
+    <Policy>AM-InjectLoggingHeaders</Policy>
   </Policies>
-  <Resources>
-    <Resource>jsc://log-request-response.js</Resource>
-  </Resources>
   <SharedFlows>
     <SharedFlow>default</SharedFlow>
   </SharedFlows>

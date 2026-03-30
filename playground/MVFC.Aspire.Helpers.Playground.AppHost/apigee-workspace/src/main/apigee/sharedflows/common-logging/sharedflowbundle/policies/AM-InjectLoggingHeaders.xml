@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage name="AM-InjectLoggingHeaders">
+  <DisplayName>AM-InjectLoggingHeaders</DisplayName>
+  <Description>Injeta headers de correlação (X-Correlation-ID) e metadados de execução (Timestamp, Proxy, Ambiente) para fins de logging e rastreabilidade.</Description>
+  <AssignTo createNew="false" transport="http" type="request"/>
+  <Set>
+    <Headers>
+      <!-- Header que prova que o SharedFlow foi executado -->
+      <Header name="X-Correlation-Id">{request.header.x-correlation-id|{messageid}}</Header>
+      <Header name="X-Logging-Timestamp">{system.timestamp}</Header>
+      <Header name="X-Apigee-Proxy">{apiproxy.name}</Header>
+      <Header name="X-Apigee-Env">{environment.name}</Header>
+    </Headers>
+  </Set>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</AssignMessage>

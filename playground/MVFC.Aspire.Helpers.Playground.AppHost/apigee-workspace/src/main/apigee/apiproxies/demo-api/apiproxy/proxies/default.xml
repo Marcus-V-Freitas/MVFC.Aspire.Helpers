@@ -6,7 +6,18 @@
 
   <!-- Conditional Flows -->
   <Flows>
-    
+
+    <!-- Shared Flow Check -->
+    <Flow name="SharedFlowCheck">
+      <Condition>(proxy.pathsuffix MatchesPath "/sharedflow-check") and (request.verb = "GET")</Condition>
+      <Request>
+        <Step>
+          <Name>FC-CallLogging</Name>
+        </Step>
+      </Request>
+      <Response/>
+    </Flow>
+
     <!-- Spike Arrest Test -->
     <Flow name="Spike Arrest Test">
       <Condition>(proxy.pathsuffix MatchesPath "/spike-arrest")</Condition>
@@ -166,9 +177,6 @@
       </Step>
       <Step>
         <Name>AM-AddCustomHeaders</Name>
-      </Step>
-      <Step>
-        <Name>FC-CallLogging</Name>
       </Step>
     </Response>
   </PostFlow>
