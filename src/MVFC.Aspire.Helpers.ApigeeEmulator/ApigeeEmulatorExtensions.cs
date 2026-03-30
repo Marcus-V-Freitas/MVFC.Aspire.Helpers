@@ -129,6 +129,8 @@ public static class ApigeeEmulatorExtensions
         ArgumentNullException.ThrowIfNull(backend);
         ArgumentNullException.ThrowIfNullOrWhiteSpace(targetServerName);
 
+        ThrowIfTargetServerAlreadyRegistered(builder, targetServerName);
+
         // Ensure the backend endpoint bypasses the Aspire proxy to allow direct Docker access
         backend.WithEndpoint(endpointName, e => e.IsProxied = false);
 
@@ -146,6 +148,16 @@ public static class ApigeeEmulatorExtensions
         });
 
         return builder;
+    }
+
+    private static void ThrowIfTargetServerAlreadyRegistered(IResourceBuilder<ApigeeEmulatorResource> builder, string targetServerName)
+    {
+        var alreadyRegistered = builder.Resource.Annotations
+            .OfType<ApigeeTargetBackendAnnotation>()
+            .Any(a => string.Equals(a.TargetServerName, targetServerName, StringComparison.OrdinalIgnoreCase));
+
+        if (alreadyRegistered)
+            throw new InvalidOperationException($"A TargetServer named '{targetServerName}' is already registered.");
     }
 
     /// <summary>

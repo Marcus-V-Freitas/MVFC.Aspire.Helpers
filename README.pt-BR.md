@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers
+﻿# MVFC.Aspire.Helpers
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -120,8 +120,10 @@ var wireMock = builder.AddWireMock("wireMock", port: 7070, configure: (server) =
 
 var api = builder.AddProject<Projects.MyApi>("api");
 
+var apigeeWorkspace = Path.Combine(Directory.GetCurrentDirectory(), "apigee-workspace");
+
 var apigee = builder.AddApigeeEmulator("apigee-emulator")
-    .WithWorkspace("./apigee-workspace")
+    .WithWorkspace(apigeeWorkspace, "health")
     .WithEnvironment("local")
     .WithBackend(api, "origin");
 

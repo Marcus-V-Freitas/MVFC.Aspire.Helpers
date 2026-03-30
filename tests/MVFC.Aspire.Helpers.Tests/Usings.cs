@@ -53,4 +53,7 @@ global using Microsoft.Extensions.Logging.Abstractions;
 global using NSubstitute;
 global using MVFC.Aspire.Helpers.ApigeeEmulator.Files;
 global using MVFC.Aspire.Helpers.ApigeeEmulator.Models;
+global using MVFC.Aspire.Helpers.ApigeeEmulator;
+global using MVFC.Aspire.Helpers.Tests.Unit.ApigeeEmulator.Helpers;
+global using MVFC.Aspire.Helpers.ApigeeEmulator.Annotations;
 global using Encoding = System.Text.Encoding;

@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.ApigeeEmulator
+﻿# MVFC.Aspire.Helpers.ApigeeEmulator
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -9,62 +9,62 @@
 ![NuGet Version](https://img.shields.io/nuget/v/MVFC.Aspire.Helpers.ApigeeEmulator)
 ![NuGet Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.ApigeeEmulator)
 
-Helpers para integração do Google Apigee Emulator em projetos .NET Aspire, permitindo desenvolvimento e testes locais de API proxies.
+Helpers para integrar o Google Apigee Emulator com projetos .NET Aspire, permitindo desenvolvimento e testes locais de API Proxies.
 
 ## Motivação
 
-Trabalhar com API proxies do Apigee localmente normalmente significa:
+Trabalhar localmente com proxies do Apigee normalmente envolve:
 
-- Subir o container do emulador na mão com a imagem e portas corretas.
-- Lembrar de fazer build e deploy do bundle do proxy (ZIP) a cada alteração.
-- Configurar manualmente os TargetServers apontando para os serviços backend.
-- Lidar com `host.docker.internal` e divergências de portas entre host e Docker.
+- Subir o container do emulator manualmente com a imagem e portas corretas.
+- Lembrar de gerar e publicar o bundle do proxy (ZIP) sempre que houver alteração.
+- Configurar manualmente os TargetServers apontando para os serviços de backend.
+- Lidar com `host.docker.internal` e diferenças de portas entre host e Docker.
 
-Com o .NET Aspire você pode definir containers, mas ainda precisa:
+Com .NET Aspire, você consegue declarar containers, mas ainda precisa:
 
-- Configurar a imagem do emulador, porta de controle e porta de tráfego.
-- Fazer build e deploy do bundle apiproxy no emulador na inicialização.
-- Resolver dinamicamente os TargetServers para as portas alocadas pelo Aspire nos backends.
+- Configurar imagem do emulator, porta de controle e porta de tráfego.
+- Gerar e publicar o bundle `apiproxy` na inicialização.
+- Resolver dinamicamente os TargetServers com base nas portas atribuídas pelo Aspire aos backends.
 
-O `MVFC.Aspire.Helpers.ApigeeEmulator` fornece:
+`MVFC.Aspire.Helpers.ApigeeEmulator` oferece:
 
-- `AddApigeeEmulator(...)` para iniciar o emulador com configurações padrão.
-- `.WithWorkspace(...)` para apontar para o bundle de proxy local.
-- `.WithEnvironment(...)` para definir o nome do ambiente Apigee.
-- `.WithBackend(...)` para resolver automaticamente endpoints de backends Aspire como TargetServers.
+- `AddApigeeEmulator(...)` para iniciar o emulator com padrões sensatos.
+- `WithWorkspace(...)` para apontar para o bundle local do proxy e definir um endpoint de health check do proxy.
+- `WithEnvironment(...)` para definir o ambiente do Apigee.
+- `WithBackend(...)` para resolver automaticamente endpoints de backend do Aspire como TargetServers.
 
-## Visão Geral
+## Visão geral
 
-Este projeto facilita a configuração e integração do Apigee Emulator em aplicações distribuídas .NET Aspire, fornecendo métodos de extensão para:
+Este projeto facilita a configuração e a integração do Apigee Emulator em aplicações distribuídas com .NET Aspire, fornecendo extension methods para:
 
 - Adicionar o container do Apigee Emulator com portas pré-configuradas.
-- Fazer deploy automático do bundle do proxy (apiproxy) na inicialização.
+- Publicar automaticamente o bundle do proxy (`apiproxy`) na inicialização.
 - Injetar dinamicamente configurações de TargetServer apontando para backends gerenciados pelo Aspire.
-- Mesclar definições estáticas e dinâmicas de TargetServer para cenários híbridos.
+- Mesclar definições estáticas e dinâmicas de `targetservers.json` em cenários híbridos.
 
 ## Vantagens do Apigee Emulator
 
-- Desenvolva e teste API proxies localmente sem precisar de conta no Google Cloud.
-- Valide políticas de tráfego, fluxos de segurança e SharedFlows antes de enviar para produção.
-- Suporte completo a sessões de Trace/Debug para inspeção de requests.
-- Integração transparente com serviços backend gerenciados pelo Aspire.
+- Desenvolver e testar proxies localmente sem depender de conta Google Cloud.
+- Validar policies de tráfego, segurança e SharedFlows antes de publicar em ambientes reais.
+- Utilizar Trace/Debug para inspeção de requisições.
+- Integrar o tráfego do emulator com serviços de backend gerenciados pelo Aspire.
 
 ## Imagens compatíveis
 
-- **Emulador**:
-  - `gcr.io/apigee-release/hybrid/apigee-emulator` (Padrão no helper do Aspire)
+- **Emulator**
+  - `gcr.io/apigee-release/hybrid/apigee-emulator` (padrão deste helper)
 
-## Estrutura do Projeto
+## Estrutura do projeto
 
 - [`MVFC.Aspire.Helpers.ApigeeEmulator`](MVFC.Aspire.Helpers.ApigeeEmulator.csproj): Biblioteca de helpers e extensões para o Apigee Emulator.
 
 ## Funcionalidades
 
 - Adiciona o container do Apigee Emulator com imagem e portas padrão.
-- Faz deploy automático do bundle do proxy quando o emulador está pronto.
-- Resolve portas de backends Aspire e injeta configurações de TargetServer.
-- Mescla `targetservers.json` estático existente com entradas geradas dinamicamente.
-- Métodos de extensão para configuração fluente no AppHost.
+- Publica automaticamente o bundle do proxy quando o emulator estiver pronto.
+- Resolve portas dos backends do Aspire e injeta configurações de TargetServer.
+- Mescla `targetservers.json` existente com entradas dinâmicas geradas em tempo de execução.
+- Fornece configuração fluente para o AppHost.
 
 ## Instalação
 
@@ -80,64 +80,140 @@ using MVFC.Aspire.Helpers.ApigeeEmulator;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var apigeeWorkspace = Path.Combine(Directory.GetCurrentDirectory(), "apigee-workspace");
+var apigeeWorkspace = Path.Combine(
+    Directory.GetCurrentDirectory(),
+    "apigee-workspace");
 
 var api = builder.AddProject<Projects.MyApi>("my-api");
 
 var apigee = builder.AddApigeeEmulator("apigee-emulator")
-                    .WithWorkspace(apigeeWorkspace)
-                    .WithEnvironment("local")
-                    .WithBackend(api, "origin");
+    .WithWorkspace(
+        workspacePath: apigeeWorkspace,
+        healthCheckPath: "/demo/health-check")
+    .WithEnvironment("local")
+    .WithBackend(api, "origin");
 
 await builder.Build().RunAsync();
 ```
+
+> [!NOTE]
+> Se `WithWorkspace(...)` não for chamado, o container do emulator será iniciado normalmente, mas nenhum bundle será publicado automaticamente.
+> Isso é útil para testes manuais do emulator ou quando você quer controlar o deploy fora do helper.
 
 ## Portas
 
 | Porta | Padrão | Descrição |
 |---|---|---|
-| Controle | `7071` → `8080` (container) | API de gerenciamento/deploy |
-| Tráfego | `8998` → `8998` (container) | Tráfego do API gateway |
+| Controle | `7071` → `8080` (container) | API de gerenciamento e deploy |
+| Tráfego | `8998` → `8998` (container) | Tráfego do gateway de API |
 
 ## Diagrama de provisionamento
 
 ```mermaid
 sequenceDiagram
     participant Aspire as .NET Aspire
-    participant Container as Apigee Emulator Container
-    participant Hook as Deploy Lifecycle Hook
-    participant Backend as Aspire Backend
+    participant Container as Container Apigee Emulator
+    participant Hook as Hook de Deploy
+    participant Backend as Backend Aspire
 
-    Aspire->>Container: Start container (apigee-emulator)
-    Container-->>Aspire: Ready (porta de controle disponível)
-    Aspire->>Hook: Trigger AfterResourcesCreatedEvent
-    Hook->>Backend: Aguardar backend em Running
+    Aspire->>Container: Inicia o container (apigee-emulator)
+    Container-->>Aspire: Pronto (porta de controle disponível)
+    Aspire->>Hook: Dispara AfterResourcesCreatedEvent
+    Hook->>Backend: Aguarda backend atingir Running
     Backend-->>Hook: Running (porta resolvida)
-    Hook->>Hook: Build ZIP (merge targetservers.json)
+    Hook->>Hook: Gera ZIP (mescla targetservers.json)
     Hook->>Container: POST /v1/emulator/deploy
-    Container-->>Hook: Deploy realizado
-    Hook-->>Aspire: Deploy concluído
+    Container-->>Hook: Deploy concluído
+    Hook-->>Aspire: Publicação finalizada
 ```
 
-## Métodos Públicos
+## Métodos públicos
 
-- `AddApigeeEmulator` – adiciona o container do emulador com imagem e portas padrão.
-- `WithWorkspace` – define o caminho local do bundle apiproxy.
-- `WithEnvironment` – define o nome do ambiente Apigee (padrão: `"local"`).
-- `WithDockerImage` – substitui a imagem e tag Docker.
-- `WithBackend` – configura um backend Aspire como TargetServer para o proxy.
+- `AddApigeeEmulator` – Adiciona o container do emulator com imagem e portas padrão.
+- `WithWorkspace` – Define o caminho local do bundle `apiproxy` e o path de health check do proxy.
+- `WithEnvironment` – Define o nome do ambiente do Apigee (padrão: `"local"`).
+- `WithDockerImage` – Sobrescreve a imagem e a tag Docker.
+- `WithBackend` – Configura um backend do Aspire como TargetServer do proxy.
 
-## Arquitetura e Políticas do Apigee Proxy
+## Comportamento em runtime
 
-Após validar o projeto base e a configuração final presente em `proxies/default.xml`, este documento foi atualizado para apresentar a real estrutura de rotas, o diagrama do fluxo da requisição e todas as **22 políticas** com suas funções aplicadas corretamente as suas respectivas rotas.
+- O helper aguarda o recurso do emulator atingir o estado `Running` antes de iniciar o deploy.
+- Ele também aguarda os recursos de backend configurados ficarem disponíveis antes de gerar os TargetServers.
+- O bundle do proxy é copiado para um diretório temporário, opcionalmente mesclado com `targetservers.json` dinâmico, compactado, publicado e limpo ao final.
+- A resolução de backend suporta tanto projetos Aspire quanto recursos baseados em container.
 
-## Diagrama Geral dos Fluxos
+## Troubleshooting
+
+### O container não fica pronto
+
+- A primeira inicialização pode levar mais tempo porque a imagem do emulator precisa ser baixada localmente.
+- Se o tempo de startup estiver alto, faça o pull manual da imagem antes de rodar o Aspire:
+  ```sh
+  docker pull gcr.io/apigee-release/hybrid/apigee-emulator
+  ```
+- Verifique se o Docker está em execução e criando containers normalmente.
+
+### O deploy do bundle foi ignorado
+
+- O deploy automático só acontece quando `WithWorkspace(...)` é configurado com o caminho do workspace e o endpoint de health check do proxy.
+- Se esses valores não forem definidos, o container sobe normalmente, mas o helper ignora o deploy de forma intencional.
+
+### O backend não pode ser alcançado pelo emulator
+
+- Ao usar `.WithBackend(...)`, o helper configura o endpoint do backend para bypass do proxy interno do Aspire.
+- Para projetos ASP.NET Core, ele também força o bind em `0.0.0.0`, o que é necessário para acesso Docker-to-host.
+- Se você configurar o backend manualmente, garanta que o serviço esteja escutando em um endereço acessível pelo Docker.
+
+### Problemas com `host.docker.internal` no Linux
+
+- No Linux, o helper adiciona automaticamente `--add-host host.docker.internal:host-gateway`.
+- Se ainda assim houver falha de resolução, valide se a sua versão do Docker suporta `host-gateway`.
+
+### Porta já está em uso
+
+- Sobrescreva as portas padrão se `7071` ou `8998` já estiverem ocupadas:
+  ```csharp
+  builder.AddApigeeEmulator(
+      name: "apigee-emulator",
+      controlPort: 7072,
+      trafficPort: 8999);
+  ```
+
+### O health check do proxy nunca fica saudável
+
+- Confirme que o `healthCheckPath` informado em `WithWorkspace(...)` corresponde a uma rota válida exposta pelo proxy publicado.
+- Se o deploy ocorrer com sucesso, mas essa rota responder com erro, a inicialização poderá continuar em retry até timeout.
+
+## Aspire Dashboard
+
+Depois de iniciado, o Apigee Emulator aparece como um recurso gerenciado no Aspire Dashboard ao lado dos serviços de backend.
+
+> Sugestão de screenshot:
+> - Nome do recurso: `apigee-emulator`
+> - Status: `Running`
+> - Endpoint de controle visível
+> - Endpoint de tráfego visível
+> - Backend aparecendo no mesmo grafo da aplicação distribuída
+
+---
+
+## Proxy do playground (apenas exemplo)
+
+> As seções abaixo documentam o proxy de exemplo incluído na pasta `playground/`.
+> Elas descrevem a configuração Apigee usada para demonstrar o helper em um cenário mais realista.
+> Elas não são obrigatórias para usar o pacote NuGet.
+
+## Arquitetura e policies do proxy de exemplo
+
+Após validar o projeto de exemplo e a configuração final presente em `proxies/default.xml`, este documento reflete a estrutura real de rotas, o fluxo da requisição e as policies configuradas.
+
+## Diagrama geral do fluxo
 
 ```mermaid
 flowchart TD
-    A["Request → /demo/*"] --> B{"Método / Rota?"}
+    A["Request → /demo/*"] --> B{"Method / Route?"}
     
-    B -->|OPTIONS| C["CORS Preflight (AM-Cors) → 200 Sem Backend"]
+    B -->|OPTIONS| C["CORS Preflight (AM-Cors) → 200 No Backend"]
     B -->|DELETE/PUT/PATCH| D["Method Not Allowed (RF) → 405"]
     
     B -->|/sharedflow-check| Q["SharedFlow Check (FC-CallLogging)"]
@@ -151,50 +227,48 @@ flowchart TD
     B -->|/secure| L["Secure Resource (BasicAuth + JS Valid.)"]
     B -->|/xml| M["XML to JSON Format Convert"]
     B -->|/status/**| N["TargetRule: public (httpbin)"]
-    B -->|Outros| O["TargetRule: default (origin)"]
+    B -->|Others| O["TargetRule: default (origin)"]
 
-    J -->|Sim| J1["AM-CacheHit → Responde 200"]
-    J -->|Não| J2["Target Backend → Popula PC-Cache + AM-Miss"]
+    J -->|Yes| J1["AM-CacheHit → Responds 200"]
+    J -->|No| J2["Target Backend → Populates PC-Cache + AM-Miss"]
 
     E & G & H & I & J2 & K & L & M & N & O & Q --> P["PostFlow: Adds CORS + Custom Headers + FC-CallLogging"]
 ```
 
----
+## Policies implementadas diretamente nos flows
 
-## Políticas Implementadas Diretamente nos Fluxos
-
-Abaixo estão detalhadas as aplicabilidades e o exato local de uso de cada política configurada nos arquivos XML do emulador:
-
-| Rota / Fluxo | Políticas Utilizadas | Objetivo prático no projeto atual |
+| Rota / Flow | Policies usadas | Objetivo prático no projeto atual |
 |---|---|---|
-| **`/sharedflow-check`** | `FC-CallLogging.xml` | Verifica integração do SharedFlow `common-logging` acionando a injeção de Headers e metadados de execução. |
-| **`/spike-arrest`** | `SA-SpikeArrest.xml` | Bloqueia interações que superem a volumetria estática imediata (picos repentinos). |
-| **`OPTIONS` (Todos)** | `AM-CorsPreflightResponse.xml` | Valida requisições sem verbo (preflight), retornando dados simulados diretamente e barrando acesso ao target. |
-| **`DELETE, PUT, PATCH`** | `RF-MethodNotAllowed.xml` | Atua como interceptador de erro disparando um "Raise Fault" caso alguém tente realizar deleção de dados neste proxy demonstrativo. |
-| **`/notfound`** | `RF-NotFound.xml` | Mapeia caminhos quebrados para gerar uma resposta artificial e rápida tipo 404 pelo RaiseFault. |
-| **`/transform`** | `JS-TransformResponse.xml` | Aguarda respostas na pipeline de saída e dispara um script de wrapper JSON via JavaScript. |
-| **`/quota-test`** | `QU-RateLimit.xml` | Regula quantas transações esta rota recebe per-capita sob uma janela de tempo restritiva (5 cham./min). |
-| **`/health-check`** | `SC-HealthCheck.xml` <br> `EV-HealthStatus.xml` <br> `AM-SetHealthHeader.xml` | Faz uma requisição paralela para validar dependências do backend. Traz a dependência, captura com extração de variávies e injeta Headers de notificação usando AssignMessage. |
-| **`/cached`** | `LC-ResponseCache.xml` <br> `AM-CacheHit.xml` <br> `PC-ResponseCache.xml` <br> `AM-CacheMissHeader.xml` | Aciona pesquisas e alimentações de Cache de respostas aprimoradas. Em caso de hit, responde sem rota traseira; caso não exxita, avança, cadastra valor (*Populate*) e marca qual foi o resultado. |
-| **`/admin`** | `AC-AllowLocalOnly.xml`| Emite negativa (via firewall policy) barrando acessos forasteiros. Limitado estritamente por ranges da máquina onde o contêiner Aspire roda. |
-| **`/secure`** | `BA-DecodeBasicAuth.xml` <br> `JS-ValidateCredentials.xml`<br> `RF-Unauthorized.xml`| Rotina de autenticação dura que faz a quebra do Base64, checa contra JS interno e explode em erro "Unauthorized" caso falhe. |
-| **`/xml`** | `X2J-ConvertResponse.xml` | Regra restritiva para conversão na porta de devolução que engole XML obsoleto e devolve JSON bem formatado ao end user. |
+| `/sharedflow-check` | `FC-CallLogging.xml` | Valida a integração com a SharedFlow `common-logging`, injetando headers e metadados de execução. |
+| `/spike-arrest` | `SA-SpikeArrest.xml` | Bloqueia interações acima do volume imediato permitido. |
+| `OPTIONS` (Todos) | `AM-CorsPreflightResponse.xml` | Trata preflight e evita encaminhamento ao backend. |
+| `DELETE, PUT, PATCH` | `RF-MethodNotAllowed.xml` | Gera fault para métodos não permitidos neste proxy de demonstração. |
+| `/notfound` | `RF-NotFound.xml` | Produz um 404 artificial rapidamente via RaiseFault. |
+| `/transform` | `JS-TransformResponse.xml` | Envolve a resposta do backend com transformação JavaScript no pipeline de saída. |
+| `/quota-test` | `QU-RateLimit.xml` | Restringe transações sob uma janela de quota definida. |
+| `/health-check` | `SC-HealthCheck.xml`, `EV-HealthStatus.xml`, `AM-SetHealthHeader.xml` | Chama uma dependência, extrai o estado e enriquece os headers com o resultado. |
+| `/cached` | `LC-ResponseCache.xml`, `AM-CacheHit.xml`, `PC-ResponseCache.xml`, `AM-CacheMissHeader.xml` | Consulta e popula cache de resposta conforme hit ou miss. |
+| `/admin` | `AC-AllowLocalOnly.xml` | Restringe acesso com base em faixas de IP permitidas. |
+| `/secure` | `BA-DecodeBasicAuth.xml`, `JS-ValidateCredentials.xml`, `RF-Unauthorized.xml` | Valida credenciais Basic Auth e gera Unauthorized quando inválidas. |
+| `/xml` | `X2J-ConvertResponse.xml` | Converte respostas XML em JSON antes de retornar ao consumidor. |
 
-### Policies do PostFlow (Aplicadas a todos que sobrevivem e chegam na resposta):
+### Policies de PostFlow
 
-Seja um retorno interceptado, erro planejado ou chamada com sucesso ao backend, as políticas de PostFlow operam o enriquecimento da mensagem de saída:
-- `AM-AddCorsHeaders.xml`: Garante as especificações para evitar erro de CORS do browser (Allow-Origins).
-- `AM-AddCustomHeaders.xml`: Reforça as informações adicionais dos ID's.
-- `FC-CallLogging.xml`: É uma ligação delegada que isola nosso código complexado de logs passando isso para o SharedFlow `common-logging`.
+Independentemente de a resposta vir de sucesso no backend, resposta interceptada ou erro planejado, o PostFlow enriquece a mensagem de saída:
 
-### Faltas Globais (Fault Rules Override)
-- `AM-DefaultFaultResponse.xml`: Uma política AssignMessage invocada pelo Fault Rule quando algum erro sistêmico acontece no Apigee sem que tenha um RaiseFault especifico, modificando a saída padrão e feia para o escopo do nosso layout em JSON da API.
+- `AM-AddCorsHeaders.xml`: Adiciona headers necessários para evitar problemas de CORS no navegador.
+- `AM-AddCustomHeaders.xml`: Acrescenta metadados extras de rastreamento e identificação.
+- `FC-CallLogging.xml`: Delega o comportamento compartilhado de logging para a SharedFlow `common-logging`.
+
+### Faults globais
+
+- `AM-DefaultFaultResponse.xml`: Padroniza o payload JSON de erro quando o Apigee gera uma falha sistêmica não tratada.
 
 ## Requisitos
 
 - .NET 9+
 - Aspire.Hosting >= 9.5.0
-- Docker em execução
+- Docker em execução localmente
 
 ## Licença
 

@@ -84,11 +84,16 @@ public sealed class ApigeeEmulatorLifecycleHook(
 
         var entries = ResolveEntries(backendAnnotations);
         var zipPath = await EnsureBundleAsync(resource, entries).ConfigureAwait(false);
-        await DeployZipAsync(controlClient, zipPath, resource.ApigeeEnvironment, ct).ConfigureAwait(false);
 
-        // Cleanup after successful deploy
-        if (FileSystem.FileExists(zipPath))
-            FileSystem.FileDelete(zipPath);
+        try
+        {
+            await DeployZipAsync(controlClient, zipPath, resource.ApigeeEnvironment, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            if (FileSystem.FileExists(zipPath))
+                FileSystem.FileDelete(zipPath);
+        }
 
         var trafficPort = ResolveBackendPort(resource, ApigeeEmulatorResource.TRAFFIC_PORT_NAME);
         using var trafficClient = HttpClientFactory(trafficPort);

@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.3.1] - 2026-03-29
+
+### Added
+- Added comprehensive unit tests for `WithBackend` validation, covering duplicate target server name prevention and parameter validation.
+- Added new test helpers (`ApigeeEmulatorTestHelpers`, `FakeBackend`) to streamline and simplify emulator unit testing.
+
+### Changed
+- Extracted target server duplication validation into a dedicated method (`ThrowIfTargetServerAlreadyRegistered`) in `ApigeeEmulatorExtensions.cs`.
+- Enhanced `ApigeeEmulatorLifecycleHook.cs` to ensure the proxy bundle `.zip` is reliably deleted after deployment attempts using a `try...finally` block.
+- Significantly expanded Apigee Emulator documentation (`README.md` and `README.pt-BR.md`), detailing runtime behavior, troubleshooting steps, and comprehensive policy explanations.
+
 ## [7.3.0] - 2026-03-29
 
 ### Added
@@ -265,6 +276,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[7.3.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.3.0...v7.3.1
 [7.3.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.2.2...v7.3.0
 [7.2.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.2.1...v7.2.2
 [7.2.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.2.0...v7.2.1
