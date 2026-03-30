@@ -184,17 +184,6 @@ sequenceDiagram
 - Confirm that the `healthCheckPath` passed to `WithWorkspace(...)` is a valid route exposed by your deployed proxy.
 - If the proxy deploys successfully but that route returns non-success status codes, Aspire startup may continue retrying until timeout.
 
-## Aspire Dashboard
-
-Once running, the Apigee Emulator appears as a managed resource in the Aspire Dashboard alongside your backend services.
-
-> Suggested screenshot:
-> - Resource name: `apigee-emulator`
-> - Status: `Running`
-> - Control endpoint visible
-> - Traffic endpoint visible
-> - Backend service shown in the same distributed application graph
-
 ---
 
 ## Playground proxy (example only)

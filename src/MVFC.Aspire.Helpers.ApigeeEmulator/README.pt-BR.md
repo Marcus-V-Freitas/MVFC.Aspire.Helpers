@@ -184,17 +184,6 @@ sequenceDiagram
 - Confirme que o `healthCheckPath` informado em `WithWorkspace(...)` corresponde a uma rota válida exposta pelo proxy publicado.
 - Se o deploy ocorrer com sucesso, mas essa rota responder com erro, a inicialização poderá continuar em retry até timeout.
 
-## Aspire Dashboard
-
-Depois de iniciado, o Apigee Emulator aparece como um recurso gerenciado no Aspire Dashboard ao lado dos serviços de backend.
-
-> Sugestão de screenshot:
-> - Nome do recurso: `apigee-emulator`
-> - Status: `Running`
-> - Endpoint de controle visível
-> - Endpoint de tráfego visível
-> - Backend aparecendo no mesmo grafo da aplicação distribuída
-
 ---
 
 ## Proxy do playground (apenas exemplo)
