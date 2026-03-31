@@ -1,9 +1,14 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [7.3.3] - 2026-03-31
+
+### Added
+- Added a featured mention section in the documentation (`README.md` and `README.pt-BR.md`) highlighting the MVFC.Aspire.Helpers article on the GFT Technologies Engineering Blog.
 
 ## [7.3.2] - 2026-03-29
 
@@ -281,6 +286,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[7.3.3]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.3.2...v7.3.3
 [7.3.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.3.1...v7.3.2
 [7.3.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.3.0...v7.3.1
 [7.3.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.2.2...v7.3.0

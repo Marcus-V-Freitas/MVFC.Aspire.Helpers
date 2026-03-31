@@ -9,6 +9,14 @@
 
 Coleção de helpers para integrar serviços comuns com o .NET Aspire de forma rápida e padronizada.
 
+> 🏢 **Validação Corporativa: Destaque na GFT Technologies**
+> 
+> **[Leia o artigo completo no blog de engenharia da GFT](https://www.gft.com/br/pt/blog/net-aspire-na-pratica-simplificando-a-orquestracao)**
+> 
+> *O `MVFC.Aspire.Helpers` foi construído para resolver desafios reais de orquestração em escala corporativa. Publicado no blog de uma gigante global de tecnologia, este artigo detalha como a biblioteca simplifica a configuração de serviços como MongoDB, RabbitMQ e Keycloak. Descubra como essas abstrações reduzem a carga cognitiva dos times e habilitam o Shift-Left Testing em ambientes complexos.*
+
+---
+
 ## Motivação
 
 Orquestrar um ambiente local realista para aplicações distribuídas em .NET normalmente significa:
