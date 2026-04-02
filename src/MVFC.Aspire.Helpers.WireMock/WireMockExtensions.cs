@@ -45,7 +45,7 @@ public static class WireMockExtensions
                               new(CustomResourceKnownProperties.Source, WireMockDefaults.RESOURCE_SOURCE_PROPERTY)
                           ],
                           ResourceType = WireMockDefaults.RESOURCE_TYPE_PROPERTY,
-                          CreationTimeStamp = DateTime.UtcNow,
+                          CreationTimeStamp = DateTimeOffset.UtcNow.DateTime,
                           State = KnownResourceStates.NotStarted,
                       });
     }

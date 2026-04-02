@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
@@ -73,6 +75,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET 9
         uses: actions/setup-dotnet@v4
@@ -84,33 +88,11 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Extrair versão da tag
-        id: get_version
-        run: echo "PACKAGE_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-
-      - name: Atualizar versão nos csproj
-        run: |
-          for csproj_file in $(find ./src -name "*.csproj"); do
-            sed -i "s|<Version>.*</Version>|<Version>${PACKAGE_VERSION}</Version>|" "$csproj_file"
-          done
-
-      - name: Restaurar dependências
-        run: |
-          for csproj_file in $(find ./src -name "*.csproj"); do
-            dotnet restore "$csproj_file"
-          done
-
-      - name: Build em Release
-        run: |
-          for csproj_file in $(find ./src -name "*.csproj"); do
-            dotnet build "$csproj_file" --configuration Release --no-restore
-          done
-
-      - name: Gerar pacotes NuGet
+      - name: Build e Pack
         run: |
           mkdir -p ./nupkg
-          for csproj_file in $(find ./src -name "*.csproj"); do
-            dotnet pack "$csproj_file" --configuration Release --no-build --output ./nupkg
+          for csproj in $(find ./src -name "*.csproj"); do
+            dotnet pack "$csproj" --configuration Release --output ./nupkg
           done
 
       - name: Publicar no NuGet

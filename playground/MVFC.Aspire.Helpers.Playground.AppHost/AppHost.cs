@@ -128,7 +128,7 @@ var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-e
                   .WaitFor(spanner)
                   .WithReference(spanner);
 
-var wireMock = builder.AddWireMock("wireMock", port: 7070, configure: (server) => {
+builder.AddWireMock("wireMock", port: 7070, configure: (server) => {
     server.Endpoint("/api/echo")
           .SetEncoding(Encoding.UTF8)
           .WithDefaultBodyType(BodyType.String)

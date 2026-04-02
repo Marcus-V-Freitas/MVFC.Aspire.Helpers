@@ -25,7 +25,7 @@ internal sealed class WireMockLifecycleHook(
     public Task SubscribeAsync(
         IDistributedApplicationEventing eventing,
         DistributedApplicationExecutionContext executionContext,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
 
         eventing.Subscribe<BeforeStartEvent>(OnBeforeStartAsync);
@@ -106,8 +106,8 @@ internal sealed class WireMockLifecycleHook(
             resource,
             s => s with
             {
-                StartTimeStamp = started ? DateTime.UtcNow : null,
-                StopTimeStamp = started ? null : DateTime.UtcNow,
+                StartTimeStamp = started ? DateTimeOffset.UtcNow.DateTime : null,
+                StopTimeStamp = started ? null : DateTimeOffset.UtcNow.DateTime,
                 Urls = BuildUrls(resource, started),
                 State = BuildResourceState(started),
             }).ConfigureAwait(false);

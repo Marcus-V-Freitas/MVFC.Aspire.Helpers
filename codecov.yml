@@ -1,6 +1,10 @@
 ﻿codecov:
   branch: main
 
+ignore:
+  - "tests/**"
+  - "playground/**"
+
 coverage:
   status:
     project:

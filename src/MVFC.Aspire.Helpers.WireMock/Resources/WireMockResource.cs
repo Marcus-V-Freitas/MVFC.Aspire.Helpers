@@ -35,5 +35,5 @@ public sealed class WireMockResource : Resource, IResourceWithEndpoints, IResour
     /// Expressão que representa a connection string HTTP local do servidor WireMock.
     /// </summary>
     public ReferenceExpression ConnectionStringExpression =>
-        ReferenceExpression.Create($"http://localhost:{Port.ToString()}");
+        ReferenceExpression.Create($"http://localhost:{Port.ToString(CultureInfo.InvariantCulture)}");
 }

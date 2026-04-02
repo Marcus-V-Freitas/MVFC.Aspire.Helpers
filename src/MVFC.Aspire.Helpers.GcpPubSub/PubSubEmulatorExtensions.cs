@@ -100,7 +100,7 @@ public static class PubSubEmulatorExtensions
         EnvironmentCallbackContext ctx,
         PubSubEmulatorResource resource)
     {
-        ctx.EnvironmentVariables[PubSubDefaults.EMULATOR_WAIT_TIMEOUT_ENV_VAR] = resource.WaitTimeoutSeconds.ToString();
+        ctx.EnvironmentVariables[PubSubDefaults.EMULATOR_WAIT_TIMEOUT_ENV_VAR] = resource.WaitTimeoutSeconds.ToString(CultureInfo.InvariantCulture);
 
         var projectNumber = 0;
         foreach (var pubSubConfig in resource.PubSubConfigs)

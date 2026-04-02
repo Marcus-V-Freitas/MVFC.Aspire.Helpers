@@ -30,11 +30,11 @@ public sealed class RabbitMQDefinitionsBuilderTests
         // Assert
         rb.Resource.Exchanges.Should().HaveCount(3);
         rb.Resource.Exchanges!.Select(e => e.Name)
-            .Should().BeEquivalentTo(new[] { "ex-direct", "ex-topic", "ex-fanout" });
+            .Should().BeEquivalentTo(["ex-direct", "ex-topic", "ex-fanout"]);
 
         rb.Resource.Queues.Should().HaveCount(4);
         rb.Resource.Queues!.Select(q => q.Name)
-            .Should().BeEquivalentTo(new[] { "q1", "q2", "q3", "q4-no-exchange" });
+            .Should().BeEquivalentTo(["q1", "q2", "q3", "q4-no-exchange"]);
     }
 
     [Fact]

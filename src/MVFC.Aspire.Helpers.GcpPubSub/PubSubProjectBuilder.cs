@@ -11,7 +11,7 @@ internal static class PubSubProjectBuilder
     /// </summary>
     internal static string Build(PubSubConfig pubSubConfig)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(pubSubConfig.ProjectId, nameof(pubSubConfig.ProjectId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(pubSubConfig.ProjectId);
         var sb = new StringBuilder(pubSubConfig.ProjectId);
 
         return !pubSubConfig.MessageConfigs.Any()

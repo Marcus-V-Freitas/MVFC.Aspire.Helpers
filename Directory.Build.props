@@ -1,7 +1,12 @@
 ﻿<Project>
   <PropertyGroup>
-    <LangVersion>13.0</LangVersion>
+    <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+    <ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
@@ -18,8 +23,11 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(MSBuildProjectDirectory.Contains(playground))' == 'true'">
-    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
+  <ItemGroup Condition="'$(IsTestProject)' != 'true' AND !$([System.String]::new('$(MSBuildProjectDirectory)').Contains('playground'))">
+    <PackageReference Include="MinVer" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup Condition="$([System.String]::new('$(MSBuildProjectDirectory)').Contains('playground'))">
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
+  </ItemGroup>
 </Project>

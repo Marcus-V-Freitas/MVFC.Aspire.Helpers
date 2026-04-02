@@ -27,6 +27,7 @@
       <PackageVersion Include="WireMock.Net.minimal" Version="1.25.0" />
       <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
       <PackageVersion Include="xunit.v3" Version="3.2.2" />
+      <PackageVersion Include="MinVer" Version="6.0.0" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">

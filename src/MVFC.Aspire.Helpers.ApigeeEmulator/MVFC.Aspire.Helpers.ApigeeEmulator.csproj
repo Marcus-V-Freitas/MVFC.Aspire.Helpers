@@ -2,20 +2,17 @@
 
   <PropertyGroup>
     <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <IsAspireSharedProject>true</IsAspireSharedProject>
-    <Version>0.0.0</Version>
     <Authors>Marcus Vinicius de Freitas Costa</Authors>
-    <Description>Helpers para integração com o emulador Apigee em projetos .NET Aspire, facilitando o uso de proxies de API em ambientes de desenvolvimento.</Description>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/tree/master/src/MVFC.Aspire.Helpers.ApigeeEmulator</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <IsPackable>true</IsPackable>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://www.nuget.org/packages/MVFC.Aspire.Helpers.ApigeeEmulator</PackageProjectUrl>
     <PackageTags>aspire;dotnet;helpers;apigee;emulator;api;proxy;csharp;net;microservicos</PackageTags>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <IsPackable>true</IsPackable>
-    <PackageIcon>icon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/tree/master/src/MVFC.Aspire.Helpers.ApigeeEmulator</RepositoryUrl>
+    <Description>Helpers para integração com o emulador Apigee em projetos .NET Aspire, facilitando o uso de proxies de API em ambientes de desenvolvimento.</Description>
   </PropertyGroup>
 
   <ItemGroup>

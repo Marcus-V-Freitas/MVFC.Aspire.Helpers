@@ -93,7 +93,7 @@ public sealed class EndpointBuilder(WireMockServer server, string path, Endpoint
                 ? authList.FirstOrDefault()
                 : null;
 
-            if (auth?.StartsWith("Bearer ") != true || auth[7..] != token)
+            if (auth?.StartsWith("Bearer ", StringComparison.Ordinal) != true || auth[7..] != token)
                 return (false, error, contentType);
 
             return (true, null, contentType);

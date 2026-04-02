@@ -3,21 +3,14 @@
 public static class MongoEndpoints
 {
     public static void MapMongoEndpoints(this IEndpointRouteBuilder apiGroup) =>
-        apiGroup.MapGet("/mongo", async (IConfiguration configuration) => 
+        apiGroup.MapGet("/mongo", async (IConfiguration configuration) =>
         {
             var mongoClient = new MongoClient(configuration.GetConnectionString("mongo"));
             var database = mongoClient.GetDatabase("admin");
 
-            try 
-            {
-                var pingCommand = new BsonDocument("ping", 1);
-                var result = await database.RunCommandAsync<BsonDocument>(pingCommand).ConfigureAwait(false);
+            var pingCommand = new BsonDocument("ping", 1);
+            await database.RunCommandAsync<BsonDocument>(pingCommand).ConfigureAwait(false);
 
-                return Results.Ok("Funcionou");
-            }
-            catch 
-            {
-                throw;
-            }
+            return Results.Ok("Funcionou");
         });
 }

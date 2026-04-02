@@ -55,7 +55,7 @@ public static class MailpitExtensions
         ArgumentOutOfRangeException.ThrowIfLessThan(maxMessages, 0);
         ArgumentNullException.ThrowIfNull(builder);
 
-        return builder.WithEnvironment(MailpitDefaults.MAX_MESSAGES_ENV_VAR, maxMessages.ToString());
+        return builder.WithEnvironment(MailpitDefaults.MAX_MESSAGES_ENV_VAR, maxMessages.ToString(CultureInfo.InvariantCulture));
     }
 
     /// <summary>
@@ -68,7 +68,7 @@ public static class MailpitExtensions
         ArgumentOutOfRangeException.ThrowIfLessThan(sizeMb, 0);
         ArgumentNullException.ThrowIfNull(builder);
 
-        return builder.WithEnvironment(MailpitDefaults.MAX_MESSAGE_SIZE_ENV_VAR, (sizeMb * 1024 * 1024).ToString());
+        return builder.WithEnvironment(MailpitDefaults.MAX_MESSAGE_SIZE_ENV_VAR, (sizeMb * 1024 * 1024).ToString(CultureInfo.InvariantCulture));
     }
 
     /// <summary>

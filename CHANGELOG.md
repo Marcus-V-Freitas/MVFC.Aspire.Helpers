@@ -1,9 +1,19 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [8.0.0] - 2026-04-02
+
+### Added
+- Integrated **MinVer** for automatic Semantic Versioning based on Git tags.
+- Configured `MinVerTagPrefix` as `v` to align with existing project tagging conventions.
+
+### Changed
+- Simplified GitHub Actions CI workflow by removing manual version extraction and project patching scripts.
+- Optimized MSBuild property functions in `Directory.Build.Props` for more robust project categorization and exclusion (e.g., playground projects).
 
 ## [7.3.3] - 2026-03-31
 
@@ -286,6 +296,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[8.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.3.3...v8.0.0
 [7.3.3]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.3.2...v7.3.3
 [7.3.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.3.1...v7.3.2
 [7.3.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.3.0...v7.3.1

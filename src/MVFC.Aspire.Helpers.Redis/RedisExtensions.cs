@@ -76,7 +76,7 @@ public static class RedisExtensions
                 targetPort: RedisDefaults.DEFAULT_COMMANDER_PORT,
                 name: RedisDefaults.COMMANDER_HTTP_ENDPOINT_NAME)
             .WithEnvironment(RedisDefaults.HOST_ENV_VAR, builder.Resource.Name)
-            .WithEnvironment(RedisDefaults.PORT_ENV_VAR, RedisDefaults.DEFAULT_REDIS_PORT.ToString())
+            .WithEnvironment(RedisDefaults.PORT_ENV_VAR, RedisDefaults.DEFAULT_REDIS_PORT.ToString(CultureInfo.InvariantCulture))
             .WithReference(builder);
 
         return builder;

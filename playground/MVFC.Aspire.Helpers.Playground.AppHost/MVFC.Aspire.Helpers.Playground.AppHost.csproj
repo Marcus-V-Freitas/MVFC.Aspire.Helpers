@@ -1,41 +1,39 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<Sdk Name="Aspire.AppHost.Sdk" Version="9.3.1" />
+  <Sdk Name="Aspire.AppHost.Sdk" Version="9.3.1" />
 
-	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<TargetFramework>net10.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<IsPackable>false</IsPackable>
-		<UserSecretsId>d534f6dc-2282-4439-8829-f3cb82c29649</UserSecretsId>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <UserSecretsId>d534f6dc-2282-4439-8829-f3cb82c29649</UserSecretsId>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Aspire.Hosting.AppHost" />
-		<PackageReference Include="Refit" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Refit" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.ApigeeEmulator\MVFC.Aspire.Helpers.ApigeeEmulator.csproj" IsAspireProjectResource="false" />
-		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.GcpPubSub\MVFC.Aspire.Helpers.GcpPubSub.csproj" IsAspireProjectResource="false" />
-		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.GcpSpanner\MVFC.Aspire.Helpers.GcpSpanner.csproj" IsAspireProjectResource="false" />
-		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.Gotenberg\MVFC.Aspire.Helpers.Gotenberg.csproj" IsAspireProjectResource="false" />
-		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.Keycloak\MVFC.Aspire.Helpers.Keycloak.csproj" IsAspireProjectResource="false" />
-		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.Mongo\MVFC.Aspire.Helpers.Mongo.csproj" IsAspireProjectResource="false" />
-		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.CloudStorage\MVFC.Aspire.Helpers.CloudStorage.csproj" IsAspireProjectResource="false" />
-		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.WireMock\MVFC.Aspire.Helpers.WireMock.csproj" IsAspireProjectResource="false" />
-		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.Mailpit\MVFC.Aspire.Helpers.Mailpit.csproj" IsAspireProjectResource="false" />
-		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.Redis\MVFC.Aspire.Helpers.Redis.csproj" IsAspireProjectResource="false" />
-		<ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.RabbitMQ\MVFC.Aspire.Helpers.RabbitMQ.csproj" IsAspireProjectResource="false" />
-		<ProjectReference Include="..\MVFC.Aspire.Helpers.Playground.Api\MVFC.Aspire.Helpers.Playground.Api.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.ApigeeEmulator\MVFC.Aspire.Helpers.ApigeeEmulator.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.GcpPubSub\MVFC.Aspire.Helpers.GcpPubSub.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.GcpSpanner\MVFC.Aspire.Helpers.GcpSpanner.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.Gotenberg\MVFC.Aspire.Helpers.Gotenberg.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.Keycloak\MVFC.Aspire.Helpers.Keycloak.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.Mongo\MVFC.Aspire.Helpers.Mongo.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.CloudStorage\MVFC.Aspire.Helpers.CloudStorage.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.WireMock\MVFC.Aspire.Helpers.WireMock.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.Mailpit\MVFC.Aspire.Helpers.Mailpit.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.Redis\MVFC.Aspire.Helpers.Redis.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\..\src\MVFC.Aspire.Helpers.RabbitMQ\MVFC.Aspire.Helpers.RabbitMQ.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\MVFC.Aspire.Helpers.Playground.Api\MVFC.Aspire.Helpers.Playground.Api.csproj" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<None Update="bucket-data\bucket-teste\teste.txt">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
+  <ItemGroup>
+    <None Update="bucket-data\bucket-teste\teste.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="apigee-workspace\**\*">

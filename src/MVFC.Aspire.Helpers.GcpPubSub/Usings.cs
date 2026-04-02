@@ -7,3 +7,4 @@ global using Google.Cloud.PubSub.V1;
 global using Google.Protobuf.WellKnownTypes;
 global using MVFC.Aspire.Helpers.GcpPubSub.Models;
 global using MVFC.Aspire.Helpers.GcpPubSub.Resources;
+global using System.Globalization;

@@ -21,7 +21,7 @@ public static class ApigeeEndpoints
         apiGroup.MapGet("/", () => new
         {
             message = "Hello from BackendApi (Aspire)",
-            timestamp = DateTime.UtcNow,
+            timestamp = DateTimeOffset.UtcNow.DateTime,
         });
 
         apiGroup.MapGet("/health", () => Results.Ok("healthy"));
@@ -48,7 +48,7 @@ public static class ApigeeEndpoints
         apiGroup.MapGet("/quota-test", () => Results.Ok(new
         {
             message = "Quota test endpoint",
-            callTime = DateTime.UtcNow,
+            callTime = DateTimeOffset.UtcNow.DateTime,
             note = "Este endpoint tem limite de 5 chamadas por minuto via Apigee Quota policy"
         }));
 
@@ -58,7 +58,7 @@ public static class ApigeeEndpoints
             framework = "ASP.NET Minimal API",
             runtime = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
             os = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
-            timestamp = DateTime.UtcNow,
+            timestamp = DateTimeOffset.UtcNow.DateTime,
             endpoints = _endpoints,
         }));
 
@@ -68,7 +68,7 @@ public static class ApigeeEndpoints
             return Results.Ok(new
             {
                 message = "Dados processados (operação custosa)",
-                generatedAt = DateTime.UtcNow,
+                generatedAt = DateTimeOffset.UtcNow.DateTime,
                 data = new
                 {
                     metrics = new
@@ -152,7 +152,7 @@ public static class ApigeeEndpoints
                 externalApis = "reachable",
             },
             version = "1.0.0",
-            timestamp = DateTime.UtcNow,
+            timestamp = DateTimeOffset.UtcNow.DateTime,
         }));
 
         apiGroup.MapGet("/sharedflow-check", (HttpRequest request) =>

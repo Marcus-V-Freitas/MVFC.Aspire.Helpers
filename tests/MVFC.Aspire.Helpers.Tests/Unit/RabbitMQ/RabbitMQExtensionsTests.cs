@@ -178,7 +178,7 @@ public sealed class RabbitMQExtensionsTests
         // Assert
         rabbitBuilder.Resource.Exchanges.Should().NotBeNull();
         rabbitBuilder.Resource.Exchanges.Should().HaveCount(2);
-        rabbitBuilder.Resource.Exchanges!.Select(e => e.Name).Should().Contain(new[] { "exchange-1", "exchange-2" });
+        rabbitBuilder.Resource.Exchanges!.Select(e => e.Name).Should().Contain(["exchange-1", "exchange-2"]);
     }
 
     [Fact]
@@ -217,7 +217,7 @@ public sealed class RabbitMQExtensionsTests
         // Assert
         rabbitBuilder.Resource.Queues.Should().NotBeNull();
         rabbitBuilder.Resource.Queues.Should().HaveCount(2);
-        rabbitBuilder.Resource.Queues!.Select(q => q.Name).Should().Contain(new[] { "queue-1", "queue-2" });
+        rabbitBuilder.Resource.Queues!.Select(q => q.Name).Should().Contain(["queue-1", "queue-2"]);
     }
 
     [Fact]

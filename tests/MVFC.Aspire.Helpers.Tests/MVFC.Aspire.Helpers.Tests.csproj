@@ -1,32 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<IsPackable>false</IsPackable>
-		<IsTestProject>true</IsTestProject>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Aspire.Hosting.Testing" />
-		<PackageReference Include="coverlet.collector" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" />
-		<PackageReference Include="Refit" />
-		<PackageReference Include="Refit.HttpClientFactory" />
-		<PackageReference Include="xunit.v3" />
-		<PackageReference Include="xunit.runner.visualstudio" />
-		<PackageReference Include="FluentAssertions" />
-        <PackageReference Include="NSubstitute" />
-		<PackageReference Include="Moq" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Testing" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Refit" />
+    <PackageReference Include="Refit.HttpClientFactory" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="Moq" />
+  </ItemGroup>
 
-	<ItemGroup>
-	  <EmbeddedResource Include="Integration\Templates\Index.html" />
-	</ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Integration\Templates\Index.html" />
+  </ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\..\playground\MVFC.Aspire.Helpers.Playground.AppHost\MVFC.Aspire.Helpers.Playground.AppHost.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\playground\MVFC.Aspire.Helpers.Playground.AppHost\MVFC.Aspire.Helpers.Playground.AppHost.csproj" />
+  </ItemGroup>
 
 </Project>
