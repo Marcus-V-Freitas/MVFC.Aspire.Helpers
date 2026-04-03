@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Tests.Unit.ApigeeEmulator;
+namespace MVFC.Aspire.Helpers.Tests.Unit.ApigeeEmulator;
 
 public sealed class ApigeeEmulatorLifecycleHookTests : IDisposable
 {
@@ -335,5 +335,232 @@ public sealed class ApigeeEmulatorLifecycleHookTests : IDisposable
 
         // Assert
         json.Should().BeNull();
+    }
+
+    [Fact]
+    public void ResolveBackendEndpoint_SingleEndpoint_NonContainer_ReturnsDockerInternalHost()
+    {
+        // Arrange
+        var resource = Substitute.For<IResource>();
+        resource.Name.Returns("my-project");
+        var annotations = new ResourceAnnotationCollection
+        {
+            new EndpointAnnotation(ProtocolType.Tcp, name: "http", port: 5050)
+        };
+        resource.Annotations.Returns(annotations);
+
+        // Act
+        var (host, port) = ApigeeEmulatorLifecycleHook.ResolveBackendEndpoint(resource, "http");
+
+        // Assert
+        host.Should().Be(ApigeeEmulatorDefaults.DOCKER_INTERNAL_HOST);
+        port.Should().Be(5050);
+    }
+
+    [Fact]
+    public void ResolveBackendEndpoint_SingleEndpoint_Container_ReturnsContainerHost()
+    {
+        // Arrange
+        var resource = Substitute.For<IResource>();
+        resource.Name.Returns("WireMock-Backend");
+        var annotations = new ResourceAnnotationCollection
+        {
+            new EndpointAnnotation(ProtocolType.Tcp, name: "http", port: 5050, targetPort: 8080),
+            new ContainerImageAnnotation { Image = "wiremock/wiremock", Tag = "latest" }
+        };
+        resource.Annotations.Returns(annotations);
+
+        // Act
+        var (host, port) = ApigeeEmulatorLifecycleHook.ResolveBackendEndpoint(resource, "http");
+
+        // Assert
+        host.Should().Be("wiremock-backend");
+        port.Should().Be(8080);
+    }
+
+    [Fact]
+    public void ResolveBackendEndpoint_Container_UsesTargetPortWhenAvailable()
+    {
+        // Arrange
+        var resource = Substitute.For<IResource>();
+        resource.Name.Returns("Redis");
+        var annotations = new ResourceAnnotationCollection
+        {
+            new EndpointAnnotation(ProtocolType.Tcp, name: "tcp", port: 6379, targetPort: 6380),
+            new ContainerImageAnnotation { Image = "redis", Tag = "7" }
+        };
+        resource.Annotations.Returns(annotations);
+
+        // Act
+        var (host, port) = ApigeeEmulatorLifecycleHook.ResolveBackendEndpoint(resource, "tcp");
+
+        // Assert
+        host.Should().Be("redis");
+        port.Should().Be(6380);
+    }
+
+    [Fact]
+    public void ResolveBackendEndpoint_Container_FallsBackToPortWhenNoTargetPort()
+    {
+        // Arrange
+        var resource = Substitute.For<IResource>();
+        resource.Name.Returns("Backend");
+        var annotations = new ResourceAnnotationCollection
+        {
+            new EndpointAnnotation(ProtocolType.Tcp, name: "http", port: 3000),
+            new ContainerImageAnnotation { Image = "my-app", Tag = "1.0" }
+        };
+        resource.Annotations.Returns(annotations);
+
+        // Act
+        var (host, port) = ApigeeEmulatorLifecycleHook.ResolveBackendEndpoint(resource, "http");
+
+        // Assert
+        host.Should().Be("backend");
+        port.Should().Be(3000);
+    }
+
+    [Fact]
+    public void ResolveBackendEndpoint_Container_FallsBackTo80WhenNoPortsDefined()
+    {
+        // Arrange
+        var resource = Substitute.For<IResource>();
+        resource.Name.Returns("Svc");
+        var annotations = new ResourceAnnotationCollection
+        {
+            new EndpointAnnotation(ProtocolType.Tcp, name: "http"),
+            new ContainerImageAnnotation { Image = "app", Tag = "v1" }
+        };
+        resource.Annotations.Returns(annotations);
+
+        // Act
+        var (host, port) = ApigeeEmulatorLifecycleHook.ResolveBackendEndpoint(resource, "http");
+
+        // Assert
+        host.Should().Be("svc");
+        port.Should().Be(80);
+    }
+
+    [Fact]
+    public void ResolveBackendEndpoint_MultipleEndpoints_ReturnsMatchingByName()
+    {
+        // Arrange
+        var resource = Substitute.For<IResource>();
+        resource.Name.Returns("my-project");
+        var annotations = new ResourceAnnotationCollection
+        {
+            new EndpointAnnotation(ProtocolType.Tcp, name: "grpc", port: 9090),
+            new EndpointAnnotation(ProtocolType.Tcp, name: "http", port: 5050)
+        };
+        resource.Annotations.Returns(annotations);
+
+        // Act
+        var (host, port) = ApigeeEmulatorLifecycleHook.ResolveBackendEndpoint(resource, "http");
+
+        // Assert
+        host.Should().Be(ApigeeEmulatorDefaults.DOCKER_INTERNAL_HOST);
+        port.Should().Be(5050);
+    }
+
+    [Fact]
+    public void ResolveBackendEndpoint_MultipleEndpoints_ThrowsWhenNoneMatch()
+    {
+        // Arrange
+        var resource = Substitute.For<IResource>();
+        resource.Name.Returns("my-project");
+        var annotations = new ResourceAnnotationCollection
+        {
+            new EndpointAnnotation(ProtocolType.Tcp, name: "grpc", port: 9090),
+            new EndpointAnnotation(ProtocolType.Tcp, name: "tcp", port: 5050)
+        };
+        resource.Annotations.Returns(annotations);
+
+        // Act
+        var act = () => ApigeeEmulatorLifecycleHook.ResolveBackendEndpoint(resource, "http");
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*No endpoint found*");
+    }
+
+    [Fact]
+    public void ResolveBackendEndpoint_NonContainer_UsesAllocatedEndpointPort()
+    {
+        // Arrange
+        var resource = Substitute.For<IResource>();
+        resource.Name.Returns("my-project");
+        var endpoint = new EndpointAnnotation(ProtocolType.Tcp, name: "http", port: 5050);
+        endpoint.AllocatedEndpoint = new AllocatedEndpoint(endpoint, "localhost", 9999);
+        var annotations = new ResourceAnnotationCollection { endpoint };
+        resource.Annotations.Returns(annotations);
+
+        // Act
+        var (host, port) = ApigeeEmulatorLifecycleHook.ResolveBackendEndpoint(resource, "http");
+
+        // Assert
+        host.Should().Be(ApigeeEmulatorDefaults.DOCKER_INTERNAL_HOST);
+        port.Should().Be(9999);
+    }
+
+    [Fact]
+    public void ResolveBackendEndpoint_NonContainer_ThrowsWhenNoPortConfigured()
+    {
+        // Arrange
+        var resource = Substitute.For<IResource>();
+        resource.Name.Returns("my-project");
+        var annotations = new ResourceAnnotationCollection
+        {
+            new EndpointAnnotation(ProtocolType.Tcp, name: "http")
+        };
+        resource.Annotations.Returns(annotations);
+
+        // Act
+        var act = () => ApigeeEmulatorLifecycleHook.ResolveBackendEndpoint(resource, "http");
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*does not have a configured port*");
+    }
+
+    [Fact]
+    public async Task BuildZipAsync_WithTargetServersJson_MergesFile()
+    {
+        // Arrange
+        var workspacePath = Path.Combine("mock", "ws");
+        var zipName = "bundle.zip";
+        var targetServersJson = """[{"name":"backend","host":"localhost","port":5050,"isEnabled":true}]""";
+
+        _fileSystem.FileExists(zipName).Returns(false);
+        _fileSystem.DirectoryExists(Arg.Is<string>(s => s.StartsWith(Path.GetTempPath()))).Returns(true);
+        _fileSystem.DirectoryGetFiles(workspacePath, "*", SearchOption.AllDirectories).Returns([]);
+
+        // Act
+        await _sut.BuildZipAsync(workspacePath, zipName, targetServersJson, "local");
+
+        // Assert
+        await _fileSystem.Received(1).FileWriteAllTextAsync(
+            Arg.Is<string>(s => s.Contains("targetservers.json")),
+            Arg.Is<string>(s => s.Contains("backend")));
+        await _fileSystem.Received(1).ZipCreateFromDirectoryAsync(
+            Arg.Is<string>(s => s.StartsWith(Path.GetTempPath())), zipName);
+    }
+
+    [Fact]
+    public async Task DeployAsync_SkipsWhenHealthCheckPathIsWhiteSpace()
+    {
+        // Arrange
+        var resource = new ApigeeEmulatorResource("test")
+        {
+            WorkspacePath = "some/path",
+            HealthCheckPath = "   "
+        };
+        var httpCalled = false;
+        _sut.HttpClientFactory = _ => { httpCalled = true; return null!; };
+
+        // Act
+        await _sut.DeployAsync(resource, TestContext.Current.CancellationToken);
+
+        // Assert
+        httpCalled.Should().BeFalse();
     }
 }

@@ -119,4 +119,35 @@ public sealed class PubSubUIExtensionsTests
         // Assert
         act.Should().Throw<ArgumentNullException>();
     }
+
+    [Fact]
+    public void WithReference_WithConfigs_ShouldNotThrow()
+    {
+        // Arrange
+        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var ui = appBuilder.AddGcpPubSubUI("pubsub-ui");
+        var emulator = appBuilder.AddGcpPubSub("pubsub")
+            .WithPubSubConfigs(new PubSubConfig("project-a", new MessageConfig("topic-a")));
+
+        // Act
+        var act = () => ui.WithReference(emulator);
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void WithReference_WithoutConfigs_ShouldNotThrow()
+    {
+        // Arrange
+        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var ui = appBuilder.AddGcpPubSubUI("pubsub-ui");
+        var emulator = appBuilder.AddGcpPubSub("pubsub");
+
+        // Act
+        var act = () => ui.WithReference(emulator);
+
+        // Assert
+        act.Should().NotThrow();
+    }
 }

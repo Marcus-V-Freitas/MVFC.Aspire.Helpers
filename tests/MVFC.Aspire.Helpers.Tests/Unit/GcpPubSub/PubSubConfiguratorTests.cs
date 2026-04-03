@@ -131,4 +131,87 @@ public sealed class PubSubConfiguratorTests
         // Assert
         await act.Should().ThrowAsync<Exception>(); // Grpc exception since there's no emulator on default host
     }
+
+    [Fact]
+    public void BuildDeadLetterPolicy_WhenMaxDeliveryAttemptsIsNull_ShouldUseDefault()
+    {
+        // Arrange
+        var messageConfig = new MessageConfig("topic", "sub")
+        {
+            DeadLetterTopic = "dlq",
+            MaxDeliveryAttempts = null
+        };
+
+        // Act
+        var result = PubSubConfigurator.BuildDeadLetterPolicy("project", messageConfig);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.MaxDeliveryAttempts.Should().Be(PubSubDefaults.MAX_DELIVERY_ATTEMPTS_DEFAULT);
+    }
+
+    [Fact]
+    public void BuildFieldMaskUpdate_WhenOnlyPushEndpoint_ShouldIncludePushConfig()
+    {
+        // Arrange
+        var messageConfig = new MessageConfig("topic", "sub")
+        {
+            PushEndpoint = "endpoint",
+            DeadLetterTopic = null
+        };
+
+        // Act
+        var result = PubSubConfigurator.BuildFieldMaskUpdate(messageConfig);
+
+        // Assert
+        result.Paths.Should().Contain("ack_deadline_seconds");
+        result.Paths.Should().Contain("push_config");
+        result.Paths.Should().NotContain("dead_letter_policy");
+    }
+
+    [Fact]
+    public void BuildFieldMaskUpdate_WhenOnlyDeadLetterTopic_ShouldIncludeDeadLetterPolicy()
+    {
+        // Arrange
+        var messageConfig = new MessageConfig("topic", "sub")
+        {
+            PushEndpoint = null,
+            DeadLetterTopic = "dlq"
+        };
+
+        // Act
+        var result = PubSubConfigurator.BuildFieldMaskUpdate(messageConfig);
+
+        // Assert
+        result.Paths.Should().Contain("ack_deadline_seconds");
+        result.Paths.Should().NotContain("push_config");
+        result.Paths.Should().Contain("dead_letter_policy");
+    }
+
+    [Fact]
+    public void BuildPushEndpoint_WhenPushEndpointIsWhiteSpace_ShouldReturnNull()
+    {
+        // Arrange
+        var messageConfig = new MessageConfig("topic", "sub") { PushEndpoint = "   " };
+
+        // Act
+        var result = PubSubConfigurator.BuildPushEndpoint(messageConfig, "http://localhost");
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void BuildDeadLetterPolicy_WhenDeadLetterTopicIsWhiteSpace_ShouldReturnNull()
+    {
+        // Arrange
+        var messageConfig = new MessageConfig("topic", "sub") { DeadLetterTopic = "   " };
+
+        // Act
+        var result = PubSubConfigurator.BuildDeadLetterPolicy("project", messageConfig);
+
+        // Assert
+        result.Should().BeNull();
+    }
 }
+

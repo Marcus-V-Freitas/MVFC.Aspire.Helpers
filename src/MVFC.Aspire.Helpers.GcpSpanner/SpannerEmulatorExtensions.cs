@@ -163,20 +163,13 @@ public static class SpannerEmulatorExtensions
 
         spanner.OnResourceReady(async (_, _, ct) =>
         {
-            var connectionString = await spanner.Resource.ConnectionStringExpression.GetValueAsync(ct);
+            var connectionString = await spanner.Resource.ConnectionStringExpression.GetValueAsync(ct).ConfigureAwait(false);
             Environment.SetEnvironmentVariable(SpannerDefaults.EMULATOR_HOST_ENV_VAR, connectionString);
 
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             cts.CancelAfter(TimeSpan.FromSeconds(spanner.Resource.WaitTimeoutSeconds));
 
-            try
-            {
-                await SpannerConfigProcessor.ConfigureAsync(spanner.Resource.SpannerConfigs, cts.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (cts.IsCancellationRequested && !ct.IsCancellationRequested)
-            {
-                throw new TimeoutException($"Spanner configuration timed out after {spanner.Resource.WaitTimeoutSeconds} seconds.");
-            }
+            await SpannerConfigProcessor.ConfigureAsync(spanner.Resource.SpannerConfigs, cts.Token).ConfigureAwait(false);
         });
     }
 }

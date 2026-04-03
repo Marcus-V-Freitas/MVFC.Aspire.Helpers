@@ -1,9 +1,20 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [8.0.1] - 2026-04-02
+
+### Added
+- Expanded unit test coverage for **RabbitMQ**, **GcpSpanner**, **Mongo**, **ApigeeEmulator**, and **WireMock**, specifically targeting asynchronous resource readiness callbacks and boundary logic.
+- Created `WireMockLifecycleHookTests` to verify and validate resource lifecycle states (`Running`, `Error`) and generated log messages.
+- Added comprehensive property and hashing tests for `RabbitMQDefinitionsBuilder` to ensure reliable generation of RabbitMQ configuration files.
+
+### Changed
+- Improved `WireMockLifecycleHookTests` robustness by implementing dynamic port allocation to prevent conflicts during concurrent test runs.
+- Standardized `AuthenticationHeaderValue` usage across unit tests for consistency and better namespace handling.
 
 ## [8.0.0] - 2026-04-02
 
@@ -296,6 +307,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[8.0.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v8.0.0...v8.0.1
 [8.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.3.3...v8.0.0
 [7.3.3]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.3.2...v7.3.3
 [7.3.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v7.3.1...v7.3.2

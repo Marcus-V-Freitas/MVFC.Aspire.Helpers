@@ -99,4 +99,160 @@ public sealed class MongoExtensionsTests
         // Assert
         act.Should().NotThrow();
     }
+
+    [Fact]
+    public void AddMongoReplicaSet_ShouldThrow_WhenPortIsInvalid()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+
+        // Act
+        var act = () => builder.AddMongoReplicaSet("mongo", port: -1);
+
+        // Assert
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void WithDockerImage_ShouldThrow_WhenBuilderIsNull()
+    {
+        // Arrange
+        IResourceBuilder<MongoReplicaSetResource>? builder = null;
+
+        // Act
+        var act = () => builder!.WithDockerImage("img", "tag");
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Theory]
+    [InlineData(null, "tag")]
+    [InlineData("", "tag")]
+    [InlineData("img", null)]
+    [InlineData("img", "")]
+    public void WithDockerImage_ShouldThrow_WhenImageOrTagInvalid(string? image, string? tag)
+    {
+        // Arrange
+        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var mongoBuilder = appBuilder.AddMongoReplicaSet("mongo");
+
+        // Act
+        var act = () => mongoBuilder.WithDockerImage(image!, tag!);
+
+        // Assert
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void WithReference_ShouldThrow_WhenProjectIsNull()
+    {
+        // Arrange
+        IResourceBuilder<ProjectResource>? project = null;
+        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var mongoBuilder = appBuilder.AddMongoReplicaSet("mongo");
+
+        // Act
+        var act = () => project!.WithReference(mongoBuilder);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void WithReference_ShouldThrow_WhenMongoBuilderIsNull()
+    {
+        // Arrange
+        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        IResourceBuilder<MongoReplicaSetResource>? mongoBuilder = null;
+
+        // Act
+        var act = () => project.WithReference(mongoBuilder!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void WithReference_WithoutDumps_ShouldNotThrow()
+    {
+        // Arrange
+        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var mongoBuilder = appBuilder.AddMongoReplicaSet("mongo");
+
+        // Act
+        var act = () => project.WithReference(mongoBuilder);
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void WithReference_WithDumps_ShouldNotThrow()
+    {
+        // Arrange
+        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        IReadOnlyCollection<IMongoClassDump> dumps =
+        [
+            new NoOpMongoDump("db", "collection", 1)
+        ];
+        var mongoBuilder = appBuilder.AddMongoReplicaSet("mongo").WithDumps(dumps);
+
+        // Act
+        var act = () => project.WithReference(mongoBuilder);
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void WithReference_CalledTwice_ShouldNotRegisterDumpsExecutorTwice()
+    {
+        // Arrange
+        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var project1 = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api1");
+        var project2 = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api2");
+        IReadOnlyCollection<IMongoClassDump> dumps =
+        [
+            new NoOpMongoDump("db", "collection", 1)
+        ];
+        var mongoBuilder = appBuilder.AddMongoReplicaSet("mongo").WithDumps(dumps);
+
+        // Act
+        project1.WithReference(mongoBuilder);
+        project2.WithReference(mongoBuilder);
+
+        // Assert
+        mongoBuilder.Resource.Annotations.OfType<MongoDumpsExecutedAnnotation>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void WithDumps_ShouldThrow_WhenBuilderIsNull()
+    {
+        // Arrange
+        IResourceBuilder<MongoReplicaSetResource>? builder = null;
+        IReadOnlyCollection<IMongoClassDump> dumps = [new NoOpMongoDump("db", "col", 1)];
+
+        // Act
+        var act = () => builder!.WithDumps(dumps);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void WithDataVolume_ShouldThrow_WhenBuilderIsNull()
+    {
+        // Arrange
+        IResourceBuilder<MongoReplicaSetResource>? builder = null;
+
+        // Act
+        var act = () => builder!.WithDataVolume("vol");
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
 }

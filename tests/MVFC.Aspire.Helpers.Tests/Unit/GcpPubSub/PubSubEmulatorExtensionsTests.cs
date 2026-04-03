@@ -242,4 +242,54 @@ public sealed class PubSubEmulatorExtensionsTests
         // Assert
         act.Should().Throw<ArgumentNullException>();
     }
+
+    [Fact]
+    public void WithReference_WithConfigs_ShouldNotThrow()
+    {
+        // Arrange
+        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var pubSub = appBuilder.AddGcpPubSub("pubsub")
+            .WithPubSubConfigs(new PubSubConfig("project-a", new MessageConfig("topic-a", "sub-a")));
+
+        // Act
+        var act = () => project.WithReference(pubSub);
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void WithReference_WithoutConfigs_ShouldNotThrow()
+    {
+        // Arrange
+        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var pubSub = appBuilder.AddGcpPubSub("pubsub");
+
+        // Act
+        var act = () => project.WithReference(pubSub);
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void WithReference_CalledTwice_ShouldNotRegisterConfiguratorTwice()
+    {
+        // Arrange
+        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var project1 = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api1");
+        var project2 = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api2");
+        var pubSub = appBuilder.AddGcpPubSub("pubsub")
+            .WithPubSubConfigs(new PubSubConfig("project-a", new MessageConfig("topic-a", "sub-a")));
+
+        // Act
+        project1.WithReference(pubSub);
+        project2.WithReference(pubSub);
+
+        // Assert — annotation should be added only once
+        pubSub.Resource.Annotations.OfType<PubSubConfiguredAnnotation>().Should().ContainSingle();
+    }
 }
+
