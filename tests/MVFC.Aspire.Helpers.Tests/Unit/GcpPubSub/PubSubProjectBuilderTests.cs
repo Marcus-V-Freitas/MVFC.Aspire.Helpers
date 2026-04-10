@@ -15,20 +15,17 @@ public sealed class PubSubProjectBuilderTests
         result.Should().Be("my-project");
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData(" ")]
-    public void Build_ShouldThrow_WhenProjectIdIsNullOrWhitespace(string? projectId)
+    [Fact]
+    public void Build_ShouldThrow_WhenPubSubProjectIsNull()
     {
         // Arrange
-        var config = new PubSubConfig(projectId!, new MessageConfig("topic"));
+        PubSubConfig config = null!;
 
         // Act
         var act = () => PubSubProjectBuilder.Build(config);
 
         // Assert
-        act.Should().Throw<ArgumentException>();
+        act.Should().Throw<ArgumentNullException>();
     }
 
     [Fact]

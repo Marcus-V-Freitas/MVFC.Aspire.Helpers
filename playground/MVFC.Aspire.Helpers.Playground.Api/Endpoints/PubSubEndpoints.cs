@@ -4,9 +4,9 @@ public static class PubSubEndpoints
 {
     public static void MapPubSubEndpoints(this IEndpointRouteBuilder apiGroup) 
     {
-        apiGroup.MapGet("/pub-sub-enter", (IMessagePublisher messagePublisher) => 
+        apiGroup.MapGet("/pub-sub-enter", async (IMessagePublisher messagePublisher) => 
         {
-            messagePublisher.PublishAsync("test-topic", "ola mundo");
+            await messagePublisher.PublishAsync("test-topic", "ola mundo").ConfigureAwait(false);
 
             return Results.Ok();
         });

@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Playground.Api.Endpoints;
+namespace MVFC.Aspire.Helpers.Playground.Api.Endpoints;
 
 public static class ApigeeEndpoints
 {
@@ -18,21 +18,46 @@ public static class ApigeeEndpoints
 
     public static void MapApigeeEndpoints(this IEndpointRouteBuilder apiGroup)
     {
+        apiGroup.MapRootEndpoint();
+        apiGroup.MapHealthEndpoint();
+        apiGroup.MapEchoEndpoint();
+        apiGroup.MapTransformEndpoint();
+        apiGroup.MapQuotaTestEndpoint();
+        apiGroup.MapInfoEndpoint();
+        apiGroup.MapCachedEndpoint();
+        apiGroup.MapAdminEndpoint();
+        apiGroup.MapSecureEndpoint();
+        apiGroup.MapXmlEndpoint();
+        apiGroup.MapHealthCheckEndpoint();
+        apiGroup.MapSharedFlowCheckEndpoint();
+    }
+
+    private static void MapRootEndpoint(this IEndpointRouteBuilder apiGroup)
+    {
         apiGroup.MapGet("/", () => new
         {
             message = "Hello from BackendApi (Aspire)",
             timestamp = DateTimeOffset.UtcNow.DateTime,
         });
+    }
 
+    private static void MapHealthEndpoint(this IEndpointRouteBuilder apiGroup)
+    {
         apiGroup.MapGet("/health", () => Results.Ok("healthy"));
+    }
 
+    private static void MapEchoEndpoint(this IEndpointRouteBuilder apiGroup)
+    {
         apiGroup.MapGet("/echo", (HttpRequest req) => Results.Ok(new
         {
             method = req.Method,
             path = req.Path.Value,
             headers = req.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()),
         }));
+    }
 
+    private static void MapTransformEndpoint(this IEndpointRouteBuilder apiGroup)
+    {
         apiGroup.MapGet("/transform", () => Results.Ok(new
         {
             products = new[]
@@ -44,14 +69,20 @@ public static class ApigeeEndpoints
             total = 3,
             currency = "BRL"
         }));
+    }
 
+    private static void MapQuotaTestEndpoint(this IEndpointRouteBuilder apiGroup)
+    {
         apiGroup.MapGet("/quota-test", () => Results.Ok(new
         {
             message = "Quota test endpoint",
             callTime = DateTimeOffset.UtcNow.DateTime,
             note = "Este endpoint tem limite de 5 chamadas por minuto via Apigee Quota policy"
         }));
+    }
 
+    private static void MapInfoEndpoint(this IEndpointRouteBuilder apiGroup)
+    {
         apiGroup.MapGet("/info", () => Results.Ok(new
         {
             server = "BackendApi",
@@ -61,7 +92,10 @@ public static class ApigeeEndpoints
             timestamp = DateTimeOffset.UtcNow.DateTime,
             endpoints = _endpoints,
         }));
+    }
 
+    private static void MapCachedEndpoint(this IEndpointRouteBuilder apiGroup)
+    {
         apiGroup.MapGet("/cached", async () =>
         {
             await Task.Delay(2000).ConfigureAwait(false);
@@ -83,7 +117,10 @@ public static class ApigeeEndpoints
                 note = "Esta resposta deve ser cacheada por 30s pelo proxy Apigee",
             });
         });
+    }
 
+    private static void MapAdminEndpoint(this IEndpointRouteBuilder apiGroup)
+    {
         apiGroup.MapGet("/admin", () => Results.Ok(new
         {
             panel = "Admin Dashboard",
@@ -93,7 +130,10 @@ public static class ApigeeEndpoints
             systemHealth = "green",
             note = "Este endpoint é restrito a IPs locais via AccessControl policy",
         }));
+    }
 
+    private static void MapSecureEndpoint(this IEndpointRouteBuilder apiGroup)
+    {
         apiGroup.MapGet("/secure", (HttpRequest req) =>
         {
             var authUser = req.Headers["X-Authenticated-User"].FirstOrDefault() ?? "unknown";
@@ -110,7 +150,10 @@ public static class ApigeeEndpoints
                 note = "Este endpoint requer Basic Auth (user: admin, pw: secret123)"
             });
         });
+    }
 
+    private static void MapXmlEndpoint(this IEndpointRouteBuilder apiGroup)
+    {
         apiGroup.MapGet("/xml", () =>
         {
             var xml = """
@@ -141,7 +184,10 @@ public static class ApigeeEndpoints
                        """;
             return Results.Content(xml, "application/xml");
         });
+    }
 
+    private static void MapHealthCheckEndpoint(this IEndpointRouteBuilder apiGroup)
+    {
         apiGroup.MapGet("/health-check", () => Results.Ok(new
         {
             status = "healthy",
@@ -154,7 +200,10 @@ public static class ApigeeEndpoints
             version = "1.0.0",
             timestamp = DateTimeOffset.UtcNow.DateTime,
         }));
+    }
 
+    private static void MapSharedFlowCheckEndpoint(this IEndpointRouteBuilder apiGroup)
+    {
         apiGroup.MapGet("/sharedflow-check", (HttpRequest request) =>
         {
             var headersPresentes = _headers

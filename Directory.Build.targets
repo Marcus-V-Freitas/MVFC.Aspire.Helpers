@@ -1,8 +1,10 @@
 ﻿<Project>
   <ItemGroup Condition="!$(MSBuildProjectName.Contains('Test'))">
-    <PackageReference Include="SonarAnalyzer.CSharp">
+    <PackageReference Include="MVFC.Pack.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <Target Name="CopyEditorConfigToSolutionRoot" />
 </Project>

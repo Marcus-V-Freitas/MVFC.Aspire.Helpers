@@ -3,7 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
     <ItemGroup>
-      <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.19.0.132793" />
+      <PackageVersion Include="MVFC.Pack.Analyzers" Version="4.0.0" />
       <PackageVersion Include="Aspire.Hosting" Version="13.1.2" />
       <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.1.2" />
       <PackageVersion Include="Aspire.Hosting.Testing" Version="13.1.2" />

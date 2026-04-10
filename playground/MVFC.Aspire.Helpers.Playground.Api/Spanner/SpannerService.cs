@@ -8,15 +8,19 @@ internal sealed class SpannerService(SpannerConnection spannerConnection) : ISpa
     {
         await _spannerConnection.OpenAsync().ConfigureAwait(false);
 
-        await using var cmd = _spannerConnection.CreateSelectCommand("SELECT 1");
-        return await cmd.ExecuteScalarAsync().ConfigureAwait(false);
+        var cmd = _spannerConnection.CreateSelectCommand("SELECT 1");
+
+        await using (cmd.ConfigureAwait(false))
+        {
+            return await cmd.ExecuteScalarAsync().ConfigureAwait(false);
+        }
     }
 
     public async Task CreateUserAsync(Guid id, string name)
     {
         await _spannerConnection.OpenAsync().ConfigureAwait(false);
 
-        await using var cmd = _spannerConnection.CreateInsertCommand("Users",
+        var cmd = _spannerConnection.CreateInsertCommand("Users",
             new SpannerParameterCollection
             {
                 { "UserId", SpannerDbType.String, id.ToString() },
@@ -24,21 +28,30 @@ internal sealed class SpannerService(SpannerConnection spannerConnection) : ISpa
                 { "CreatedAt", SpannerDbType.Timestamp, SpannerParameter.CommitTimestamp },
             });
 
-        await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+        await using(cmd.ConfigureAwait(false))
+        {
+            await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+        }
     }
 
     public async Task<IReadOnlyList<object>> GetAllUsers()
     {
         await _spannerConnection.OpenAsync().ConfigureAwait(false);
 
-        await using var cmd = _spannerConnection.CreateSelectCommand("SELECT UserId, Name FROM Users LIMIT 50");
+        var cmd = _spannerConnection.CreateSelectCommand("SELECT UserId, Name FROM Users LIMIT 50");
 
-        await using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
+        await using (cmd.ConfigureAwait(false))
+        {
+            var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
 
-        var users = new List<object>();
-        while (await reader.ReadAsync().ConfigureAwait(false))
-            users.Add(new { UserId = reader.GetString(0), Name = reader.GetString(1) });
+            await using(reader.ConfigureAwait(false))
+            {
+                var users = new List<object>();
+                while (await reader.ReadAsync().ConfigureAwait(false))
+                    users.Add(new { UserId = reader.GetString(0), Name = reader.GetString(1) });
 
-        return users;
+                return users;
+            }
+        }
     }
 }

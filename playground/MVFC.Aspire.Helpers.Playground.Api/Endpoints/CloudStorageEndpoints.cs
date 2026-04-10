@@ -9,10 +9,11 @@ public static class CloudStorageEndpoints
 
             foreach (var file in files)
             {
-                await using var fileStream = await storageClient.DownloadFileAsync(bucketName, file).ConfigureAwait(false);
+                var fileStream = await storageClient.DownloadFileAsync(bucketName, file).ConfigureAwait(false);
 
-                using (var reader = new StreamReader(fileStream))
+                await using(fileStream.ConfigureAwait(false))
                 {
+                    using var reader = new StreamReader(fileStream);
                     var content = await reader.ReadToEndAsync().ConfigureAwait(false);
                     Console.WriteLine(content);
                 }
