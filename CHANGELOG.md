@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.0.3] - 2026-04-12
+
+### Changed
+- Removed leftover `FirestoreConfiguredAnnotation` class and cleaned up unused global `using` directives across the `GcpFirestore` and tests projects.
+- Refactored `WithReference` documentation comment by removing outdated references to `OnResourceReady`.
+
 ## [9.0.2] - 2026-04-12
 
 ### Changed
@@ -341,6 +347,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[9.0.3]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.2...v9.0.3
+[9.0.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.1...v9.0.2
 [9.0.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.0...v9.0.1
 [9.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v8.0.2...v9.0.0
 [8.0.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v8.0.1...v8.0.2

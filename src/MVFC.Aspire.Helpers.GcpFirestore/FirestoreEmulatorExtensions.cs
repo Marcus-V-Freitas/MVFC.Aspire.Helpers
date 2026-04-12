@@ -70,8 +70,7 @@ public static class FirestoreEmulatorExtensions
 
     /// <summary>
     /// Adds a reference to the Firestore resource in the project, injecting
-    /// FIRESTORE_EMULATOR_HOST, all ProjectIds (delimited), and registering
-    /// collection provisioning via OnResourceReady.
+    /// FIRESTORE_EMULATOR_HOST and all ProjectIds as a delimited environment variable.
     /// </summary>
     /// <param name="project">The project resource builder.</param>
     /// <param name="firestore">The Firestore emulator resource builder.</param>
