@@ -7,7 +7,7 @@ public static class FirestoreEmulatorExtensions
 {
     /// <summary>
     /// Adds the Google Cloud Firestore emulator to the distributed application.
-    /// Use fluent methods such as WithFirestoreConfigs and WithWaitTimeout to customize.
+    /// Use fluent methods such as WithFirestoreConfigs and WithDockerImage to customize.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="name">The resource name.</param>
