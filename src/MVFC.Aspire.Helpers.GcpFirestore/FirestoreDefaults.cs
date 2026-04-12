@@ -36,11 +36,6 @@ internal static class FirestoreDefaults
     public const string GCP_PROJECT_IDS_ENV_VAR = "Firestore__ProjectIds";
 
     /// <summary>
-    /// Default wait timeout in seconds for Firestore emulator startup.
-    /// </summary>
-    internal const int WAIT_TIMEOUT_SECONDS_DEFAULT = 30;
-
-    /// <summary>
     /// Delimiter used for separating project IDs in environment variables.
     /// </summary>
     internal const char CREATION_DELIMITER = ',';

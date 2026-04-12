@@ -80,8 +80,7 @@ var firestoreConfig = new FirestoreConfig(
     projectId: "test-project");
 
 var firestore = builder.AddGcpFirestore("gcp-firestore")
-                       .WithFirestoreConfigs(firestoreConfig)
-                       .WithWaitTimeout(15);
+                       .WithFirestoreConfigs(firestoreConfig);
 
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
        .WithReference(firestore)
@@ -121,7 +120,6 @@ sequenceDiagram
 
 - `AddGcpFirestore` – adds the emulator container.
 - `WithFirestoreConfigs` – configures project IDs.
-- `WithWaitTimeout` – sets emulator startup delay timeout.
 - `WithDockerImage` – replaces the Docker image used by the resource.
 - `WithReference` – wires projects to the emulator and sets the `FIRESTORE_EMULATOR_HOST` environment variable automatically.
 

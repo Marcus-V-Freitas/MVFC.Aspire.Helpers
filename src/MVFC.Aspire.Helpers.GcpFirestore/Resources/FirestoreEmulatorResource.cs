@@ -28,9 +28,4 @@ public sealed class FirestoreEmulatorResource(string name) : ContainerResource(n
     /// Firestore project configurations.
     /// </summary>
     internal IReadOnlyList<FirestoreConfig> FirestoreConfigs { get; set; } = [];
-
-    /// <summary>
-    /// Wait timeout for emulator initialization in seconds.
-    /// </summary>
-    internal int WaitTimeoutSeconds { get; set; } = FirestoreDefaults.WAIT_TIMEOUT_SECONDS_DEFAULT;
 }

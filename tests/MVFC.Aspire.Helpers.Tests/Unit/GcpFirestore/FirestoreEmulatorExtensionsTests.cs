@@ -110,39 +110,6 @@ public sealed class FirestoreEmulatorExtensionsTests
     }
 
     [Fact]
-    public void WithWaitTimeout_ShouldThrow_WhenBuilderIsNull()
-    {
-        IResourceBuilder<FirestoreEmulatorResource>? builder = null;
-        var act = () => builder!.WithWaitTimeout(30);
-        act.Should().Throw<ArgumentNullException>();
-    }
-
-    [Fact]
-    public void WithWaitTimeout_ShouldThrow_WhenValueIsNegative()
-    {
-        var appBuilder = DistributedApplication.CreateBuilder([]);
-        var firestore = appBuilder.AddGcpFirestore("firestore");
-
-        var act = () => firestore.WithWaitTimeout(-1);
-
-        act.Should().Throw<ArgumentOutOfRangeException>();
-    }
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(15)]
-    [InlineData(60)]
-    public void WithWaitTimeout_ShouldSetWaitTimeoutSeconds(int seconds)
-    {
-        var appBuilder = DistributedApplication.CreateBuilder([]);
-        var firestore = appBuilder.AddGcpFirestore("firestore");
-
-        firestore.WithWaitTimeout(seconds);
-
-        firestore.Resource.WaitTimeoutSeconds.Should().Be(seconds);
-    }
-
-    [Fact]
     public void WithReference_ShouldThrow_WhenProjectIsNull()
     {
         IResourceBuilder<ProjectResource>? project = null;
@@ -192,21 +159,6 @@ public sealed class FirestoreEmulatorExtensionsTests
     }
 
     [Fact]
-    public void WithReference_CalledTwice_ShouldNotRegisterConfiguratorTwice()
-    {
-        var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project1 = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api1");
-        var project2 = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api2");
-        var firestore = appBuilder.AddGcpFirestore("firestore")
-            .WithFirestoreConfigs(new FirestoreConfig("project-a"));
-
-        project1.WithReference(firestore);
-        project2.WithReference(firestore);
-
-        firestore.Resource.Annotations.OfType<FirestoreConfiguredAnnotation>().Should().ContainSingle();
-    }
-
-    [Fact]
     public void WithFirestoreConfigs_ShouldAccumulateOnChainedCalls()
     {
         // Arrange
@@ -249,19 +201,6 @@ public sealed class FirestoreEmulatorExtensionsTests
 
         // Assert — default port should be the Firestore emulator default (8084)
         firestore.Resource.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void AddGcpFirestore_ShouldUseDefaultWaitTimeout()
-    {
-        // Arrange
-        var builder = DistributedApplication.CreateBuilder([]);
-
-        // Act
-        var firestore = builder.AddGcpFirestore("firestore");
-
-        // Assert
-        firestore.Resource.WaitTimeoutSeconds.Should().Be(FirestoreDefaults.WAIT_TIMEOUT_SECONDS_DEFAULT);
     }
 
     [Fact]

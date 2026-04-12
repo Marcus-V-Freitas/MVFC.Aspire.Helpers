@@ -69,23 +69,6 @@ public static class FirestoreEmulatorExtensions
     }
 
     /// <summary>
-    /// Sets the maximum wait timeout for the emulator startup.
-    /// </summary>
-    /// <param name="builder">The resource builder for the Firestore emulator.</param>
-    /// <param name="seconds">Timeout in seconds.</param>
-    /// <returns>The resource builder for chaining.</returns>
-    public static IResourceBuilder<FirestoreEmulatorResource> WithWaitTimeout(
-        this IResourceBuilder<FirestoreEmulatorResource> builder,
-        int seconds)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        ArgumentOutOfRangeException.ThrowIfLessThan(seconds, 0);
-
-        builder.Resource.WaitTimeoutSeconds = seconds;
-        return builder;
-    }
-
-    /// <summary>
     /// Adds a reference to the Firestore resource in the project, injecting
     /// FIRESTORE_EMULATOR_HOST, all ProjectIds (delimited), and registering
     /// collection provisioning via OnResourceReady.
@@ -105,8 +88,6 @@ public static class FirestoreEmulatorExtensions
                .WithEnvironment(
                    FirestoreDefaults.EMULATOR_HOST_ENV_VAR,
                    firestore.Resource.ConnectionStringExpression);
-
-        RegisterFirestoreConfigurator(project, firestore);
 
         return project;
     }
@@ -132,37 +113,6 @@ public static class FirestoreEmulatorExtensions
             firestoreConfigs.Select(c => c.ProjectId));
 
         return resource.WithEnvironment(FirestoreDefaults.GCP_PROJECT_IDS_ENV_VAR, projectIds);
-    }
-
-    /// <summary>
-    /// Registers the OnResourceReady callback responsible for provisioning collections
-    /// in the emulator after startup, ensuring single execution via annotation.
-    /// </summary>
-    /// <param name="project">The project resource builder.</param>
-    /// <param name="firestore">The Firestore emulator resource builder.</param>
-    private static void RegisterFirestoreConfigurator(
-        IResourceBuilder<ProjectResource> project,
-        IResourceBuilder<FirestoreEmulatorResource> firestore)
-    {
-        if (firestore.Resource.FirestoreConfigs.Count == 0)
-            return;
-
-        if (firestore.Resource.TryGetAnnotationsOfType<FirestoreConfiguredAnnotation>(out _))
-            return;
-
-        firestore.WithAnnotation(new FirestoreConfiguredAnnotation());
-
-        project.OnResourceReady(async (_, _, ct) =>
-        {
-            var connectionString = await firestore.Resource.ConnectionStringExpression.GetValueAsync(ct).ConfigureAwait(false);
-
-            Environment.SetEnvironmentVariable(
-                FirestoreDefaults.EMULATOR_HOST_ENV_VAR,
-                connectionString);
-
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            cts.CancelAfter(TimeSpan.FromSeconds(firestore.Resource.WaitTimeoutSeconds));
-        });
     }
 
     /// <summary>

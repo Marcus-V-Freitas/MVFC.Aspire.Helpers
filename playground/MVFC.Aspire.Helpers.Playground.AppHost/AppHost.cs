@@ -46,8 +46,7 @@ var apigeeWorkspace = Path.Combine(Directory.GetCurrentDirectory(), "apigee-work
 
 // --- GCP Firestore ---
 var firestore = builder.AddGcpFirestore("firestore")
-                       .WithFirestoreConfigs(new FirestoreConfig("my-gcp-project-id"))
-                       .WithWaitTimeout(30);
+                       .WithFirestoreConfigs(new FirestoreConfig("my-gcp-project-id"));
 
 // --- GCP Spanner ---
 var spanner = builder.AddGcpSpanner("gcp-spanner")
