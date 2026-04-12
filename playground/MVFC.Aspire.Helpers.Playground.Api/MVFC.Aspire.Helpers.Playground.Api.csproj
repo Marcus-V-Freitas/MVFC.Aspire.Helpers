@@ -17,6 +17,7 @@
     <PackageReference Include="Google.Cloud.Storage.V1" />
     <PackageReference Include="MongoDB.Driver" />
     <PackageReference Include="Google.Cloud.Spanner.Data" />
+	<PackageReference Include="Google.Cloud.Firestore" />
   </ItemGroup>
 
 </Project>

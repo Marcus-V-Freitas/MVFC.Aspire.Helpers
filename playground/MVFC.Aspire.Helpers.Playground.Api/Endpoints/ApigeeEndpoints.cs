@@ -4,7 +4,7 @@ public static class ApigeeEndpoints
 {
     private static readonly string[] _endpoints =
         [ "/", "/health", "/echo", "/transform", "/quota-test",
-          "/info", "/cached", "/admin", "/secure", "/xml" ];
+          "/info", "/cached", "/admin", "/secure", "/xml", ];
 
     private static readonly string[] _permissions = ["read", "write", "admin"];
     private static readonly string[] _headers =
@@ -67,7 +67,7 @@ public static class ApigeeEndpoints
                 new { id = 3, name = "Widget C", price = 19.99, inStock = true },
             },
             total = 3,
-            currency = "BRL"
+            currency = "BRL",
         }));
     }
 
@@ -77,7 +77,7 @@ public static class ApigeeEndpoints
         {
             message = "Quota test endpoint",
             callTime = DateTimeOffset.UtcNow.DateTime,
-            note = "Este endpoint tem limite de 5 chamadas por minuto via Apigee Quota policy"
+            note = "Este endpoint tem limite de 5 chamadas por minuto via Apigee Quota policy",
         }));
     }
 
@@ -112,7 +112,7 @@ public static class ApigeeEndpoints
                         disk = 23.1,
                     },
                     users = 1234,
-                    requestsPerHour = 56789
+                    requestsPerHour = 56789,
                 },
                 note = "Esta resposta deve ser cacheada por 30s pelo proxy Apigee",
             });
@@ -147,7 +147,7 @@ public static class ApigeeEndpoints
                     environment = "development",
                     permissions = _permissions,
                 },
-                note = "Este endpoint requer Basic Auth (user: admin, pw: secret123)"
+                note = "Este endpoint requer Basic Auth (user: admin, pw: secret123)",
             });
         });
     }
@@ -156,7 +156,7 @@ public static class ApigeeEndpoints
     {
         apiGroup.MapGet("/xml", () =>
         {
-            var xml = """
+            const string xml = """
                        <?xml version="1.0" encoding="UTF-8"?>
                        <catalog>
                          <book id="1">
@@ -211,11 +211,11 @@ public static class ApigeeEndpoints
                 {
                     Header = h,
                     Valor = request.Headers.TryGetValue(h, out var v) ? v.ToString() : null,
-                    Presente = request.Headers.ContainsKey(h)
+                    Presente = request.Headers.ContainsKey(h),
                 })
                 .ToList();
 
-            var sharedFlowAtivo = headersPresentes.Any(h => h.Presente);
+            var sharedFlowAtivo = headersPresentes.Exists(h => h.Presente);
 
             return Results.Ok(new
             {

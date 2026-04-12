@@ -11,6 +11,7 @@
   <Folder Name="/src/">
     <Project Path="src/MVFC.Aspire.Helpers.ApigeeEmulator/MVFC.Aspire.Helpers.ApigeeEmulator.csproj" Id="df261e8a-7109-41df-9afa-45a8103eb0f2" />
     <Project Path="src/MVFC.Aspire.Helpers.CloudStorage/MVFC.Aspire.Helpers.CloudStorage.csproj" />
+    <Project Path="src/MVFC.Aspire.Helpers.GcpFirestore/MVFC.Aspire.Helpers.GcpFirestore.csproj" Id="66d890a3-bc9b-4655-9ee1-bae02113b5d1" />
     <Project Path="src/MVFC.Aspire.Helpers.GcpPubSub/MVFC.Aspire.Helpers.GcpPubSub.csproj" />
     <Project Path="src/MVFC.Aspire.Helpers.GcpSpanner/MVFC.Aspire.Helpers.GcpSpanner.csproj" Id="87e1f935-ed4d-426d-99df-2f5d824111cc" />
     <Project Path="src/MVFC.Aspire.Helpers.Gotenberg/MVFC.Aspire.Helpers.Gotenberg.csproj" />

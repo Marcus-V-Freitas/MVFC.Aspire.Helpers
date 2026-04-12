@@ -2,6 +2,17 @@
 
 internal interface IPlaygroundApiClient
 {
+    // Firestore
+    [Get("/api/firestore/ping")]
+    internal Task<ApiResponse<string>> GetFirestorePingAsync();
+
+    [Post("/api/firestore/users")]
+    [Headers("Content-Type: application/json")]
+    internal Task<ApiResponse<string>> CreateFirestoreUserAsync([Body] JsonNode requestBody);
+
+    [Get("/api/firestore/users")]
+    internal Task<ApiResponse<string>> GetFirestoreUsersAsync();
+
     // Gotenberg
     [Post("/api/pdf")]
     [Headers("Content-Type: application/json")]

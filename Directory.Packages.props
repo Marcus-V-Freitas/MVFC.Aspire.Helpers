@@ -15,6 +15,7 @@
       <PackageVersion Include="Google.Cloud.Spanner.Admin.Instance.V1" Version="4.5.0" />
       <PackageVersion Include="Google.Cloud.Spanner.Admin.Database.V1" Version="4.5.0" />
       <PackageVersion Include="Google.Cloud.Spanner.Data" Version="4.5.0" />
+      <PackageVersion Include="Google.Cloud.Firestore" Version="4.2.0" />
       <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
       <PackageVersion Include="MongoDB.Driver" Version="3.7.0" />
       <PackageVersion Include="NSubstitute" Version="5.3.0" />

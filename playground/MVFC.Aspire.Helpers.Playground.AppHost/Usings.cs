@@ -25,3 +25,5 @@ global using MVFC.Aspire.Helpers.GcpSpanner;
 global using MVFC.Aspire.Helpers.Playground.AppHost.Seeds.Mongo;
 global using MVFC.Aspire.Helpers.Playground.AppHost.Seeds.Keycloak;
 global using MVFC.Aspire.Helpers.ApigeeEmulator;
+global using MVFC.Aspire.Helpers.GcpFirestore;
+global using MVFC.Aspire.Helpers.GcpFirestore.Models;

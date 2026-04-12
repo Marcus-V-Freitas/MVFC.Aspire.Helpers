@@ -18,7 +18,7 @@ public sealed class WireMockResource : Resource, IResourceWithEndpoints, IResour
     /// <summary>
     /// Inicializa uma nova instância de <see cref="WireMockResource"/>.
     /// </summary>
-    /// <param name="name">Nome do recurso.</param>
+    /// <param name="name">Nome do recurso.</param>5
     /// <param name="port">Porta TCP para o servidor WireMock.</param>
     /// <param name="configure">Ação opcional para configuração adicional do servidor.</param>
     public WireMockResource(string name, int? port, Action<WireMockServer>? configure = null)

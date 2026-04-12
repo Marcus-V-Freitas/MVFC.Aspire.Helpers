@@ -1,6 +1,7 @@
 ﻿global using System.Net.Mail;
 global using System.Text.Json;
 global using Google.Api.Gax;
+global using Google.Cloud.Firestore;
 global using Google.Cloud.PubSub.V1;
 global using Google.Cloud.Storage.V1;
 global using Google.Protobuf;

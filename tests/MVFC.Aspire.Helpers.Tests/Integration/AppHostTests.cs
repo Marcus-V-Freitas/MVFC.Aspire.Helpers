@@ -4,6 +4,51 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
 {
     private readonly AppHostFixture _fixture = fixture;
 
+    #region Firestore
+
+    [Fact]
+    public async Task Firestore_Ping_ShouldReturnOk()
+    {
+        // Arrange & Act
+        using var response = await _fixture.PlaygroundApi.GetFirestorePingAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Firestore_CreateUser_ShouldReturnCreated()
+    {
+        // Arrange
+        var body = new JsonObject
+        {
+            ["Name"] = "Marcus Firestore Test"
+        };
+
+        // Act
+        using var response = await _fixture.PlaygroundApi.CreateFirestoreUserAsync(body);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task Firestore_GetUsers_AfterInsert_ShouldReturnNonEmptyList()
+    {
+        // Arrange
+        var body = new JsonObject { ["Name"] = "Marcus List Test" };
+        using var _ = await _fixture.PlaygroundApi.CreateFirestoreUserAsync(body);
+
+        // Act
+        using var response = await _fixture.PlaygroundApi.GetFirestoreUsersAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Should().NotBeNullOrEmpty();
+    }
+
+    #endregion
+
     #region Spanner
 
     [Fact]

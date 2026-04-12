@@ -2,6 +2,29 @@
 
 public static class InstanceHelpers
 {
+    public static async Task<IReadOnlyDictionary<string, FirestoreDb>> CreateFirestoreDbsAsync(this WebApplicationBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        var raw = builder.Configuration["Firestore:ProjectIds"]
+                  ?? throw new InvalidOperationException("Firestore:ProjectIds configuration is missing.");
+
+        var projectIds = raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        var results = new Dictionary<string, FirestoreDb>(projectIds.Length);
+
+        foreach (var projectId in projectIds)
+        {
+            results[projectId] = await new FirestoreDbBuilder
+            {
+                ProjectId = projectId,
+                EmulatorDetection = EmulatorDetection.EmulatorOrProduction,
+            }.BuildAsync().ConfigureAwait(false);
+        }
+
+        return results;
+    }
+
     public static SpannerConnection CreateSpannerConnection(this IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);

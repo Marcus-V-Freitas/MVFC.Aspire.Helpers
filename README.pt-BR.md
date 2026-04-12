@@ -1,4 +1,4 @@
-﻿# MVFC.Aspire.Helpers
+# MVFC.Aspire.Helpers
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -55,6 +55,7 @@ Depois que você aprende como um helper funciona, os demais parecem imediatament
 |---|---|---|
 | [MVFC.Aspire.Helpers.CloudStorage](src/MVFC.Aspire.Helpers.CloudStorage/README.md) | Google Cloud Storage (emulador GCS) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.CloudStorage) |
 | [MVFC.Aspire.Helpers.Mongo](src/MVFC.Aspire.Helpers.Mongo/README.md) | MongoDB com Replica Set | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Mongo) |
+| [MVFC.Aspire.Helpers.GcpFirestore](src/MVFC.Aspire.Helpers.GcpFirestore/README.pt-BR.md) | Google Cloud Firestore (emulador) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpFirestore) |
 | [MVFC.Aspire.Helpers.GcpPubSub](src/MVFC.Aspire.Helpers.GcpPubSub/README.md) | Google Pub/Sub (emulador + UI) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpPubSub) |
 | [MVFC.Aspire.Helpers.GcpSpanner](src/MVFC.Aspire.Helpers.GcpSpanner/README.md) | Google Cloud Spanner (emulador) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpSpanner) |
 | [MVFC.Aspire.Helpers.Gotenberg](src/MVFC.Aspire.Helpers.Gotenberg/README.md) | Gotenberg (conversão de PDF) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Gotenberg) |
@@ -72,6 +73,7 @@ Depois que você aprende como um helper funciona, os demais parecem imediatament
 ```sh
 dotnet add package MVFC.Aspire.Helpers.CloudStorage
 dotnet add package MVFC.Aspire.Helpers.Mongo
+dotnet add package MVFC.Aspire.Helpers.GcpFirestore
 dotnet add package MVFC.Aspire.Helpers.GcpPubSub
 dotnet add package MVFC.Aspire.Helpers.GcpSpanner
 dotnet add package MVFC.Aspire.Helpers.Gotenberg
@@ -95,6 +97,9 @@ var cloudStorage = builder.AddCloudStorage("cloud-storage")
 
 var mongo = builder.AddMongoReplicaSet("mongo")
     .WithDumps(dumps);
+
+var firestore = builder.AddGcpFirestore("gcp-firestore")
+    .WithFirestoreConfigs(firestoreConfig);
 
 var pubSub = builder.AddGcpPubSub("gcp-pubsub")
     .WithPubSubConfigs(pubSubConfig);
@@ -147,6 +152,7 @@ await builder.Build().RunAsync().ConfigureAwait(false);
 ```
 src/
   MVFC.Aspire.Helpers.CloudStorage/
+  MVFC.Aspire.Helpers.GcpFirestore/
   MVFC.Aspire.Helpers.GcpPubSub/
   MVFC.Aspire.Helpers.GcpSpanner/
   MVFC.Aspire.Helpers.Gotenberg/

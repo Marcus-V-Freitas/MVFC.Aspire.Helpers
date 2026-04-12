@@ -1,13 +1,14 @@
 ﻿namespace MVFC.Aspire.Helpers.Playground.Api.Endpoints;
 
-public static class DefaultEndpoints 
+public static class DefaultEndpoints
 {
-    public static void MapAllEndpoints(this IEndpointRouteBuilder app) 
+    public static void MapAllEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapApigeeEndpoints();
 
         var apiGroup = app.MapGroup("/api");
 
+        apiGroup.MapFirestoreEndpoints();
         apiGroup.MapCloudStorageEndpoints();
         apiGroup.MapMongoEndpoints();
         apiGroup.MapPubSubEndpoints();

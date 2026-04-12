@@ -1,4 +1,4 @@
-﻿global using System.Net;
+global using System.Net;
 global using System.Net.Http.Headers;
 global using Aspire.Hosting;
 global using Aspire.Hosting.Eventing;
@@ -71,3 +71,8 @@ global using MVFC.Aspire.Helpers.WireMock.Builders;
 global using MVFC.Aspire.Helpers.WireMock.Settings;
 global using WireMock.Types;
 global using MVFC.Aspire.Helpers.WireMock.Extensions;
+global using MVFC.Aspire.Helpers.GcpFirestore;
+global using MVFC.Aspire.Helpers.GcpFirestore.Annotations;
+global using MVFC.Aspire.Helpers.GcpFirestore.HealthChecks;
+global using MVFC.Aspire.Helpers.GcpFirestore.Models;
+global using MVFC.Aspire.Helpers.GcpFirestore.Resources;

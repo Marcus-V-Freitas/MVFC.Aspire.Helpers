@@ -13,7 +13,7 @@ var spannerConfig = new SpannerConfig(
             Name STRING(256) NOT NULL,
             CreatedAt TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true)
         ) PRIMARY KEY (UserId)
-        """
+        """,
     ]);
 
 // --- GCP Pub/Sub Configs ---
@@ -43,6 +43,11 @@ var dumps = new MongoClassDump<TestDatabase>(
 
 // --- Apigee Workspace ---
 var apigeeWorkspace = Path.Combine(Directory.GetCurrentDirectory(), "apigee-workspace");
+
+// --- GCP Firestore ---
+var firestore = builder.AddGcpFirestore("firestore")
+                       .WithFirestoreConfigs(new FirestoreConfig("my-gcp-project-id"))
+                       .WithWaitTimeout(30);
 
 // --- GCP Spanner ---
 var spanner = builder.AddGcpSpanner("gcp-spanner")
@@ -120,6 +125,8 @@ var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-e
                  .WaitFor(pubSubUI)
                  .WithReference(gotenberg)
                  .WaitFor(gotenberg)
+                 .WaitFor(firestore)
+                 .WithReference(firestore)
                  .WaitFor(keycloak)
                  .WithReference(keycloak,
                          realmName: "my-app",

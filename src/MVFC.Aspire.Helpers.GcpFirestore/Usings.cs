@@ -1,0 +1,11 @@
+﻿global using System.Net;
+global using Aspire.Hosting;
+global using Aspire.Hosting.ApplicationModel;
+global using MVFC.Aspire.Helpers.GcpFirestore.Models;
+global using MVFC.Aspire.Helpers.GcpFirestore.Resources;
+global using System.Globalization;
+global using Microsoft.Extensions.Diagnostics.HealthChecks;
+global using System.Net.Sockets;
+global using Microsoft.Extensions.DependencyInjection;
+global using MVFC.Aspire.Helpers.GcpFirestore.HealthChecks;
+global using MVFC.Aspire.Helpers.GcpFirestore.Annotations;

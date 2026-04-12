@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+	<IsAspireSharedProject>true</IsAspireSharedProject>
+	<Authors>Marcus Vinicius de Freitas Costa</Authors>
+	<RepositoryType>git</RepositoryType>
+	<PackageIcon>icon.png</PackageIcon>
+	<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+	<IsPackable>true</IsPackable>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<PackageProjectUrl>https://www.nuget.org/packages/MVFC.Aspire.Helpers.GcpFirestore</PackageProjectUrl>
+	<PackageTags>aspire;dotnet;helpers;firestore;google;csharp;net;microservicos</PackageTags>
+	<RepositoryUrl>https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/tree/master/src/MVFC.Aspire.Helpers.GcpFirestore</RepositoryUrl>
+	<Description>Helpers para integração com Google Firestore em projetos .NET Aspire, incluindo suporte ao emulador.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<InternalsVisibleTo Include="MVFC.Aspire.Helpers.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<None Include="icon.png" Pack="true" PackagePath="" />
+	<None Include="README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<PackageReference Include="Aspire.Hosting" />
+	<PackageReference Include="Google.Cloud.Firestore" />
+  </ItemGroup>
+
+</Project>
