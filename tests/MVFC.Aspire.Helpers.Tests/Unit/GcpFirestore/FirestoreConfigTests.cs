@@ -15,15 +15,7 @@ public sealed class FirestoreConfigTests
     [Fact]
     public void Constructor_ShouldSetProperties()
     {
-        var config = new FirestoreConfig("my-project", 10);
-        config.ProjectId.Should().Be("my-project");
-        config.UpDelay.Should().Be(TimeSpan.FromSeconds(10));
-    }
-
-    [Fact]
-    public void Constructor_ShouldSetDefaultDelay()
-    {
         var config = new FirestoreConfig("my-project");
-        config.UpDelay.Should().Be(TimeSpan.FromSeconds(5));
+        config.ProjectId.Should().Be("my-project");
     }
 }

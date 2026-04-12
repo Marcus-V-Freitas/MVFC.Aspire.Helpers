@@ -77,8 +77,7 @@ using MVFC.Aspire.Helpers.GcpFirestore.Models;
 var builder = DistributedApplication.CreateBuilder(args);
 
 var firestoreConfig = new FirestoreConfig(
-    projectId: "test-project",
-    secondsDelay: 5);
+    projectId: "test-project");
 
 var firestore = builder.AddGcpFirestore("gcp-firestore")
                        .WithFirestoreConfigs(firestoreConfig)
@@ -98,11 +97,10 @@ await builder.Build().RunAsync();
 | Parameter      | Type       | Default | Description                                  |
 |----------------|------------|---------|----------------------------------------------|
 | `projectId`    | string     | —       | GCP project ID used by Firestore.            |
-| `secondsDelay` | int        | `5`     | Startup delay in seconds for initialization. |
 
 ## Ports
 
-- **HTTP Port:** `8080`
+- **HTTP Port:** `8084` *(mapped to internal port `8080` in the container)*
 
 ## Provisioning diagram
 
@@ -113,10 +111,8 @@ sequenceDiagram
     participant Configurator as Config Processor
     
     Aspire->>Container: Start container (mtlynch/firestore-emulator)
-    Container-->>Aspire: Ready (HTTP port 8080 available)
+    Container-->>Aspire: Ready (HTTP port 8084 available)
     Aspire->>Configurator: Trigger OnResourceReady
-    Configurator->>Container: Wait for emulator readiness
-    Configurator->>Container: Apply startup delay
     Configurator-->>Aspire: Provisioning Completed
     Aspire->>App: Start App with FIRESTORE_EMULATOR_HOST
 ```
@@ -124,7 +120,7 @@ sequenceDiagram
 ## Public methods
 
 - `AddGcpFirestore` – adds the emulator container.
-- `WithFirestoreConfigs` – configures project IDs and startup delays.
+- `WithFirestoreConfigs` – configures project IDs.
 - `WithWaitTimeout` – sets emulator startup delay timeout.
 - `WithDockerImage` – replaces the Docker image used by the resource.
 - `WithReference` – wires projects to the emulator and sets the `FIRESTORE_EMULATOR_HOST` environment variable automatically.

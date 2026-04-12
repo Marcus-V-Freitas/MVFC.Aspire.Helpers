@@ -247,7 +247,7 @@ public sealed class FirestoreEmulatorExtensionsTests
         // Act
         var firestore = builder.AddGcpFirestore("firestore");
 
-        // Assert — default port should be the Firestore emulator default (8080)
+        // Assert — default port should be the Firestore emulator default (8084)
         firestore.Resource.Should().NotBeNull();
     }
 

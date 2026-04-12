@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.GcpFirestore;
+namespace MVFC.Aspire.Helpers.GcpFirestore;
 
 /// <summary>
 /// Default configuration constants for Google Firestore.
@@ -6,9 +6,14 @@
 internal static class FirestoreDefaults
 {
     /// <summary>
-    /// Default port used by the Firestore emulator.
+    /// Default internal port used by the Firestore emulator container.
     /// </summary>
     internal const int EMULATOR_PORT = 8080;
+
+    /// <summary>
+    /// Default external port mapped to the Firestore emulator.
+    /// </summary>
+    internal const int DEFAULT_EXTERNAL_PORT = 8084;
 
     /// <summary>
     /// Official Docker image for the Firestore emulator (via firebase-tools).
@@ -31,16 +36,9 @@ internal static class FirestoreDefaults
     public const string GCP_PROJECT_IDS_ENV_VAR = "Firestore__ProjectIds";
 
     /// <summary>
-    /// Docker host address for container-to-host communication, OS-aware.
-    /// Returns "172.17.0.1" for Linux, "host.docker.internal" for other OSes.
-    /// </summary>
-    internal static string DockerInternalHost =>
-        OperatingSystem.IsLinux() ? "172.17.0.1" : "host.docker.internal";
-
-    /// <summary>
     /// Default wait timeout in seconds for Firestore emulator startup.
     /// </summary>
-    internal const int WAIT_TIMEOUT_SECONDS_DEFAULT = 15;
+    internal const int WAIT_TIMEOUT_SECONDS_DEFAULT = 30;
 
     /// <summary>
     /// Delimiter used for separating project IDs in environment variables.

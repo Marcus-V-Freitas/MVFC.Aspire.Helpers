@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.GcpFirestore;
+namespace MVFC.Aspire.Helpers.GcpFirestore;
 
 /// <summary>
 /// Extension methods to register the Google Cloud Firestore emulator in Aspire.
@@ -11,12 +11,12 @@ public static class FirestoreEmulatorExtensions
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="name">The resource name.</param>
-    /// <param name="port">The port to expose the emulator. Default is FirestoreDefaults.EMULATOR_PORT.</param>
+    /// <param name="port">The port to expose the emulator. Default is FirestoreDefaults.DEFAULT_EXTERNAL_PORT.</param>
     /// <returns>A resource builder for the Firestore emulator resource.</returns>
     public static IResourceBuilder<FirestoreEmulatorResource> AddGcpFirestore(
         this IDistributedApplicationBuilder builder,
         string name,
-        int port = FirestoreDefaults.EMULATOR_PORT)
+        int port = FirestoreDefaults.DEFAULT_EXTERNAL_PORT)
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -152,21 +152,16 @@ public static class FirestoreEmulatorExtensions
 
         firestore.WithAnnotation(new FirestoreConfiguredAnnotation());
 
-        project.OnResourceReady(async (context, _, ct) =>
+        project.OnResourceReady(async (_, _, ct) =>
         {
-            var port = context.GetEndpoint(FirestoreEmulatorResource.HTTP_ENDPOINT_NAME).Port;
+            var connectionString = await firestore.Resource.ConnectionStringExpression.GetValueAsync(ct).ConfigureAwait(false);
 
             Environment.SetEnvironmentVariable(
                 FirestoreDefaults.EMULATOR_HOST_ENV_VAR,
-                $"localhost:{port.ToString(CultureInfo.InvariantCulture)}");
+                connectionString);
 
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             cts.CancelAfter(TimeSpan.FromSeconds(firestore.Resource.WaitTimeoutSeconds));
-
-            await FirestoreConfigurator.ConfigureAsync(
-                firestore.Resource.FirestoreConfigs,
-                port,
-                cts.Token).ConfigureAwait(false);
         });
     }
 
