@@ -100,7 +100,7 @@ var rabbitMQ = builder.AddRabbitMQ("rabbitmq")
 // --- Redis ---
 var redis = builder.AddRedis("redis")
                    .WithPassword("teste")
-                   .WithCommander()
+                   .WithCommander(port: 6555)
                    .WithDataVolume("redis-data");
 
 // --- Gotenberg ---
