@@ -71,7 +71,7 @@ Task("Test-Coverage")
     Information("Executando testes com cobertura (dotnet-coverage)...");
 
     // dotnet-coverage collect monitors child processes, which is essential for Aspire integration tests
-    var testArgs = $"test \"{testProject}\" --configuration Release --no-build --logger \"trx;LogFileName=test-results.trx\"";
+    var testArgs = $"test \"{testProject}\" --configuration Release --no-build";
     var collectArgs = $"collect --output-format cobertura --output \"{coverageXml}\" \"dotnet {testArgs}\"";
     var exitCode = StartProcess(coverageToolPath, collectArgs);
 

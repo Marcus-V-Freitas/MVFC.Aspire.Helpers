@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.0.5] - 2026-08-27
+
+### Added
+
+- Added `global.json` configuring `Microsoft.Testing.Platform` test runner.
+- Added `Microsoft.Testing.Platform` package reference to tests project.
+- Added missing package references (`Microsoft.OpenApi` in Playground API and `Scriban.Signed` in Playground AppHost).
+
+### Changed
+
+- Upgraded test suite dependencies (`xunit.v3` and `xunit.runner.visualstudio`) to `4.0.0`.
+- Adjusted test coverage arguments in `build.cake` for compatibility with `Microsoft.Testing.Platform`.
+- Updated NuGet package dependencies (`Google.Cloud.PubSub.V1`, `Google.Cloud.Firestore`, `Microsoft.NET.Test.Sdk`, `MongoDB.Driver`, `NSubstitute`, `RabbitMQ.Client`, `Scalar.AspNetCore`, `StackExchange.Redis`, `WireMock.Net.minimal`, and ASP.NET Core packages).
+
 ## [9.0.4] - 2026-06-26
 
 ### Changed
@@ -414,6 +428,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[9.0.5]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.4...v9.0.5
 [9.0.4]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.3...v9.0.4
 [9.0.3]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.2...v9.0.3
 [9.0.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.1...v9.0.2

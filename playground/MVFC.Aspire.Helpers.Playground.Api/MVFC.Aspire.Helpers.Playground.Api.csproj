@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+	  <PackageReference Include="Microsoft.OpenApi" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Refit" />
     <PackageReference Include="Refit.HttpClientFactory" />
@@ -17,7 +18,7 @@
     <PackageReference Include="Google.Cloud.Storage.V1" />
     <PackageReference Include="MongoDB.Driver" />
     <PackageReference Include="Google.Cloud.Spanner.Data" />
-	<PackageReference Include="Google.Cloud.Firestore" />
+	  <PackageReference Include="Google.Cloud.Firestore" />
   </ItemGroup>
 
 </Project>
