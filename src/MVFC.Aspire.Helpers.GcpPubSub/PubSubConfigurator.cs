@@ -13,20 +13,29 @@ internal static class PubSubConfigurator
         int portEndpoint,
         CancellationToken ct)
     {
+        if (pubSubConfigs.Count == 0)
+            return;
+
+        var tasksToRun = pubSubConfigs
+            .SelectMany(c => c.MessageConfigs
+                .Where(p => !string.IsNullOrWhiteSpace(p.SubscriptionName))
+                .Select(mc => (c.ProjectId, MessageConfig: mc)))
+            .ToList();
+
+        if (tasksToRun.Count == 0)
+            return;
+
         var client = await new SubscriberServiceApiClientBuilder
         {
             EmulatorDetection = EmulatorDetection.EmulatorOnly,
         }.BuildAsync(ct).ConfigureAwait(false);
 
-        foreach (var pubSubConfig in pubSubConfigs)
-        {
-            var pushEndpoint = $"http://{PubSubDefaults.DockerInternalHost}:{portEndpoint}";
-            var tasks = pubSubConfig.MessageConfigs
-                .Where(p => !string.IsNullOrWhiteSpace(p.SubscriptionName))
-                .Select(mc => ModifyPushEndpoint(client, pubSubConfig.ProjectId, mc, pushEndpoint, ct))
-                .ToList();
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-        }
+        var pushEndpoint = $"http://{PubSubDefaults.DockerInternalHost}:{portEndpoint.ToString(CultureInfo.InvariantCulture)}";
+        var tasks = tasksToRun
+            .ConvertAll(t => ModifyPushEndpoint(client, t.ProjectId, t.MessageConfig, pushEndpoint, ct))
+;
+
+        await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -73,7 +82,7 @@ internal static class PubSubConfigurator
             : new DeadLetterPolicy
         {
             DeadLetterTopic = TopicName.FormatProjectTopic(projectId, messageConfig.DeadLetterTopic),
-            MaxDeliveryAttempts = messageConfig.MaxDeliveryAttempts ?? PubSubDefaults.MAX_DELIVERY_ATTEMPTS_DEFAULT
+            MaxDeliveryAttempts = messageConfig.MaxDeliveryAttempts ?? PubSubDefaults.MAX_DELIVERY_ATTEMPTS_DEFAULT,
         };
     }
 
@@ -100,7 +109,7 @@ internal static class PubSubConfigurator
             ? null
             : new PushConfig
         {
-            PushEndpoint = $"{pushEndpoint.TrimEnd('/')}/{messageConfig.PushEndpoint.TrimStart('/')}"
+            PushEndpoint = $"{pushEndpoint.TrimEnd('/')}/{messageConfig.PushEndpoint.TrimStart('/')}",
         };
     }
 }
