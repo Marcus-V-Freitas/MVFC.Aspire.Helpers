@@ -24,7 +24,6 @@ public static class PubSubEmulatorExtensions
             .WithDockerImage(
                 image: PubSubDefaults.EMULATOR_IMAGE,
                 tag: PubSubDefaults.EMULATOR_IMAGE_TAG)
-            .WithContainerName(resource.Name)
             .WithEnvironment(ctx => ApplyEmulatorEnvironment(ctx, resource))
             .WithPubSubEndpoint(port);
     }
@@ -105,7 +104,7 @@ public static class PubSubEmulatorExtensions
 
         var projectNumber = 0;
         foreach (var pubSubConfig in resource.PubSubConfigs)
-            ctx.EnvironmentVariables[$"{PubSubDefaults.PROJECT_ENV_VAR_PREFIX}{++projectNumber}"] = PubSubProjectBuilder.Build(pubSubConfig);
+            ctx.EnvironmentVariables[$"{PubSubDefaults.PROJECT_ENV_VAR_PREFIX}{(++projectNumber).ToString(CultureInfo.InvariantCulture)}"] = PubSubProjectBuilder.Build(pubSubConfig);
     }
 
     /// <summary>
@@ -164,7 +163,7 @@ public static class PubSubEmulatorExtensions
             port: port,
             targetPort: PubSubDefaults.EMULATOR_PORT,
             name: PubSubEmulatorResource.HTTP_ENDPOINT_NAME,
-            isProxied: false)
+            isProxied: true)
             .WithHttpHealthCheck("/");
     }
 }

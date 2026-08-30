@@ -24,7 +24,6 @@ public static class PubSubUIExtensions
             .WithDockerImage(
                 image: PubSubDefaults.UI_IMAGE,
                 tag: PubSubDefaults.UI_IMAGE_TAG)
-            .WithContainerName(resource.Name)
             .WithPubSubUiEndpoint(port);
     }
 
@@ -86,7 +85,7 @@ public static class PubSubUIExtensions
                 port: port,
                 targetPort: PubSubDefaults.UI_PORT,
                 name: PubSubUIResource.HttpEndpointName,
-                isProxied: false)
+                isProxied: true)
             .WithHttpHealthCheck("/");
     }
 }

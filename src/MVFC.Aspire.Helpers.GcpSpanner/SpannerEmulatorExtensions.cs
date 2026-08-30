@@ -23,7 +23,6 @@ public static class SpannerEmulatorExtensions
                       .WithDockerImage(
                           image: SpannerDefaults.EMULATOR_IMAGE,
                           tag: SpannerDefaults.EMULATOR_IMAGE_TAG)
-                      .WithContainerName(resource.Name)
                       .WithSpannerEndpoint(builder, port, name);
     }
 
@@ -142,7 +141,7 @@ public static class SpannerEmulatorExtensions
                           port: port,
                           targetPort: SpannerDefaults.GRPC_PORT,
                           name: SpannerEmulatorResource.GRPC_ENDPOINT_NAME,
-                          isProxied: false)
+                          isProxied: true)
                       .WithHealthCheck(healthCheckKey);
     }
 

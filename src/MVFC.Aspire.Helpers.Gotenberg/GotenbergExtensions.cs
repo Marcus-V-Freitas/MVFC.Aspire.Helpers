@@ -31,7 +31,6 @@ public static class GotenbergExtensions
             .WithDockerImage(
                 image: GotenbergDefaults.DEFAULT_IMAGE,
                 tag: GotenbergDefaults.DEFAULT_IMAGE_TAG)
-            .WithContainerName(resource.Name)
             .WithGotenbergEndpoint(port);
     }
 
@@ -94,7 +93,7 @@ public static class GotenbergExtensions
                 port: port,
                 targetPort: GotenbergDefaults.DEFAULT_HTTP_PORT,
                 name: GotenbergResource.HTTP_ENDPOINT_NAME,
-                isProxied: false)
+                isProxied: true)
             .WithHttpHealthCheck(GotenbergDefaults.HEALTH_PATH);
     }
 }

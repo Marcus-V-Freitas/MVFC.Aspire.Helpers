@@ -25,7 +25,6 @@ public static class MailpitExtensions
             .WithDockerImage(
                 image: MailpitDefaults.DEFAULT_IMAGE,
                 tag: MailpitDefaults.DEFAULT_IMAGE_TAG)
-            .WithContainerName(resource.Name)
             .WithMailpitEndpoint(httpPort, smtpPort)
             .WithMaxMessages(MailpitDefaults.DEFAULT_MAX_MESSAGES)
             .WithSmtpAuth();

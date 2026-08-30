@@ -26,7 +26,6 @@ public static class RabbitMQExtensions
                 image: RabbitMQDefaults.DEFAULT_RABBIT_MQ_IMAGE,
                 tag: RabbitMQDefaults.DEFAULT_RABBIT_MQ_TAG)
             .WithRabbitEndpoint(amqpPort, httpPort)
-            .WithContainerName(resource.Name)
             .WithEnvironment(ctx =>
             {
                 ctx.EnvironmentVariables[RabbitMQDefaults.DEFAULT_USER_ENV_VAR] = resource.Username;

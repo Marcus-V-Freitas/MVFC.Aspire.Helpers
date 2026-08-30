@@ -24,7 +24,6 @@ public static class MongoExtensions
                       .WithDockerImage(
                            image: MongoDefaults.DEFAULT_MONGO_IMAGE,
                            tag: MongoDefaults.DEFAULT_IMAGE_TAG)
-                      .WithContainerName(resource.Name)
                       .WithReplicaSetArgs()
                       .WithMongoEndpoint(port)
                       .WithReplicaSetInitScript();
@@ -135,7 +134,7 @@ public static class MongoExtensions
             targetPort: MongoDefaults.HOST_PORT,
             scheme: MongoReplicaSetResource.MONGO_ENDPOINT_NAME,
             name: MongoReplicaSetResource.MONGO_ENDPOINT_NAME,
-            isProxied: false,
+            isProxied: true,
             isExternal: true);
     }
 

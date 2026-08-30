@@ -136,7 +136,7 @@ public static class FirestoreEmulatorExtensions
                            port: port,
                            targetPort: FirestoreDefaults.EMULATOR_PORT,
                            name: FirestoreEmulatorResource.HTTP_ENDPOINT_NAME,
-                           isProxied: false)
+                           isProxied: true)
                        .WithHealthCheck(healthCheckKey);
     }
 

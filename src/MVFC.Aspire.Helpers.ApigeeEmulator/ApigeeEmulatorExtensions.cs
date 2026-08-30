@@ -33,8 +33,7 @@ public static class ApigeeEmulatorExtensions
             .WithDockerImage(
                 image: ApigeeEmulatorDefaults.DEFAULT_IMAGE,
                 tag: ApigeeEmulatorDefaults.DEFAULT_IMAGE_TAG)
-            .WithApigeeEndpoints(controlPort, trafficPort)
-            .WithContainerName(resource.Name);
+            .WithApigeeEndpoints(controlPort, trafficPort);
 
         if (OperatingSystem.IsLinux())
         {

@@ -24,7 +24,6 @@ public static class RedisExtensions
             .WithDockerImage(
                 image: RedisDefaults.DEFAULT_REDIS_IMAGE,
                 tag: RedisDefaults.DEFAULT_REDIS_TAG)
-            .WithContainerName(resource.Name)
             .WithRedisEndpoint(port);
     }
 
@@ -110,6 +109,6 @@ public static class RedisExtensions
                 port: port,
                 targetPort: RedisDefaults.DEFAULT_REDIS_PORT,
                 name: RedisDefaults.ENDPOINT_NAME,
-                isProxied: false);
+                isProxied: true);
     }
 }

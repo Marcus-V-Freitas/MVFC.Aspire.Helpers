@@ -16,7 +16,6 @@ public static class KeycloakExtensions
         return builder.AddResource(resource)
             .WithDockerImage(KeycloakDefaults.DEFAULT_IMAGE, KeycloakDefaults.DEFAULT_TAG)
             .WithArgs(KeycloakDefaults.START_DEV_ARG)
-            .WithContainerName(resource.Name)
             .WithEnvironment(KeycloakDefaults.ADMIN_USERNAME_ENV, resource.AdminUsername)
             .WithEnvironment(KeycloakDefaults.ADMIN_PASSWORD_ENV, resource.AdminPassword)
             .WithKeycloakEndpoint(httpPort, managementPort);
