@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.GcpSpanner;
+namespace MVFC.Aspire.Helpers.GcpSpanner;
 
 /// <summary>
 /// Extension methods para registrar o Google Cloud Spanner emulator no Aspire.
@@ -23,6 +23,7 @@ public static class SpannerEmulatorExtensions
                       .WithDockerImage(
                           image: SpannerDefaults.EMULATOR_IMAGE,
                           tag: SpannerDefaults.EMULATOR_IMAGE_TAG)
+                      .WithContainerName(resource.Name)
                       .WithSpannerEndpoint(builder, port, name);
     }
 

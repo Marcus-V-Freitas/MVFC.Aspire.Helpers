@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Gotenberg;
+namespace MVFC.Aspire.Helpers.Gotenberg;
 
 /// <summary>
 /// Métodos de extensão para simplificar a configuração e integração do recurso Gotenberg
@@ -31,6 +31,7 @@ public static class GotenbergExtensions
             .WithDockerImage(
                 image: GotenbergDefaults.DEFAULT_IMAGE,
                 tag: GotenbergDefaults.DEFAULT_IMAGE_TAG)
+            .WithContainerName(resource.Name)
             .WithGotenbergEndpoint(port);
     }
 

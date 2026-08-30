@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.RabbitMQ;
+namespace MVFC.Aspire.Helpers.RabbitMQ;
 
 /// <summary>
 /// Provides extension methods to simplify the configuration and integration of the RabbitMQ resource
@@ -26,6 +26,7 @@ public static class RabbitMQExtensions
                 image: RabbitMQDefaults.DEFAULT_RABBIT_MQ_IMAGE,
                 tag: RabbitMQDefaults.DEFAULT_RABBIT_MQ_TAG)
             .WithRabbitEndpoint(amqpPort, httpPort)
+            .WithContainerName(resource.Name)
             .WithEnvironment(ctx =>
             {
                 ctx.EnvironmentVariables[RabbitMQDefaults.DEFAULT_USER_ENV_VAR] = resource.Username;
@@ -141,12 +142,12 @@ public static class RabbitMQExtensions
                 port: amqpPort,
                 targetPort: RabbitMQDefaults.DEFAULT_AMQP_PORT,
                 name: RabbitMQResource.AMQP_ENDPOINT_NAME,
-                isProxied: false)
+                isProxied: true)
             .WithHttpEndpoint(
                 port: httpPort,
                 targetPort: RabbitMQDefaults.DEFAULT_MANAGEMENT_PORT,
                 name: RabbitMQResource.MANAGEMENT_ENDPOINT_NAME,
-                isProxied: false)
+                isProxied: true)
             .WithHttpHealthCheck(endpointName: RabbitMQResource.MANAGEMENT_ENDPOINT_NAME);
     }
 

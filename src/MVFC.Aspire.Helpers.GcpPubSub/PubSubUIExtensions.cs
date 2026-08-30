@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.GcpPubSub;
+namespace MVFC.Aspire.Helpers.GcpPubSub;
 
 /// <summary>
 /// Provides extension methods to configure and integrate the Google Pub/Sub administrative UI
@@ -24,6 +24,7 @@ public static class PubSubUIExtensions
             .WithDockerImage(
                 image: PubSubDefaults.UI_IMAGE,
                 tag: PubSubDefaults.UI_IMAGE_TAG)
+            .WithContainerName(resource.Name)
             .WithPubSubUiEndpoint(port);
     }
 

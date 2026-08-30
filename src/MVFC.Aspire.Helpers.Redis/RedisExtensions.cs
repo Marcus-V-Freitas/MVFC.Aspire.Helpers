@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Redis;
+namespace MVFC.Aspire.Helpers.Redis;
 
 /// <summary>
 /// Provides extension methods to simplify the configuration and integration of the Redis resource
@@ -24,6 +24,7 @@ public static class RedisExtensions
             .WithDockerImage(
                 image: RedisDefaults.DEFAULT_REDIS_IMAGE,
                 tag: RedisDefaults.DEFAULT_REDIS_TAG)
+            .WithContainerName(resource.Name)
             .WithRedisEndpoint(port);
     }
 

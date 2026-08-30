@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Mongo;
+namespace MVFC.Aspire.Helpers.Mongo;
 
 /// <summary>
 /// Provides extension methods to simplify the configuration and integration of a MongoDB service (with Replica Set)
@@ -24,6 +24,7 @@ public static class MongoExtensions
                       .WithDockerImage(
                            image: MongoDefaults.DEFAULT_MONGO_IMAGE,
                            tag: MongoDefaults.DEFAULT_IMAGE_TAG)
+                      .WithContainerName(resource.Name)
                       .WithReplicaSetArgs()
                       .WithMongoEndpoint(port)
                       .WithReplicaSetInitScript();

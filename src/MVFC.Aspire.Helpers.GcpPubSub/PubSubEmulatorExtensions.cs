@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.GcpPubSub;
+namespace MVFC.Aspire.Helpers.GcpPubSub;
 
 /// <summary>
 /// Provides extension methods to configure, initialize, and integrate the Google Pub/Sub emulator
@@ -24,6 +24,7 @@ public static class PubSubEmulatorExtensions
             .WithDockerImage(
                 image: PubSubDefaults.EMULATOR_IMAGE,
                 tag: PubSubDefaults.EMULATOR_IMAGE_TAG)
+            .WithContainerName(resource.Name)
             .WithEnvironment(ctx => ApplyEmulatorEnvironment(ctx, resource))
             .WithPubSubEndpoint(port);
     }

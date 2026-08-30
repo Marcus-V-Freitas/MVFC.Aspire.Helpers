@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.RabbitMQ.Resources;
+namespace MVFC.Aspire.Helpers.RabbitMQ.Resources;
 
 /// <summary>
 /// Represents the RabbitMQ resource as an Aspire container, providing AMQP and Management endpoints

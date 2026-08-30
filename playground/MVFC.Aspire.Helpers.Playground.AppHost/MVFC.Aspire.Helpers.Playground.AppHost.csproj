@@ -1,18 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <Sdk Name="Aspire.AppHost.Sdk" Version="9.3.1" />
+﻿<Project Sdk="Aspire.AppHost.Sdk/13.5.3">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <UserSecretsId>d534f6dc-2282-4439-8829-f3cb82c29649</UserSecretsId>
+	<AspireUseCliBundle>true</AspireUseCliBundle>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" />
     <PackageReference Include="Refit" />
-	  <PackageReference Include="Scriban.Signed" />
+	<PackageReference Include="Scriban.Signed" />
   </ItemGroup>
 
   <ItemGroup>
