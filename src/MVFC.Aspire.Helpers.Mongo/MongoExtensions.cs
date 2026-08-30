@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Mongo;
+namespace MVFC.Aspire.Helpers.Mongo;
 
 /// <summary>
 /// Provides extension methods to simplify the configuration and integration of a MongoDB service (with Replica Set)
@@ -134,7 +134,7 @@ public static class MongoExtensions
             targetPort: MongoDefaults.HOST_PORT,
             scheme: MongoReplicaSetResource.MONGO_ENDPOINT_NAME,
             name: MongoReplicaSetResource.MONGO_ENDPOINT_NAME,
-            isProxied: false,
+            isProxied: true,
             isExternal: true);
     }
 

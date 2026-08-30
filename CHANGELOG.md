@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [10.0.0] - 2026-08-30
+
+### Added
+
+- Added `EndpointReference` support to `SpannerGrpcHealthCheck` and `FirestoreTcpHealthCheck`, allowing dynamic resolution of host and port at runtime for resources with dynamically allocated ports.
+- Added `<AspireUseCliBundle>true</AspireUseCliBundle>` property to `MVFC.Aspire.Helpers.Playground.AppHost.csproj`.
+- Added `CustomInstantiator` in `MongoFaker.cs` for reliable instantiation of `TestDatabase` seed models.
+
+### Changed
+
+- Configured `isProxied: true` across all helper container endpoints (`ApigeeEmulator`, `CloudStorage`, `GcpFirestore`, `GcpPubSub`, `GcpSpanner`, `Gotenberg`, `Keycloak`, `Mailpit`, `Mongo`, `RabbitMQ`, and `Redis`) to route traffic through Aspire reverse proxy.
+- Updated `GcpFirestore` endpoint registration to use Aspire's native `.WithHttpHealthCheck("/")`.
+- Refactored `PubSubEmulatorExtensions` to dynamically resolve `PUBSUB_EMULATOR_HOST` from `ConnectionStringExpression` on resource ready.
+- Refactored `PubSubConfigurator` to instantiate `SubscriberServiceApiClient` asynchronously on demand, accept explicit client instances in overloads, and use `CultureInfo.InvariantCulture` for port formatting.
+- Updated `MVFC.Aspire.Helpers.Playground.Api` and `MVFC.Aspire.Helpers.Playground.AppHost` launch profiles (`launchSettings.json`) to bind `0.0.0.0` for container and external accessibility.
+- Updated `Microsoft.NET.Test.Sdk` package reference to `18.3.0`.
+
+### Removed
+
+- Removed manual `RegisterTcpHealthCheck` helper method from `FirestoreEmulatorExtensions` in favor of native Aspire HTTP health checking.
+
 ## [9.0.5] - 2026-08-27
 
 ### Added
@@ -428,6 +449,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[10.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.5...v10.0.0
 [9.0.5]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.4...v9.0.5
 [9.0.4]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.3...v9.0.4
 [9.0.3]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.2...v9.0.3

@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.GcpPubSub;
+namespace MVFC.Aspire.Helpers.GcpPubSub;
 
 /// <summary>
 /// Provides extension methods to configure, initialize, and integrate the Google Pub/Sub emulator
@@ -104,7 +104,7 @@ public static class PubSubEmulatorExtensions
 
         var projectNumber = 0;
         foreach (var pubSubConfig in resource.PubSubConfigs)
-            ctx.EnvironmentVariables[$"{PubSubDefaults.PROJECT_ENV_VAR_PREFIX}{++projectNumber}"] = PubSubProjectBuilder.Build(pubSubConfig);
+            ctx.EnvironmentVariables[$"{PubSubDefaults.PROJECT_ENV_VAR_PREFIX}{(++projectNumber).ToString(CultureInfo.InvariantCulture)}"] = PubSubProjectBuilder.Build(pubSubConfig);
     }
 
     /// <summary>
@@ -126,9 +126,10 @@ public static class PubSubEmulatorExtensions
 
         project.OnResourceReady(async (context, _, ct) =>
         {
+            var connectionString = await pubSub.Resource.ConnectionStringExpression.GetValueAsync(ct).ConfigureAwait(false);
             Environment.SetEnvironmentVariable(
                 PubSubDefaults.EMULATOR_HOST_ENV_VAR,
-                $"localhost:{PubSubDefaults.EMULATOR_PORT}");
+                connectionString);
 
             var portEndpoint = context.GetEndpoint(PubSubEmulatorResource.HTTP_ENDPOINT_NAME).Port;
             await PubSubConfigurator.ConfigureAsync(pubSub.Resource.PubSubConfigs, portEndpoint, ct).ConfigureAwait(false);
@@ -163,7 +164,7 @@ public static class PubSubEmulatorExtensions
             port: port,
             targetPort: PubSubDefaults.EMULATOR_PORT,
             name: PubSubEmulatorResource.HTTP_ENDPOINT_NAME,
-            isProxied: false)
+            isProxied: true)
             .WithHttpHealthCheck("/");
     }
 }

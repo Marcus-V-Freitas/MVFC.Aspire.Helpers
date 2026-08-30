@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.GcpPubSub;
+namespace MVFC.Aspire.Helpers.GcpPubSub;
 
 /// <summary>
 /// Provides extension methods to configure and integrate the Google Pub/Sub administrative UI
@@ -85,7 +85,7 @@ public static class PubSubUIExtensions
                 port: port,
                 targetPort: PubSubDefaults.UI_PORT,
                 name: PubSubUIResource.HttpEndpointName,
-                isProxied: false)
+                isProxied: true)
             .WithHttpHealthCheck("/");
     }
 }

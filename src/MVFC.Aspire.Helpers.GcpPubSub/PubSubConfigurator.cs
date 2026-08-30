@@ -5,12 +5,6 @@ namespace MVFC.Aspire.Helpers.GcpPubSub;
 /// </summary>
 internal static class PubSubConfigurator
 {
-    private static readonly Lazy<SubscriberServiceApiClient> _subscriberClient =
-        new(() => new SubscriberServiceApiClientBuilder
-        {
-            EmulatorDetection = EmulatorDetection.EmulatorOnly,
-        }.Build());
-
     /// <summary>
     /// Configures all topics and subscriptions for a list of Pub/Sub configs.
     /// </summary>
@@ -19,15 +13,29 @@ internal static class PubSubConfigurator
         int portEndpoint,
         CancellationToken ct)
     {
-        foreach (var pubSubConfig in pubSubConfigs)
-        {
-            var pushEndpoint = $"http://{PubSubDefaults.DockerInternalHost}:{portEndpoint}";
-            var tasks = pubSubConfig.MessageConfigs
+        if (pubSubConfigs.Count == 0)
+            return;
+
+        var tasksToRun = pubSubConfigs
+            .SelectMany(c => c.MessageConfigs
                 .Where(p => !string.IsNullOrWhiteSpace(p.SubscriptionName))
-                .Select(mc => ModifyPushEndpoint(pubSubConfig.ProjectId, mc, pushEndpoint, ct))
-                .ToList();
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-        }
+                .Select(mc => (c.ProjectId, MessageConfig: mc)))
+            .ToList();
+
+        if (tasksToRun.Count == 0)
+            return;
+
+        var client = await new SubscriberServiceApiClientBuilder
+        {
+            EmulatorDetection = EmulatorDetection.EmulatorOnly,
+        }.BuildAsync(ct).ConfigureAwait(false);
+
+        var pushEndpoint = $"http://{PubSubDefaults.DockerInternalHost}:{portEndpoint.ToString(CultureInfo.InvariantCulture)}";
+        var tasks = tasksToRun
+            .ConvertAll(t => ModifyPushEndpoint(client, t.ProjectId, t.MessageConfig, pushEndpoint, ct))
+;
+
+        await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -36,13 +44,31 @@ internal static class PubSubConfigurator
     internal static async Task ModifyPushEndpoint(
         string projectId, MessageConfig messageConfig, string pushEndpoint, CancellationToken ct)
     {
+        var client = await new SubscriberServiceApiClientBuilder
+        {
+            EmulatorDetection = EmulatorDetection.EmulatorOnly,
+        }.BuildAsync(ct).ConfigureAwait(false);
+
+        await ModifyPushEndpoint(client, projectId, messageConfig, pushEndpoint, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Modifies the push endpoint of a Pub/Sub subscription using the provided client instance.
+    /// </summary>
+    internal static async Task ModifyPushEndpoint(
+        SubscriberServiceApiClient client,
+        string projectId,
+        MessageConfig messageConfig,
+        string pushEndpoint,
+        CancellationToken ct)
+    {
         var subscriptionName = SubscriptionName.FormatProjectSubscription(projectId, messageConfig.SubscriptionName);
-        var subscription = await _subscriberClient.Value.GetSubscriptionAsync(subscriptionName).ConfigureAwait(false);
+        var subscription = await client.GetSubscriptionAsync(subscriptionName).ConfigureAwait(false);
         subscription.PushConfig = BuildPushEndpoint(messageConfig, pushEndpoint);
         subscription.AckDeadlineSeconds = messageConfig.AckDeadlineSeconds ?? PubSubDefaults.ACK_DEADLINE_SECONDS_DEFAULT;
         subscription.DeadLetterPolicy = BuildDeadLetterPolicy(projectId, messageConfig);
 
-        await _subscriberClient.Value.UpdateSubscriptionAsync(subscription, BuildFieldMaskUpdate(messageConfig), ct).ConfigureAwait(false);
+        await client.UpdateSubscriptionAsync(subscription, BuildFieldMaskUpdate(messageConfig), ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -56,7 +82,7 @@ internal static class PubSubConfigurator
             : new DeadLetterPolicy
         {
             DeadLetterTopic = TopicName.FormatProjectTopic(projectId, messageConfig.DeadLetterTopic),
-            MaxDeliveryAttempts = messageConfig.MaxDeliveryAttempts ?? PubSubDefaults.MAX_DELIVERY_ATTEMPTS_DEFAULT
+            MaxDeliveryAttempts = messageConfig.MaxDeliveryAttempts ?? PubSubDefaults.MAX_DELIVERY_ATTEMPTS_DEFAULT,
         };
     }
 
@@ -83,7 +109,7 @@ internal static class PubSubConfigurator
             ? null
             : new PushConfig
         {
-            PushEndpoint = $"{pushEndpoint.TrimEnd('/')}/{messageConfig.PushEndpoint.TrimStart('/')}"
+            PushEndpoint = $"{pushEndpoint.TrimEnd('/')}/{messageConfig.PushEndpoint.TrimStart('/')}",
         };
     }
 }

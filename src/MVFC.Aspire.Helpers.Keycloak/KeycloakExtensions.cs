@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Keycloak;
+namespace MVFC.Aspire.Helpers.Keycloak;
 
 public static class KeycloakExtensions
 {
@@ -142,12 +142,12 @@ public static class KeycloakExtensions
                 port: httpPort,
                 targetPort: KeycloakDefaults.HOST_PORT,
                 name: KeycloakResource.HTTP_ENDPOINT_NAME,
-                isProxied: false)
+                isProxied: true)
             .WithHttpEndpoint(
                 port: managementPort,
                 targetPort: KeycloakDefaults.MANAGEMENT_PORT,
                 name: KeycloakDefaults.MANAGEMENT_ENDPOINT,
-                isProxied: false)
+                isProxied: true)
             .WithEnvironment(KeycloakDefaults.MANAGEMENT_ENV, "true")
             .WithEnvironment("KC_HTTP_PORT", KeycloakDefaults.HOST_PORT.ToString(CultureInfo.InvariantCulture))
             .WithHttpHealthCheck(

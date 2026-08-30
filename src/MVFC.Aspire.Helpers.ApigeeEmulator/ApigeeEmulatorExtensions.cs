@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.ApigeeEmulator;
+namespace MVFC.Aspire.Helpers.ApigeeEmulator;
 
 /// <summary>
 /// Extension methods to simplify Apigee Emulator integration with .NET Aspire,
@@ -176,12 +176,12 @@ public static class ApigeeEmulatorExtensions
                 port: controlPort,
                 targetPort: ApigeeEmulatorDefaults.CONTROL_TARGET_PORT,
                 name: ApigeeEmulatorResource.CONTROL_PORT_NAME,
-                isProxied: false)
+                isProxied: true)
             .WithHttpEndpoint(
                 port: trafficPort,
                 targetPort: ApigeeEmulatorDefaults.TRAFFIC_TARGET_PORT,
                 name: ApigeeEmulatorResource.TRAFFIC_PORT_NAME,
-                isProxied: false)
+                isProxied: true)
             .WithHttpHealthCheck(
                 endpointName: ApigeeEmulatorResource.CONTROL_PORT_NAME,
                 path: ApigeeEmulatorDefaults.EMULATOR_READY_PATH);

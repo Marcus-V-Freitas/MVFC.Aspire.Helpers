@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Gotenberg;
+namespace MVFC.Aspire.Helpers.Gotenberg;
 
 /// <summary>
 /// Métodos de extensão para simplificar a configuração e integração do recurso Gotenberg
@@ -93,7 +93,7 @@ public static class GotenbergExtensions
                 port: port,
                 targetPort: GotenbergDefaults.DEFAULT_HTTP_PORT,
                 name: GotenbergResource.HTTP_ENDPOINT_NAME,
-                isProxied: false)
+                isProxied: true)
             .WithHttpHealthCheck(GotenbergDefaults.HEALTH_PATH);
     }
 }

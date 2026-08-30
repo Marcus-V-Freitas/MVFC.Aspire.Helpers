@@ -27,7 +27,7 @@
     <PackageVersion Include="Refit" Version="[10.2.0]" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="Refit.HttpClientFactory" Version="[10.2.0]" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.17.1" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.17.2" />
     <PackageVersion Include="StackExchange.Redis" Version="3.1.31" />
     <PackageVersion Include="Humanizer" Version="3.0.10" />
     <PackageVersion Include="WireMock.Net.minimal" Version="2.15.0" />

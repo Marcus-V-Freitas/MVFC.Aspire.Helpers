@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Mailpit;
+namespace MVFC.Aspire.Helpers.Mailpit;
 
 /// <summary>
 /// Provides extension methods to simplify the configuration and integration of the Mailpit resource
@@ -170,11 +170,11 @@ public static class MailpitExtensions
                 port: httpPort,
                 targetPort: MailpitDefaults.DEFAULT_HTTP_PORT,
                 name: MailpitResource.HTTP_ENDPOINT_NAME,
-                isProxied: false)
+                isProxied: true)
             .WithEndpoint(
                 port: smtpPort,
                 targetPort: MailpitDefaults.DEFAULT_SMTP_PORT,
                 name: MailpitResource.SMTP_ENDPOINT_NAME,
-                isProxied: false);
+                isProxied: true);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.CloudStorage;
+namespace MVFC.Aspire.Helpers.CloudStorage;
 
 /// <summary>
 /// Provides extension methods to simplify the configuration and integration of a Cloud Storage resource (GCS emulator)
@@ -83,6 +83,6 @@ public static class CloudStorageExtensions
             port: port,
             targetPort: CloudStorageDefaults.HOST_PORT,
             name: CloudStorageResource.HTTP_ENDPOINT_NAME,
-            isProxied: false);
+            isProxied: true);
     }
 }
