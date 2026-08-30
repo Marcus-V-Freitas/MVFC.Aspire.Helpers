@@ -94,15 +94,15 @@ public static class SpannerEmulatorExtensions
     }
 
     /// <summary>
-    /// Registra um health check TCP para o Spanner Emulator na porta gRPC especificada.
+    /// Registra um health check TCP para o Spanner Emulator na porta gRPC dinâmica do endpoint.
     /// </summary>
     /// <param name="builder">Builder da aplicação distribuída.</param>
-    /// <param name="port">Porta gRPC do emulador.</param>
+    /// <param name="endpoint">Referência do endpoint gRPC do emulador.</param>
     /// <param name="name">Nome do recurso Spanner.</param>
     /// <returns>Chave de identificação do health check registrado.</returns>
     private static string RegisterTcpHealthCheck(
         this IDistributedApplicationBuilder builder,
-        int port,
+        EndpointReference endpoint,
         string name)
     {
         var healthCheckKey = $"spanner_{name}";
@@ -111,7 +111,7 @@ public static class SpannerEmulatorExtensions
                       .AddHealthChecks()
                       .Add(new HealthCheckRegistration(
                           name: healthCheckKey,
-                          factory: _ => new SpannerGrpcHealthCheck(port),
+                          factory: _ => new SpannerGrpcHealthCheck(endpoint),
                           failureStatus: null,
                           tags: null));
 
@@ -135,7 +135,7 @@ public static class SpannerEmulatorExtensions
         ArgumentNullException.ThrowIfNull(resource);
         ArgumentOutOfRangeException.ThrowIfLessThan(port, IPEndPoint.MinPort);
 
-        var healthCheckKey = builder.RegisterTcpHealthCheck(port, name);
+        var healthCheckKey = builder.RegisterTcpHealthCheck(resource.Resource.GrpcEndpoint, name);
 
         return resource.WithEndpoint(
                           port: port,

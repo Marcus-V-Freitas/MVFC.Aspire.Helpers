@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.GcpFirestore.HealthChecks;
+namespace MVFC.Aspire.Helpers.GcpFirestore.HealthChecks;
 
 /// <summary>
 /// Health check using raw TCP on the emulator's HTTP port.
@@ -6,8 +6,21 @@
 /// this only verifies if the port is accepting connections.
 /// </summary>
 /// <param name="port">The port to check for TCP connectivity.</param>
-internal sealed class FirestoreTcpHealthCheck(int port) : IHealthCheck
+internal sealed class FirestoreTcpHealthCheck : IHealthCheck
 {
+    private readonly EndpointReference? _endpoint;
+    private readonly int? _port;
+
+    public FirestoreTcpHealthCheck(EndpointReference endpoint)
+    {
+        _endpoint = endpoint;
+    }
+
+    public FirestoreTcpHealthCheck(int port)
+    {
+        _port = port;
+    }
+
     /// <summary>
     /// Checks the health of the Firestore emulator by attempting a TCP connection to the specified port.
     /// </summary>
@@ -20,8 +33,30 @@ internal sealed class FirestoreTcpHealthCheck(int port) : IHealthCheck
     {
         try
         {
+            var host = "localhost";
+            int port;
+
+            if (_endpoint is not null)
+            {
+                if (!_endpoint.IsAllocated)
+                {
+                    return HealthCheckResult.Unhealthy("Endpoint is not yet allocated.");
+                }
+
+                host = _endpoint.Host;
+                port = _endpoint.Port;
+            }
+            else if (_port.HasValue)
+            {
+                port = _port.Value;
+            }
+            else
+            {
+                return HealthCheckResult.Unhealthy("No port or endpoint configured.");
+            }
+
             using var tcp = new TcpClient();
-            await tcp.ConnectAsync("localhost", port, cancellationToken).ConfigureAwait(false);
+            await tcp.ConnectAsync(host, port, cancellationToken).ConfigureAwait(false);
             return HealthCheckResult.Healthy();
         }
         catch (Exception ex)

@@ -126,9 +126,10 @@ public static class PubSubEmulatorExtensions
 
         project.OnResourceReady(async (context, _, ct) =>
         {
+            var connectionString = await pubSub.Resource.ConnectionStringExpression.GetValueAsync(ct).ConfigureAwait(false);
             Environment.SetEnvironmentVariable(
                 PubSubDefaults.EMULATOR_HOST_ENV_VAR,
-                $"localhost:{PubSubDefaults.EMULATOR_PORT}");
+                connectionString);
 
             var portEndpoint = context.GetEndpoint(PubSubEmulatorResource.HTTP_ENDPOINT_NAME).Port;
             await PubSubConfigurator.ConfigureAsync(pubSub.Resource.PubSubConfigs, portEndpoint, ct).ConfigureAwait(false);

@@ -28,7 +28,7 @@ public static class FirestoreEmulatorExtensions
                       .WithDockerImage(
                           image: FirestoreDefaults.EMULATOR_IMAGE,
                           tag: FirestoreDefaults.EMULATOR_IMAGE_TAG)
-                      .WithFirestoreEndpoint(builder, port, name);
+                      .WithFirestoreEndpoint(port);
     }
 
     /// <summary>
@@ -118,50 +118,19 @@ public static class FirestoreEmulatorExtensions
     /// Configures the HTTP endpoint of the Firestore emulator, without proxy, with HTTP health check.
     /// </summary>
     /// <param name="resource">The Firestore emulator resource builder.</param>
-    /// <param name="builder">The distributed application builder.</param>
     /// <param name="port">The port to expose the emulator.</param>
-    /// <param name="name">The resource name.</param>
     /// <returns>The resource builder for chaining.</returns>
     private static IResourceBuilder<FirestoreEmulatorResource> WithFirestoreEndpoint(
         this IResourceBuilder<FirestoreEmulatorResource> resource,
-        IDistributedApplicationBuilder builder,
-        int port,
-        string name)
+        int port)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(port, IPEndPoint.MinPort);
-
-        var healthCheckKey = builder.RegisterTcpHealthCheck(port, name);
 
         return resource.WithHttpEndpoint(
                            port: port,
                            targetPort: FirestoreDefaults.EMULATOR_PORT,
                            name: FirestoreEmulatorResource.HTTP_ENDPOINT_NAME,
                            isProxied: true)
-                       .WithHealthCheck(healthCheckKey);
-    }
-
-    /// <summary>
-    /// Registers a TCP health check for the Firestore emulator.
-    /// </summary>
-    /// <param name="builder">The distributed application builder.</param>
-    /// <param name="port">The port to check.</param>
-    /// <param name="name">The resource name.</param>
-    /// <returns>The health check key.</returns>
-    private static string RegisterTcpHealthCheck(
-        this IDistributedApplicationBuilder builder,
-        int port,
-        string name)
-    {
-        var healthCheckKey = $"firestore_{name}";
-
-        builder.Services
-               .AddHealthChecks()
-               .Add(new HealthCheckRegistration(
-                   name: healthCheckKey,
-                   factory: _ => new FirestoreTcpHealthCheck(port),
-                   failureStatus: null,
-                   tags: null));
-
-        return healthCheckKey;
+                       .WithHttpHealthCheck("/");
     }
 }
