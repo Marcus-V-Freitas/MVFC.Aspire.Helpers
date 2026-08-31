@@ -147,8 +147,9 @@ sequenceDiagram
 ## Requisitos
 
 - .NET 9+
-- Aspire.Hosting >= 9.5.0
-- Google.Cloud.Spanner.Data >= 5.6.0 (ou Google.Cloud.Spanner.V1)
+- Aspire.Hosting >= 13.5.3
+- Docker em execução
+- Google.Cloud.Spanner.Data >= 5.12.0 (ou Google.Cloud.Spanner.Admin.Instance.V1)
 
 ## Licença
 

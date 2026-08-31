@@ -126,8 +126,9 @@ sequenceDiagram
 ## Requisitos
 
 - .NET 9+
-- Aspire.Hosting >= 9.5.0
-- Google.Cloud.Firestore >= 3.6.0
+- Aspire.Hosting >= 13.5.3
+- Docker em execução
+- Google.Cloud.Firestore >= 4.4.0
 
 ## Licença
 

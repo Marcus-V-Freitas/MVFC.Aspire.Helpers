@@ -1,4 +1,4 @@
-﻿var builder = DistributedApplication.CreateBuilder(args);
+var builder = DistributedApplication.CreateBuilder(args);
 
 // --- GCP Spanner Configs ---
 var spannerConfig = new SpannerConfig(
@@ -47,6 +47,11 @@ var apigeeWorkspace = Path.Combine(Directory.GetCurrentDirectory(), "apigee-work
 // --- GCP Firestore ---
 var firestore = builder.AddGcpFirestore("firestore")
                        .WithFirestoreConfigs(new FirestoreConfig("my-gcp-project-id"));
+
+// --- GCP BigQuery ---
+var bigQuery = builder.AddGcpBigQuery("bigquery")
+                      .WithBigQueryConfigs(new BigQueryConfig("test-project", "test_dataset"))
+                      .WithDataSeed("./bigquery-data/dump.yaml");
 
 // --- GCP Spanner ---
 var spanner = builder.AddGcpSpanner("gcp-spanner")
@@ -126,6 +131,8 @@ var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-e
                  .WaitFor(gotenberg)
                  .WaitFor(firestore)
                  .WithReference(firestore)
+                 .WaitFor(bigQuery)
+                 .WithReference(bigQuery)
                  .WaitFor(keycloak)
                  .WithReference(keycloak,
                          realmName: "my-app",

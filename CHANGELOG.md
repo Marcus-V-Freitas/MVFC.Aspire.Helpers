@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [10.1.0] - 2026-08-30
+
+### Added
+
+- Created Google Cloud BigQuery emulator helper integration (`AddGcpBigQuery`) with configurations for projects, datasets, and YAML data seeding.
+- Added comprehensive unit tests and AppHost integration tests for `GcpBigQuery`.
+- Integrated BigQuery into the playground API and AppHost with working data dumps.
+- Added structured documentation for the new BigQuery module (`README.md` and `README.pt-BR.md`) aligned with standard project formatting.
+
+### Changed
+
+- Updated NuGet package dependencies listed in documentation across all helpers to match `Directory.Packages.props` (e.g., `Aspire.Hosting` to `13.5.3`).
+- Standardized documentation to explicitly require "Docker running locally" and updated the `.csproj` standardizations.
+- Added missing "Requirements" sections to Keycloak documentation.
+
 ## [10.0.0] - 2026-08-30
 
 ### Added
@@ -449,6 +464,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[10.1.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.0.0...v10.1.0
 [10.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.5...v10.0.0
 [9.0.5]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.4...v9.0.5
 [9.0.4]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.3...v9.0.4

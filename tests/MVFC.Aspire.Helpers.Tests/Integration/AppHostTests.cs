@@ -98,6 +98,33 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
 
     #endregion
 
+    #region BigQuery
+
+    [Fact]
+    public async Task BigQuery_GetDatasets_ShouldReturnOk()
+    {
+        // Arrange & Act
+        using var response = await _fixture.PlaygroundApi.GetBigQueryDatasetsAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Should().Contain("test_dataset");
+    }
+
+    [Fact]
+    public async Task BigQuery_GetUsers_ShouldReturnSeededUsers()
+    {
+        // Arrange & Act
+        using var response = await _fixture.PlaygroundApi.GetBigQueryUsersAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Should().Contain("Alice");
+        response.Content.Should().Contain("Bob");
+    }
+
+    #endregion
+    
     #region Gotenberg
 
     [Fact]

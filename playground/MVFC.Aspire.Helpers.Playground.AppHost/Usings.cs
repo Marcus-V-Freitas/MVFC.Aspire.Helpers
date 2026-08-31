@@ -1,4 +1,4 @@
-﻿global using System.Net;
+global using System.Net;
 global using System.Text;
 global using Bogus;
 global using Bogus.Extensions.Brazil;
@@ -27,3 +27,5 @@ global using MVFC.Aspire.Helpers.Playground.AppHost.Seeds.Keycloak;
 global using MVFC.Aspire.Helpers.ApigeeEmulator;
 global using MVFC.Aspire.Helpers.GcpFirestore;
 global using MVFC.Aspire.Helpers.GcpFirestore.Models;
+global using MVFC.Aspire.Helpers.GcpBigQuery;
+global using MVFC.Aspire.Helpers.GcpBigQuery.Models;

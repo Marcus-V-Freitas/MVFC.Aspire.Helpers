@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Playground.Api.Helpers;
+namespace MVFC.Aspire.Helpers.Playground.Api.Helpers;
 
 public static class InstanceHelpers
 {
@@ -23,6 +23,27 @@ public static class InstanceHelpers
         }
 
         return results;
+    }
+
+    public static async Task<BigQueryClient> CreateBigQueryClientAsync(this WebApplicationBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        var projectId = builder.Configuration["BigQuery:ProjectId"] ?? "test-project";
+
+        var clientBuilder = new BigQueryClientBuilder
+        {
+            ProjectId = projectId,
+        };
+
+        var emulatorHost = builder.Configuration["BIGQUERY_EMULATOR_HOST"];
+        if (!string.IsNullOrWhiteSpace(emulatorHost))
+        {
+            clientBuilder.BaseUri = emulatorHost;
+            clientBuilder.Credential = GoogleCredential.FromAccessToken("dummy-token");
+        }
+
+        return await clientBuilder.BuildAsync().ConfigureAwait(false);
     }
 
     public static SpannerConnection CreateSpannerConnection(this IConfiguration configuration)

@@ -1,9 +1,11 @@
-﻿global using System.Net.Mail;
+global using System.Net.Mail;
 global using System.Text.Json;
 global using Google.Api.Gax;
 global using Google.Cloud.Firestore;
 global using Google.Cloud.PubSub.V1;
 global using Google.Cloud.Storage.V1;
+global using Google.Cloud.BigQuery.V2;
+global using Google.Apis.Auth.OAuth2;
 global using Google.Protobuf;
 global using MongoDB.Bson;
 global using MongoDB.Driver;

@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Playground.Api.Endpoints;
+namespace MVFC.Aspire.Helpers.Playground.Api.Endpoints;
 
 public static class DefaultEndpoints
 {
@@ -19,5 +19,6 @@ public static class DefaultEndpoints
         apiGroup.MapGotenbergEndpoints();
         apiGroup.MapKeycloakEndpoints();
         apiGroup.MapSpannerEndpoints();
+        apiGroup.MapBigQueryEndpoints();
     }
 }

@@ -150,6 +150,12 @@ sequenceDiagram
 - `.WithSeeds(KeycloakRealmSeed)` – constrói e importa um JSON de realm via `/opt/keycloak/data/import/`.
 - `.WithRealmImport(importPath)` – carrega JSONs de realm estáticos de uma pasta e os importa no container.
 
+## Requisitos
+
+- .NET 9+
+- Aspire.Hosting >= 13.5.3
+- Docker em execução
+
 ## Licença
 
 Apache-2.0

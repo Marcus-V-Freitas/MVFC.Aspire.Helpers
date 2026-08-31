@@ -119,7 +119,8 @@ sequenceDiagram
 ## Requirements
 
 - .NET 9+
-- Aspire.Hosting >= 9.5.0
+- Aspire.Hosting >= 13.5.3
+- Docker running locally
 
 ## License
 

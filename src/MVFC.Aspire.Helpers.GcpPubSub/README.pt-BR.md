@@ -186,8 +186,9 @@ sequenceDiagram
 ## Requisitos
 
 - .NET 9+
-- Aspire.Hosting >= 9.5.0
-- Google.Cloud.PubSub.V1 >= 3.29.0
+- Aspire.Hosting >= 13.5.3
+- Docker em execução
+- Google.Cloud.PubSub.V1 >= 3.37.0
 
 ## Licença
 

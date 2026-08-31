@@ -187,9 +187,10 @@ Each `:` indicates a level/section within the `appsettings.json` file:
 ## Requirements
 
 - .NET 9+
-- Aspire.Hosting >= 9.5.0
+- Aspire.Hosting >= 13.5.3
+- Docker running locally
 - Bogus >= 35.6.0
-- MongoDB.Driver >= 3.5.0
+- MongoDB.Driver >= 3.11.1
 
 ## License
 

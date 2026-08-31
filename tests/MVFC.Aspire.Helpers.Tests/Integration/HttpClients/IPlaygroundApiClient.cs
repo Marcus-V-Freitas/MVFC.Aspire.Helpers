@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.Tests.Integration.HttpClients;
+namespace MVFC.Aspire.Helpers.Tests.Integration.HttpClients;
 
 internal interface IPlaygroundApiClient
 {
@@ -67,4 +67,10 @@ internal interface IPlaygroundApiClient
     [Get("/api/spanner/users")]
     internal Task<ApiResponse<string>> GetSpannerUsersAsync();
 
+    // BigQuery
+    [Get("/api/bigquery/datasets")]
+    internal Task<ApiResponse<string>> GetBigQueryDatasetsAsync();
+
+    [Get("/api/bigquery/users")]
+    internal Task<ApiResponse<string>> GetBigQueryUsersAsync();
 }

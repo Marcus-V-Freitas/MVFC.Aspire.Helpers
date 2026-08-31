@@ -1,4 +1,4 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 var firestoreDbs = await builder.CreateFirestoreDbsAsync().ConfigureAwait(false);
 var storageClient = await InstanceHelpers.CreateStorageClientAsync().ConfigureAwait(false);
@@ -6,8 +6,10 @@ var pubSubClient = await InstanceHelpers.CreatePubSubClientAsync().ConfigureAwai
 var redis = await builder.CreateRedisAsync().ConfigureAwait(false);
 var rabbit = await builder.CreateRabbitAsync().ConfigureAwait(false);
 var spannerConnection = builder.Configuration.CreateSpannerConnection();
+var bigQueryClient = await builder.CreateBigQueryClientAsync().ConfigureAwait(false);
 
 builder.Services.AddSingleton(firestoreDbs["my-gcp-project-id"]);
+builder.Services.AddSingleton(bigQueryClient);
 builder.Services.AddKeycloak(builder.Configuration);
 builder.Services.AddGotenberg();
 builder.Services.AddScoped<SpannerConnection>(_ => spannerConnection);
