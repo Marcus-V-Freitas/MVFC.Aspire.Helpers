@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [10.1.1] - 2026-10-31
+
+### Changed
+
+- Updated NuGet package dependencies to address security vulnerabilities: `Aspire.Hosting`, `Aspire.Hosting.AppHost`, `Aspire.Hosting.Testing` to `13.6.4`, `Microsoft.AspNetCore.Authentication.JwtBearer` and `Microsoft.Extensions.Diagnostics.HealthChecks` to `10.0.14`, `Microsoft.OpenApi` to `2.12.2`, and `Microsoft.NET.Test.Sdk` to `18.9.0`.
+- Added `Microsoft.AspNetCore.OpenApi` package reference (`10.0.14`) to the playground API to enable OpenAPI document generation required by Scalar UI.
+
 ## [10.1.0] - 2026-08-30
 
 ### Added
@@ -464,6 +471,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[10.1.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.0...v10.1.1
 [10.1.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.0.0...v10.1.0
 [10.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.5...v10.0.0
 [9.0.5]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.4...v9.0.5
