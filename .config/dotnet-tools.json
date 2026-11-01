@@ -14,6 +14,12 @@
       "commands": [
         "reportgenerator"
       ]
+    },
+    "dotnet-coverage": {
+      "version": "18.12.0",
+      "commands": [
+        "dotnet-coverage"
+      ]
     }
   }
 }

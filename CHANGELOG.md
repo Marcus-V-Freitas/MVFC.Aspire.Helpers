@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [10.1.3] - 2026-11-01
+
+### Added
+
+- Added root `.editorconfig` defining centralized coding standards, naming conventions, and Roslyn/Sonar analyzer settings.
+- Added `dotnet-coverage` tool (`18.12.0`) to local .NET tool manifest.
+- Configured SDK version `10.0.100` with `latestFeature` roll-forward strategy in `global.json`.
+
+### Changed
+
+- Updated CI/CD workflow with concurrency control, validation of release tag ancestry on `main`, and pinned tool execution (`dotnet tool restore` and `dotnet tool run`).
+- Updated `MVFC.Pack.Analyzers` package reference to `4.0.2`.
+- Suppressed analyzer rules `S1313` (hardcoded IP addresses) and `S5332` (HTTP/SSL in local emulator endpoints) with `severity = none` across scoped and root `.editorconfig` files.
+
+### Fixed
+
+- Fixed parameter ordering in `WithHttpHealthCheck` within `ApigeeEmulatorExtensions`.
+- Propagated `CancellationToken` to `GetSubscriptionAsync` call in `PubSubConfigurator`.
+
 ## [10.1.2] - 2026-10-31
 
 ### Changed
@@ -478,6 +497,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[10.1.3]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.2...v10.1.3
 [10.1.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.1...v10.1.2
 [10.1.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.0...v10.1.1
 [10.1.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.0.0...v10.1.0

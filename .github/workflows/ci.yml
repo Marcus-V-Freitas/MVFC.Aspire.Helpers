@@ -1,22 +1,34 @@
 ﻿name: CI / Publish
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - "v*"
   pull_request:
     branches:
       - main
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/v') }}
 
 env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
   ENABLE_CODECOV: ${{ secrets.CODECOV_TOKEN != '' && 'true' || 'false' }}
 
 jobs:
   test-and-coverage:
-    runs-on: ubuntu-latest
+    if: github.event_name != 'push'
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - name: Checkout
@@ -24,39 +36,41 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup .NET 10
+      - name: Setup .NET 9 e 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0.x"
-      - name: Install Cake
-        run: dotnet tool install --global Cake.Tool
+          dotnet-version: |
+            9.0.x
+            10.0.x
 
-      - name: Run Cake
-        run: dotnet-cake build.cake
+      - name: Restaurar ferramentas .NET com versões fixadas
+        run: dotnet tool restore
 
-      - name: Publish summary
+      - name: Executar Cake (build, testes e cobertura)
+        run: dotnet tool run dotnet-cake -- build.cake
+
+      - name: Resumo de cobertura
         if: always()
-        run: cat CoverageReport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+        shell: bash
+        run: |
+          if [[ -f CoverageReport/SummaryGithub.md ]]; then
+            cat CoverageReport/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Relatório de cobertura não foi produzido nesta execução." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
-      - name: Comment on PR
-        if: always() && github.event_name == 'pull_request'
+      - name: Comentário de cobertura no PR (PR interno)
+        if: >-
+          success() &&
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           recreate: true
           path: CoverageReport/SummaryGithub.md
-      - name: Upload HTML report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: CoverageReport
-          retention-days: 30
 
-      - name: Check coverage file exists
-        if: always()
-        run: ls -la coverage/
-      - name: Upload to Codecov
-        if: always() && env.ENABLE_CODECOV == 'true'
+      - name: Enviar cobertura ao Codecov
+        if: success() && env.ENABLE_CODECOV == 'true'
         uses: codecov/codecov-action@v5
         with:
           files: coverage/coverage.cobertura.xml
@@ -65,62 +79,134 @@ jobs:
           fail_ci_if_error: true
 
   build-and-publish:
-    runs-on: ubuntu-latest
-    needs: test-and-coverage
     if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
     environment: release
     permissions:
       contents: read
       id-token: write
       packages: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup .NET 9
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "9.0.x"
-
-      - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "10.0.x"
-      - name: Build e Pack
+      - name: Confirmar que a tag pertence à main
+        shell: bash
         run: |
-          mkdir -p ./nupkg
-          for csproj in $(find ./src -name "*.csproj"); do
-            dotnet pack "$csproj" --configuration Release --output ./nupkg
-          done
-      - name: Login no NuGet.org (OIDC)
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor HEAD origin/main || {
+            echo "::error::A tag precisa apontar para um commit presente na main."
+            exit 1
+          }
+
+      - name: Setup .NET 9 e 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            9.0.x
+            10.0.x
+
+      - name: Restaurar ferramentas .NET com versões fixadas
+        run: dotnet tool restore
+
+      - name: Executar Cake (build, testes e cobertura)
+        run: dotnet tool run dotnet-cake -- build.cake
+
+      - name: Resumo de cobertura
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f CoverageReport/SummaryGithub.md ]]; then
+            cat CoverageReport/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Relatório de cobertura não foi produzido nesta execução." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Enviar cobertura ao Codecov
+        if: success() && env.ENABLE_CODECOV == 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage/coverage.cobertura.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: integration
+          fail_ci_if_error: true
+
+      - name: Empacotar binários já compilados
+        shell: bash
+        run: |
+          mkdir -p nupkg
+          while IFS= read -r -d '' csproj; do
+            echo "Empacotando $csproj"
+            dotnet pack "$csproj" \
+              --configuration Release \
+              --no-build --no-restore \
+              --output ./nupkg
+          done < <(find ./src -name '*.csproj' -print0 | sort -z)
+          shopt -s nullglob
+          packages=(./nupkg/*.nupkg)
+          if (( ${#packages[@]} == 0 )); then
+            echo "::error::Nenhum pacote NuGet foi gerado."
+            exit 1
+          fi
+          echo "Pacotes gerados: ${#packages[@]}"
+          ls -lah ./nupkg/
+
+      - name: Login no NuGet.org por OIDC
         id: nuget-login
         uses: NuGet/login@v1
         with:
           user: marcuscosta
-      - name: Publicar no NuGet
+
+      - name: Publicar no NuGet.org
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         run: |
-          for nupkg in ./nupkg/*.nupkg; do
-            dotnet nuget push "$nupkg" \
-              --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" \
+          shopt -s nullglob
+          packages=(./nupkg/*.nupkg)
+          if (( ${#packages[@]} == 0 )); then
+            echo "::error::Nenhum .nupkg disponível para publicação."
+            exit 1
+          fi
+          for package in "${packages[@]}"; do
+            dotnet nuget push "$package" \
+              --api-key "$NUGET_API_KEY" \
               --source https://api.nuget.org/v3/index.json \
               --skip-duplicate
           done
-      - name: Publish to GitHub Packages
+
+      - name: Publicar no GitHub Packages
+        shell: bash
+        env:
+          GH_PACKAGES_TOKEN: ${{ github.token }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
         run: |
-          for nupkg in ./nupkg/*.nupkg; do
-            dotnet nuget push "$nupkg" \
-              --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
-              --api-key ${{ secrets.GITHUB_TOKEN }} \
+          shopt -s nullglob
+          packages=(./nupkg/*.nupkg)
+          if (( ${#packages[@]} == 0 )); then
+            echo "::error::Nenhum .nupkg disponível para publicação."
+            exit 1
+          fi
+          for package in "${packages[@]}"; do
+            dotnet nuget push "$package" \
+              --source "https://nuget.pkg.github.com/${REPOSITORY_OWNER}/index.json" \
+              --api-key "$GH_PACKAGES_TOKEN" \
               --skip-duplicate
           done
 
   create-release:
-    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: build-and-publish
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+
     steps:
-      - name: Create GitHub Release
+      - name: Criar GitHub Release (sem anexos)
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
@@ -129,27 +215,5 @@ jobs:
           body: |
             ## What's Changed
             See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for full details.
-
             ## Packages
             Published to [NuGet](https://www.nuget.org/profiles/marcuscosta).
-  cleanup-tag-on-failure:
-    runs-on: ubuntu-latest
-    needs: [test-and-coverage, build-and-publish, create-release]
-    if: |
-      always() &&
-      startsWith(github.ref, 'refs/tags/v') &&
-      (needs.test-and-coverage.result == 'failure' ||
-       needs.build-and-publish.result == 'failure' ||
-       needs.create-release.result == 'failure')
-    permissions:
-      contents: write
-    steps:
-      - name: Cleanup Release and Tag
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "::warning::Limpando tag/release - pipeline falhou em um dos estágios."
-          # Tenta deletar o release e a tag associada via GitHub CLI
-          gh release delete ${{ github.ref_name }} --yes --cleanup-tag || true
-          # Fallback: garante a deleção da tag mesmo que o release nunca tenha sido criado
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} --delete ${{ github.ref_name }} || true

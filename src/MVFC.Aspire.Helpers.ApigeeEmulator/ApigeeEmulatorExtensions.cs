@@ -183,7 +183,7 @@ public static class ApigeeEmulatorExtensions
                 name: ApigeeEmulatorResource.TRAFFIC_PORT_NAME,
                 isProxied: true)
             .WithHttpHealthCheck(
-                endpointName: ApigeeEmulatorResource.CONTROL_PORT_NAME,
-                path: ApigeeEmulatorDefaults.EMULATOR_READY_PATH);
+                path: ApigeeEmulatorDefaults.EMULATOR_READY_PATH,
+                endpointName: ApigeeEmulatorResource.CONTROL_PORT_NAME);
     }
 }

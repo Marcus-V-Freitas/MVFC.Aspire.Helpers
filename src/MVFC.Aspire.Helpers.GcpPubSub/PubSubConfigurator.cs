@@ -63,7 +63,7 @@ internal static class PubSubConfigurator
         CancellationToken ct)
     {
         var subscriptionName = SubscriptionName.FormatProjectSubscription(projectId, messageConfig.SubscriptionName);
-        var subscription = await client.GetSubscriptionAsync(subscriptionName).ConfigureAwait(false);
+        var subscription = await client.GetSubscriptionAsync(subscriptionName, ct).ConfigureAwait(false);
         subscription.PushConfig = BuildPushEndpoint(messageConfig, pushEndpoint);
         subscription.AckDeadlineSeconds = messageConfig.AckDeadlineSeconds ?? PubSubDefaults.ACK_DEADLINE_SECONDS_DEFAULT;
         subscription.DeadLetterPolicy = BuildDeadLetterPolicy(projectId, messageConfig);
