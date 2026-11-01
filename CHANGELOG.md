@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [10.1.2] - 2026-10-31
+
+### Changed
+
+- Updated CI/CD workflow to authenticate NuGet package publishing via GitHub Actions OIDC trusted publishing (`NuGet/login@v1`).
+- Enhanced tag and release cleanup on pipeline failure with explicit fallback handling.
+
 ## [10.1.1] - 2026-10-31
 
 ### Changed
@@ -471,6 +478,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[10.1.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.1...v10.1.2
 [10.1.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.0...v10.1.1
 [10.1.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.0.0...v10.1.0
 [10.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v9.0.5...v10.0.0
