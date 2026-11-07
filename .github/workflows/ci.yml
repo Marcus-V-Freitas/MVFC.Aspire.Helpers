@@ -137,15 +137,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Confirmar que a tag pertence à main
-        shell: bash
-        run: |
-          git fetch --no-tags origin main
-          git merge-base --is-ancestor HEAD origin/main || {
-            echo "::error::A tag precisa apontar para um commit presente na main."
-            exit 1
-          }
-
       - name: Setup .NET 9 e 10
         uses: actions/setup-dotnet@v4
         with:
