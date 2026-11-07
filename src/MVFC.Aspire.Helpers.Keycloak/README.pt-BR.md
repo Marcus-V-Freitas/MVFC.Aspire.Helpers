@@ -2,7 +2,7 @@
 
 > 🇺🇸 [Read in English](README.md)
 
-[![CI](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml/badge.svg)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml)
+[![CI](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers/branch/main/graph/badge.svg)](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](../../LICENSE)
 ![Platform](https://img.shields.io/badge/.NET-9%20%7C%2010-blue)
@@ -85,12 +85,12 @@ builder.Build().Run();
 
 Por padrão, ao usar `.WithReference(keycloak)`, o Aspire injeta as seguintes chaves no `IConfiguration`:
 
-| Chave de Configuração    | Descrição                                              | Exemplo                 |
-|--------------------------|--------------------------------------------------------|-------------------------|
-| `Keycloak:BaseUrl`       | URL completa de acesso ao container Keycloak.          | `http://localhost:9000` |
-| `Keycloak:Realm`         | Nome do Realm propagado do AppHost.                    | `meu-app-realm`         |
-| `Keycloak:ClientId`      | ID do cliente OAuth/OpenID.                            | `minha-api`             |
-| `Keycloak:ClientSecret`  | (Opcional) Secret vinculada ao ClientId.               | `api-secret-1234`       |
+| Chave de Configuração   | Descrição                                     | Exemplo                 |
+| ----------------------- | --------------------------------------------- | ----------------------- |
+| `Keycloak:BaseUrl`      | URL completa de acesso ao container Keycloak. | `http://localhost:9000` |
+| `Keycloak:Realm`        | Nome do Realm propagado do AppHost.           | `meu-app-realm`         |
+| `Keycloak:ClientId`     | ID do cliente OAuth/OpenID.                   | `minha-api`             |
+| `Keycloak:ClientSecret` | (Opcional) Secret vinculada ao ClientId.      | `api-secret-1234`       |
 
 Exemplo no `Program.cs` da sua API:
 
@@ -137,13 +137,13 @@ sequenceDiagram
 
 ## Opções do `AddKeycloak()`
 
-| Parâmetro   | Tipo     | Descrição                                                                            | Padrão       |
-|------------|----------|--------------------------------------------------------------------------------------|--------------|
-| `name`     | string   | Nome do recurso no framework do Aspire.                                             | `"keycloak"` |
-| `userName` | string   | Usuário administrador Master do Keycloak.                                           | `admin`      |
-| `password` | string   | Senha administrativa Master do Keycloak.                                            | `admin`      |
-| `port`     | int?     | Porta fixa exposta para localhost (ex: 9000). Se nulo, o Aspire resolve.            | `null`       |
-| `dataBound`| bool     | Se verdadeiro, aplica `.WithDataBindMount()` criando volume de estado.              | `false`      |
+| Parâmetro   | Tipo   | Descrição                                                                | Padrão       |
+| ----------- | ------ | ------------------------------------------------------------------------ | ------------ |
+| `name`      | string | Nome do recurso no framework do Aspire.                                  | `"keycloak"` |
+| `userName`  | string | Usuário administrador Master do Keycloak.                                | `admin`      |
+| `password`  | string | Senha administrativa Master do Keycloak.                                 | `admin`      |
+| `port`      | int?   | Porta fixa exposta para localhost (ex: 9000). Se nulo, o Aspire resolve. | `null`       |
+| `dataBound` | bool   | Se verdadeiro, aplica `.WithDataBindMount()` criando volume de estado.   | `false`      |
 
 ## Extensões Adicionais
 

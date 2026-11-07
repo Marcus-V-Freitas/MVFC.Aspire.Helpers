@@ -2,7 +2,7 @@
 
 > 🇺🇸 [Read in English](README.md)
 
-[![CI](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml/badge.svg)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml)
+[![CI](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers/branch/main/graph/badge.svg)](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 ![Platform](https://img.shields.io/badge/.NET-9%20%7C%2010-blue)
@@ -51,21 +51,21 @@ Depois que você aprende como um helper funciona, os demais parecem imediatament
 
 ## Visão Geral
 
-| Pacote | Serviço | Downloads |
-|---|---|---|
-| [MVFC.Aspire.Helpers.CloudStorage](src/MVFC.Aspire.Helpers.CloudStorage/README.md) | Google Cloud Storage (emulador GCS) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.CloudStorage) |
-| [MVFC.Aspire.Helpers.Mongo](src/MVFC.Aspire.Helpers.Mongo/README.md) | MongoDB com Replica Set | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Mongo) |
-| [MVFC.Aspire.Helpers.GcpFirestore](src/MVFC.Aspire.Helpers.GcpFirestore/README.pt-BR.md) | Google Cloud Firestore (emulador) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpFirestore) |
-| [MVFC.Aspire.Helpers.GcpBigQuery](src/MVFC.Aspire.Helpers.GcpBigQuery/README.pt-BR.md) | Google Cloud BigQuery (emulador) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpBigQuery) |
-| [MVFC.Aspire.Helpers.GcpPubSub](src/MVFC.Aspire.Helpers.GcpPubSub/README.md) | Google Pub/Sub (emulador + UI) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpPubSub) |
-| [MVFC.Aspire.Helpers.GcpSpanner](src/MVFC.Aspire.Helpers.GcpSpanner/README.md) | Google Cloud Spanner (emulador) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpSpanner) |
-| [MVFC.Aspire.Helpers.Gotenberg](src/MVFC.Aspire.Helpers.Gotenberg/README.md) | Gotenberg (conversão de PDF) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Gotenberg) |
-| [MVFC.Aspire.Helpers.WireMock](src/MVFC.Aspire.Helpers.WireMock/README.md) | WireMock.Net (mock de APIs) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.WireMock) |
-| [MVFC.Aspire.Helpers.Mailpit](src/MVFC.Aspire.Helpers.Mailpit/README.md) | Mailpit (emulador SMTP) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Mailpit) |
-| [MVFC.Aspire.Helpers.RabbitMQ](src/MVFC.Aspire.Helpers.RabbitMQ/README.md) | RabbitMQ | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.RabbitMQ) |
-| [MVFC.Aspire.Helpers.Redis](src/MVFC.Aspire.Helpers.Redis/README.md) | Redis + Redis Commander | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Redis) |
-| [MVFC.Aspire.Helpers.Keycloak](src/MVFC.Aspire.Helpers.Keycloak/README.md) | Keycloak | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Keycloak) |
-| [MVFC.Aspire.Helpers.ApigeeEmulator](src/MVFC.Aspire.Helpers.ApigeeEmulator/README.md) | Apigee Emulator (API proxy) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.ApigeeEmulator) |
+| Pacote                                                                                   | Serviço                             | Downloads                                                                        |
+| ---------------------------------------------------------------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------- |
+| [MVFC.Aspire.Helpers.CloudStorage](src/MVFC.Aspire.Helpers.CloudStorage/README.md)       | Google Cloud Storage (emulador GCS) | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.CloudStorage)   |
+| [MVFC.Aspire.Helpers.Mongo](src/MVFC.Aspire.Helpers.Mongo/README.md)                     | MongoDB com Replica Set             | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Mongo)          |
+| [MVFC.Aspire.Helpers.GcpFirestore](src/MVFC.Aspire.Helpers.GcpFirestore/README.pt-BR.md) | Google Cloud Firestore (emulador)   | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpFirestore)   |
+| [MVFC.Aspire.Helpers.GcpBigQuery](src/MVFC.Aspire.Helpers.GcpBigQuery/README.pt-BR.md)   | Google Cloud BigQuery (emulador)    | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpBigQuery)    |
+| [MVFC.Aspire.Helpers.GcpPubSub](src/MVFC.Aspire.Helpers.GcpPubSub/README.md)             | Google Pub/Sub (emulador + UI)      | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpPubSub)      |
+| [MVFC.Aspire.Helpers.GcpSpanner](src/MVFC.Aspire.Helpers.GcpSpanner/README.md)           | Google Cloud Spanner (emulador)     | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpSpanner)     |
+| [MVFC.Aspire.Helpers.Gotenberg](src/MVFC.Aspire.Helpers.Gotenberg/README.md)             | Gotenberg (conversão de PDF)        | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Gotenberg)      |
+| [MVFC.Aspire.Helpers.WireMock](src/MVFC.Aspire.Helpers.WireMock/README.md)               | WireMock.Net (mock de APIs)         | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.WireMock)       |
+| [MVFC.Aspire.Helpers.Mailpit](src/MVFC.Aspire.Helpers.Mailpit/README.md)                 | Mailpit (emulador SMTP)             | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Mailpit)        |
+| [MVFC.Aspire.Helpers.RabbitMQ](src/MVFC.Aspire.Helpers.RabbitMQ/README.md)               | RabbitMQ                            | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.RabbitMQ)       |
+| [MVFC.Aspire.Helpers.Redis](src/MVFC.Aspire.Helpers.Redis/README.md)                     | Redis + Redis Commander             | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Redis)          |
+| [MVFC.Aspire.Helpers.Keycloak](src/MVFC.Aspire.Helpers.Keycloak/README.md)               | Keycloak                            | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.Keycloak)       |
+| [MVFC.Aspire.Helpers.ApigeeEmulator](src/MVFC.Aspire.Helpers.ApigeeEmulator/README.md)   | Apigee Emulator (API proxy)         | ![Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.ApigeeEmulator) |
 
 ---
 

@@ -2,7 +2,7 @@
 
 > 🇺🇸 [Read in English](README.md)
 
-[![CI](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml/badge.svg)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml)
+[![CI](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers/branch/main/graph/badge.svg)](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](../../LICENSE)
 ![Platform](https://img.shields.io/badge/.NET-9%20%7C%2010-blue)
@@ -115,36 +115,36 @@ sequenceDiagram
 
 ## Métodos Fluentes
 
-| Método                                | Descrição                                   |
-|--------------------------------------|---------------------------------------------|
-| `WithDockerImage(image, tag)`        | Substitui a imagem Docker utilizada.        |
-| `WithCredentials(username, password)`| Define usuário e senha.                     |
-| `WithExchanges(exchanges)`           | Configura exchanges a serem criadas.        |
-| `WithQueues(queues)`                 | Configura queues a serem criadas.           |
-| `WithDataVolume(volumeName)`         | Habilita persistência com volume Docker.    |
+| Método                                | Descrição                                |
+| ------------------------------------- | ---------------------------------------- |
+| `WithDockerImage(image, tag)`         | Substitui a imagem Docker utilizada.     |
+| `WithCredentials(username, password)` | Define usuário e senha.                  |
+| `WithExchanges(exchanges)`            | Configura exchanges a serem criadas.     |
+| `WithQueues(queues)`                  | Configura queues a serem criadas.        |
+| `WithDataVolume(volumeName)`          | Habilita persistência com volume Docker. |
 
 ## Configuração de Exchanges e Queues
 
 ### `ExchangeConfig`
 
-| Parâmetro   | Tipo   | Padrão     | Descrição                                          |
-|------------|--------|------------|----------------------------------------------------|
-| `Name`     | string | —          | Nome do exchange.                                  |
-| `Type`     | string | `"direct"` | Tipo: `direct`, `topic`, `fanout`, `headers`.     |
-| `Durable`  | bool   | `true`     | Durável entre reinicializações.                    |
-| `AutoDelete` | bool | `false`    | Auto deletar quando não utilizado.                 |
+| Parâmetro    | Tipo   | Padrão     | Descrição                                     |
+| ------------ | ------ | ---------- | --------------------------------------------- |
+| `Name`       | string | —          | Nome do exchange.                             |
+| `Type`       | string | `"direct"` | Tipo: `direct`, `topic`, `fanout`, `headers`. |
+| `Durable`    | bool   | `true`     | Durável entre reinicializações.               |
+| `AutoDelete` | bool   | `false`    | Auto deletar quando não utilizado.            |
 
 ### `QueueConfig`
 
-| Parâmetro            | Tipo    | Padrão | Descrição                                        |
-|---------------------|---------|--------|--------------------------------------------------|
-| `Name`              | string  | —      | Nome da queue.                                   |
-| `ExchangeName`      | string? | `null` | Exchange ao qual a queue será vinculada.          |
-| `RoutingKey`        | string? | `null` | Routing key do binding (padrão: nome da queue).  |
-| `Durable`           | bool    | `true` | Durável entre reinicializações.                  |
-| `AutoDelete`        | bool    | `false`| Auto deletar quando não utilizada.               |
-| `DeadLetterExchange`| string? | `null` | Exchange de dead letter.                         |
-| `MessageTTL`        | int?    | `null` | TTL de mensagens em milissegundos.               |
+| Parâmetro            | Tipo    | Padrão  | Descrição                                       |
+| -------------------- | ------- | ------- | ----------------------------------------------- |
+| `Name`               | string  | —       | Nome da queue.                                  |
+| `ExchangeName`       | string? | `null`  | Exchange ao qual a queue será vinculada.        |
+| `RoutingKey`         | string? | `null`  | Routing key do binding (padrão: nome da queue). |
+| `Durable`            | bool    | `true`  | Durável entre reinicializações.                 |
+| `AutoDelete`         | bool    | `false` | Auto deletar quando não utilizada.              |
+| `DeadLetterExchange` | string? | `null`  | Exchange de dead letter.                        |
+| `MessageTTL`         | int?    | `null`  | TTL de mensagens em milissegundos.              |
 
 ## Parâmetros opcionais
 

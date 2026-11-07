@@ -2,7 +2,7 @@
 
 > 🇺🇸 [Read in English](README.md)
 
-[![CI](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml/badge.svg)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml)
+[![CI](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers/branch/main/graph/badge.svg)](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](../../LICENSE)
 ![Platform](https://img.shields.io/badge/.NET-9%20%7C%2010-blue)
@@ -102,10 +102,10 @@ await builder.Build().RunAsync();
 
 ## Portas
 
-| Porta | Padrão | Descrição |
-|---|---|---|
+| Porta    | Padrão                      | Descrição                     |
+| -------- | --------------------------- | ----------------------------- |
 | Controle | `7071` → `8080` (container) | API de gerenciamento e deploy |
-| Tráfego | `8998` → `8998` (container) | Tráfego do gateway de API |
+| Tráfego  | `8998` → `8998` (container) | Tráfego do gateway de API     |
 
 ## Diagrama de provisionamento
 
@@ -226,20 +226,20 @@ flowchart TD
 
 ## Policies implementadas diretamente nos flows
 
-| Rota / Flow | Policies usadas | Objetivo prático no projeto atual |
-|---|---|---|
-| `/sharedflow-check` | `FC-CallLogging.xml` | Valida a integração com a SharedFlow `common-logging`, injetando headers e metadados de execução. |
-| `/spike-arrest` | `SA-SpikeArrest.xml` | Bloqueia interações acima do volume imediato permitido. |
-| `OPTIONS` (Todos) | `AM-CorsPreflightResponse.xml` | Trata preflight e evita encaminhamento ao backend. |
-| `DELETE, PUT, PATCH` | `RF-MethodNotAllowed.xml` | Gera fault para métodos não permitidos neste proxy de demonstração. |
-| `/notfound` | `RF-NotFound.xml` | Produz um 404 artificial rapidamente via RaiseFault. |
-| `/transform` | `JS-TransformResponse.xml` | Envolve a resposta do backend com transformação JavaScript no pipeline de saída. |
-| `/quota-test` | `QU-RateLimit.xml` | Restringe transações sob uma janela de quota definida. |
-| `/health-check` | `SC-HealthCheck.xml`, `EV-HealthStatus.xml`, `AM-SetHealthHeader.xml` | Chama uma dependência, extrai o estado e enriquece os headers com o resultado. |
-| `/cached` | `LC-ResponseCache.xml`, `AM-CacheHit.xml`, `PC-ResponseCache.xml`, `AM-CacheMissHeader.xml` | Consulta e popula cache de resposta conforme hit ou miss. |
-| `/admin` | `AC-AllowLocalOnly.xml` | Restringe acesso com base em faixas de IP permitidas. |
-| `/secure` | `BA-DecodeBasicAuth.xml`, `JS-ValidateCredentials.xml`, `RF-Unauthorized.xml` | Valida credenciais Basic Auth e gera Unauthorized quando inválidas. |
-| `/xml` | `X2J-ConvertResponse.xml` | Converte respostas XML em JSON antes de retornar ao consumidor. |
+| Rota / Flow          | Policies usadas                                                                             | Objetivo prático no projeto atual                                                                 |
+| -------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `/sharedflow-check`  | `FC-CallLogging.xml`                                                                        | Valida a integração com a SharedFlow `common-logging`, injetando headers e metadados de execução. |
+| `/spike-arrest`      | `SA-SpikeArrest.xml`                                                                        | Bloqueia interações acima do volume imediato permitido.                                           |
+| `OPTIONS` (Todos)    | `AM-CorsPreflightResponse.xml`                                                              | Trata preflight e evita encaminhamento ao backend.                                                |
+| `DELETE, PUT, PATCH` | `RF-MethodNotAllowed.xml`                                                                   | Gera fault para métodos não permitidos neste proxy de demonstração.                               |
+| `/notfound`          | `RF-NotFound.xml`                                                                           | Produz um 404 artificial rapidamente via RaiseFault.                                              |
+| `/transform`         | `JS-TransformResponse.xml`                                                                  | Envolve a resposta do backend com transformação JavaScript no pipeline de saída.                  |
+| `/quota-test`        | `QU-RateLimit.xml`                                                                          | Restringe transações sob uma janela de quota definida.                                            |
+| `/health-check`      | `SC-HealthCheck.xml`, `EV-HealthStatus.xml`, `AM-SetHealthHeader.xml`                       | Chama uma dependência, extrai o estado e enriquece os headers com o resultado.                    |
+| `/cached`            | `LC-ResponseCache.xml`, `AM-CacheHit.xml`, `PC-ResponseCache.xml`, `AM-CacheMissHeader.xml` | Consulta e popula cache de resposta conforme hit ou miss.                                         |
+| `/admin`             | `AC-AllowLocalOnly.xml`                                                                     | Restringe acesso com base em faixas de IP permitidas.                                             |
+| `/secure`            | `BA-DecodeBasicAuth.xml`, `JS-ValidateCredentials.xml`, `RF-Unauthorized.xml`               | Valida credenciais Basic Auth e gera Unauthorized quando inválidas.                               |
+| `/xml`               | `X2J-ConvertResponse.xml`                                                                   | Converte respostas XML em JSON antes de retornar ao consumidor.                                   |
 
 ### Policies de PostFlow
 

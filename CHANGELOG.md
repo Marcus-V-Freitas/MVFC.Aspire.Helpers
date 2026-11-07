@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [10.1.4] - 2026-11-07
+
+### Changed
+
+- Updated NuGet package dependencies (`Scalar.AspNetCore` to `2.19.0`, `StackExchange.Redis` to `3.4.31`, and `WireMock.Net.minimal` to `2.30.0`).
+- Updated CI workflow to run tests on push to `main` and refined release publishing conditions.
+- Standardized documentation tables and updated CI badge branch targeting across READMEs.
+
 ## [10.1.3] - 2026-11-01
 
 ### Added
@@ -497,6 +505,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[10.1.4]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.3...v10.1.4
 [10.1.3]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.2...v10.1.3
 [10.1.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.1...v10.1.2
 [10.1.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.0...v10.1.1

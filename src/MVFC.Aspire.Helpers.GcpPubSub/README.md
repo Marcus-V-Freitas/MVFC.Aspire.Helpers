@@ -2,7 +2,7 @@
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
-[![CI](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml/badge.svg)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml)
+[![CI](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers/branch/main/graph/badge.svg)](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](../../LICENSE)
 ![Platform](https://img.shields.io/badge/.NET-9%20%7C%2010-blue)
@@ -116,22 +116,22 @@ await builder.Build().RunAsync();
 
 ### `PubSubConfig`
 
-| Parameter        | Type          | Default | Description                     |
-|-----------------|---------------|---------|---------------------------------|
-| `projectId`     | string        | —       | GCP project ID.                 |
-| `messageConfig` | `MessageConfig` | —     | Message configuration.          |
-| `secondsDelay`  | int           | `5`     | Startup delay in seconds.       |
+| Parameter       | Type            | Default | Description               |
+| --------------- | --------------- | ------- | ------------------------- |
+| `projectId`     | string          | —       | GCP project ID.           |
+| `messageConfig` | `MessageConfig` | —       | Message configuration.    |
+| `secondsDelay`  | int             | `5`     | Startup delay in seconds. |
 
 ### `MessageConfig`
 
-| Parameter            | Type    | Default | Description                              |
-|---------------------|---------|---------|------------------------------------------|
-| `TopicName`         | string  | —       | Topic name.                              |
-| `SubscriptionName`  | string? | `null`  | Subscription name.                       |
-| `PushEndpoint`      | string? | `null`  | HTTP endpoint for push delivery.         |
-| `DeadLetterTopic`   | string? | `null`  | Dead letter topic name (DLQ).            |
-| `MaxDeliveryAttempts` | int?  | `null`  | Max attempts before sending to DLQ.      |
-| `AckDeadlineSeconds` | int?   | `null`  | Ack deadline (seconds).                  |
+| Parameter             | Type    | Default | Description                         |
+| --------------------- | ------- | ------- | ----------------------------------- |
+| `TopicName`           | string  | —       | Topic name.                         |
+| `SubscriptionName`    | string? | `null`  | Subscription name.                  |
+| `PushEndpoint`        | string? | `null`  | HTTP endpoint for push delivery.    |
+| `DeadLetterTopic`     | string? | `null`  | Dead letter topic name (DLQ).       |
+| `MaxDeliveryAttempts` | int?    | `null`  | Max attempts before sending to DLQ. |
+| `AckDeadlineSeconds`  | int?    | `null`  | Ack deadline (seconds).             |
 
 **Note:** If `DeadLetterTopic` is provided, the subscription `{DeadLetterTopic}-subscription` will be created automatically.
 

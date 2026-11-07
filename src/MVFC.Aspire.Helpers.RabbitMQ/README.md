@@ -2,7 +2,7 @@
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
-[![CI](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml/badge.svg)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml)
+[![CI](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers/branch/main/graph/badge.svg)](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](../../LICENSE)
 ![Platform](https://img.shields.io/badge/.NET-9%20%7C%2010-blue)
@@ -115,36 +115,36 @@ sequenceDiagram
 
 ## Fluent methods
 
-| Method                        | Description                               |
-|------------------------------|-------------------------------------------|
-| `WithDockerImage(image, tag)`| Overrides the Docker image used.          |
-| `WithCredentials(username, password)` | Defines username and password.   |
-| `WithExchanges(exchanges)`   | Configures exchanges to be created.       |
-| `WithQueues(queues)`         | Configures queues to be created.          |
-| `WithDataVolume(volumeName)` | Enables persistence with Docker volume.   |
+| Method                                | Description                             |
+| ------------------------------------- | --------------------------------------- |
+| `WithDockerImage(image, tag)`         | Overrides the Docker image used.        |
+| `WithCredentials(username, password)` | Defines username and password.          |
+| `WithExchanges(exchanges)`            | Configures exchanges to be created.     |
+| `WithQueues(queues)`                  | Configures queues to be created.        |
+| `WithDataVolume(volumeName)`          | Enables persistence with Docker volume. |
 
 ## Exchanges and queues configuration
 
 ### `ExchangeConfig`
 
-| Parameter   | Type   | Default  | Description                                              |
-|------------|--------|----------|----------------------------------------------------------|
-| `Name`     | string | —        | Exchange name.                                           |
-| `Type`     | string | `"direct"` | Type: `direct`, `topic`, `fanout`, `headers`.         |
-| `Durable`  | bool   | `true`   | Durable across restarts.                                |
-| `AutoDelete` | bool | `false`  | Auto delete when unused.                                |
+| Parameter    | Type   | Default    | Description                                   |
+| ------------ | ------ | ---------- | --------------------------------------------- |
+| `Name`       | string | —          | Exchange name.                                |
+| `Type`       | string | `"direct"` | Type: `direct`, `topic`, `fanout`, `headers`. |
+| `Durable`    | bool   | `true`     | Durable across restarts.                      |
+| `AutoDelete` | bool   | `false`    | Auto delete when unused.                      |
 
 ### `QueueConfig`
 
-| Parameter          | Type    | Default | Description                                  |
-|-------------------|---------|---------|----------------------------------------------|
-| `Name`            | string  | —       | Queue name.                                  |
-| `ExchangeName`    | string? | `null`  | Exchange to which the queue will be bound.   |
-| `RoutingKey`      | string? | `null`  | Binding routing key (default: queue name).   |
-| `Durable`         | bool    | `true`  | Durable across restarts.                     |
-| `AutoDelete`      | bool    | `false` | Auto delete when unused.                     |
-| `DeadLetterExchange` | string? | `null`| Dead letter exchange.                        |
-| `MessageTTL`      | int?    | `null`  | Message TTL in milliseconds.                 |
+| Parameter            | Type    | Default | Description                                |
+| -------------------- | ------- | ------- | ------------------------------------------ |
+| `Name`               | string  | —       | Queue name.                                |
+| `ExchangeName`       | string? | `null`  | Exchange to which the queue will be bound. |
+| `RoutingKey`         | string? | `null`  | Binding routing key (default: queue name). |
+| `Durable`            | bool    | `true`  | Durable across restarts.                   |
+| `AutoDelete`         | bool    | `false` | Auto delete when unused.                   |
+| `DeadLetterExchange` | string? | `null`  | Dead letter exchange.                      |
+| `MessageTTL`         | int?    | `null`  | Message TTL in milliseconds.               |
 
 ## Other optional parameters
 

@@ -2,7 +2,7 @@
 
 > 🇺🇸 [Read in English](README.md)
 
-[![CI](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml/badge.svg)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml)
+[![CI](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers/branch/main/graph/badge.svg)](https://codecov.io/gh/Marcus-V-Freitas/MVFC.Aspire.Helpers)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](../../LICENSE)
 ![Platform](https://img.shields.io/badge/.NET-9%20%7C%2010-blue)
@@ -99,10 +99,10 @@ await builder.Build().RunAsync();
 
 ### `BigQueryConfig`
 
-| Parâmetro       | Tipo                    | Padrão  | Descrição                                     |
-|-----------------|-------------------------|---------|-----------------------------------------------|
-| `ProjectId`     | string                  | —       | ID do projeto no GCP.                         |
-| `Dataset`       | string?                 | `null`  | Nome opcional do dataset padrão.              |
+| Parâmetro   | Tipo    | Padrão | Descrição                        |
+| ----------- | ------- | ------ | -------------------------------- |
+| `ProjectId` | string  | —      | ID do projeto no GCP.            |
+| `Dataset`   | string? | `null` | Nome opcional do dataset padrão. |
 
 ## Portas
 
