@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [10.1.7] - 2026-11-07
+
+### Changed
+
+- Restricted CI test and coverage execution to internal pull requests.
+- Re-enabled release tag validation in the publish pipeline using explicit `origin/main` refspec fetching.
+
 ## [10.1.6] - 2026-11-07
 
 ### Changed
@@ -517,6 +524,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[10.1.7]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.6...v10.1.7
 [10.1.6]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.5...v10.1.6
 [10.1.5]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.4...v10.1.5
 [10.1.4]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.3...v10.1.4
