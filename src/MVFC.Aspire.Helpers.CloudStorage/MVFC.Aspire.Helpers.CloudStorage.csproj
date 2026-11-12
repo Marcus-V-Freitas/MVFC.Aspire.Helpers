@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+	<TargetFrameworks>net9.0;net10.0;net11.0</TargetFrameworks>
 	<IsAspireSharedProject>true</IsAspireSharedProject>
 	<Authors>Marcus Vinicius de Freitas Costa</Authors>
     <RepositoryType>git</RepositoryType>

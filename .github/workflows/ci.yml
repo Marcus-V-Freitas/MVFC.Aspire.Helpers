@@ -38,12 +38,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup .NET 9 e 10
+      - name: Setup .NET 9 / 10 / 11
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
             9.0.x
             10.0.x
+            11.0.x
 
       - name: Restaurar ferramentas .NET com versões fixadas
         run: dotnet tool restore
@@ -104,12 +105,13 @@ jobs:
             exit 1
           fi
 
-      - name: Setup .NET 9 e 10
+      - name: Setup .NET 9 / 10 / 11
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
             9.0.x
             10.0.x
+            11.0.x
 
       - name: Restaurar ferramentas .NET com versões fixadas
         run: dotnet tool restore

@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [11.0.0] - 2026-11-12
+
+### Added
+
+- Added support for `.NET 11` (`net11.0`) across all Aspire helper packages, playground applications, and test suites.
+- Added framework-conditional package references for `net11.0` in `Directory.Packages.props`, including `Microsoft.OpenApi 3.11.0`.
+- Added .NET 11 setup in CI/CD build and publish workflows.
+
+### Changed
+
+- Updated NuGet package dependencies (`Aspire.Hosting` to `13.6.5`, `MongoDB.Driver` to `3.14.0`, `Scalar.AspNetCore` to `2.21.0`, `StackExchange.Redis` to `3.4.35`, `WireMock.Net.minimal` to `2.31.0`, and test packages).
+- Configured centralized version properties (`AspireVersion`, `Net11Version`, `Net10Version`, `Net9Version`) in `Directory.Packages.props`.
+- Updated `global.json` SDK configuration to allow pre-releases and roll forward to `latestMajor`.
+- Updated platform documentation badges across all README files to reflect `.NET 9 | 10 | 11` support.
+
 ## [10.1.7] - 2026-11-07
 
 ### Changed
@@ -524,6 +539,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[11.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.7...v11.0.0
 [10.1.7]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.6...v10.1.7
 [10.1.6]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.5...v10.1.6
 [10.1.5]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.4...v10.1.5
