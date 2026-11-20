@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [11.0.1] - 2026-11-20
+
+### Documentation
+
+- Updated target framework requirements across root and package READMEs to .NET 9, 10 or 11 (or ou in Portuguese).
+- Updated minimum Aspire.Hosting requirement to >= 13.6.5 across all READMEs.
+- Updated Google.Cloud.PubSub.V1 minimum version to >= 3.39.0 in PubSub documentation.
+- Documented MVFC.Aspire.Helpers.Playground.AppHost and unit/integration test structure breakdown in README.md and README.pt-BR.md.
+- Added **Architecture Overview** diagram in Mermaid illustrating the interaction between Playground, helper packages, and internal mechanics.
+- Added **Internal Mechanics** architectural reference detailing OnResourceReady lifecycle hooks, TCP/gRPC health checks, temporary seed/bundle generation, environment variable injection via WithReference, and duplicate prevention annotations.
+- Added **Dependencies** section mapping centrally managed package versions from Directory.Packages.props.
+- Added **Testing** section describing test separation (unit vs. AppHost integration, xUnit v3, Microsoft.Testing.Platform, Coverlet).
+- Added **Publishing** section describing CI automated publishing via MinVer and * tags.
+- Clarified development environment requirements differentiating global.json SDK pinning (10.0.100) from library runtime support.
+
 ## [11.0.0] - 2026-11-12
 
 ### Added
@@ -539,6 +554,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[11.0.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v11.0.0...v11.0.1
 [11.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.7...v11.0.0
 [10.1.7]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.6...v10.1.7
 [10.1.6]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.5...v10.1.6

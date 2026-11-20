@@ -139,8 +139,8 @@ O `WithReference` injeta automaticamente:
 
 ## Requisitos
 
-- .NET 9+
-- Aspire.Hosting >= 13.5.3
+- .NET 9, 10 or 11
+- Aspire.Hosting >= 13.6.5
 - Docker em execução
 
 ## Licença

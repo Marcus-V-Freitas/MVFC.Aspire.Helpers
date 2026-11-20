@@ -181,8 +181,8 @@ O `MongoClassDump<T>` é uma classe utilizada para facilitar a inserção autom�
 
 ## Requisitos
 
-- .NET 9+
-- Aspire.Hosting >= 13.5.3
+- .NET 9, 10 or 11
+- Aspire.Hosting >= 13.6.5
 - Docker em execução
 - Bogus >= 35.6.0
 - MongoDB.Driver >= 3.11.1

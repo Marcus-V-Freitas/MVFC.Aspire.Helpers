@@ -255,8 +255,8 @@ Independentemente de a resposta vir de sucesso no backend, resposta interceptada
 
 ## Requisitos
 
-- .NET 9+
-- Aspire.Hosting >= 13.5.3
+- .NET 9, 10 or 11
+- Aspire.Hosting >= 13.6.5
 - Docker em execução localmente
 
 ## Licença

@@ -172,17 +172,117 @@ src/
   MVFC.Aspire.Helpers.ApigeeEmulator/
 tests/
   MVFC.Aspire.Helpers.Tests/
+    Unit/          ← testes unitários por helper (xUnit v3, Microsoft.Testing.Platform)
+    Integration/   ← testes de integração usando o AppHost (Aspire.Hosting.Testing)
 playground/
-  MVFC.Aspire.Helpers.Playground.Api/
+  MVFC.Aspire.Helpers.Playground.AppHost/   ← orquestra todos os 13 helpers
+  MVFC.Aspire.Helpers.Playground.Api/       ← API de demonstração usada pelo AppHost
 ```
+
+---
+
+## Visão Arquitetural
+
+```mermaid
+flowchart TD
+    subgraph Playground
+        AppHost["Playground.AppHost\n(orquestra os 13 helpers)"]
+        Api["Playground.Api\n(API de demonstração)"]
+    end
+
+    subgraph Helpers["Bibliotecas de Helpers (src/)"]
+        direction LR
+        CS[CloudStorage]
+        MG[Mongo]
+        FS[Firestore]
+        BQ[BigQuery]
+        PS[PubSub]
+        SP[Spanner]
+        GB[Gotenberg]
+        WM[WireMock]
+        MP[Mailpit]
+        RB[RabbitMQ]
+        RD[Redis]
+        KC[Keycloak]
+        AP[ApigeeEmulator]
+    end
+
+    subgraph Internals["Mecanismos Internos"]
+        HC[Health checks\nTCP / gRPC]
+        LH[Lifecycle hooks\nOnResourceReady]
+        ENV[Injeção de env-vars\nWithReference]
+        SEED[Arquivos de seed / bundle\nYAML, dumps, realms]
+        DEDUP[Anotações anti-duplicação]
+    end
+
+    AppHost --> Helpers
+    AppHost --> Api
+    Helpers --> Internals
+```
+
+### Mecanismos internos (nota arquitetural)
+
+Vários helpers vão além de um simples `AddContainer`:
+
+| Mecanismo                                                                                                      | Helpers que utilizam                 |
+| -------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| **Lifecycle hook `OnResourceReady`** — provisiona tópicos, schemas ou índices após o container estar saudável  | PubSub, Firestore, Spanner, BigQuery |
+| **Health checks TCP / gRPC personalizados**                                                                    | Firestore, Spanner                   |
+| **Geração de arquivos de seed / bundle** — cria arquivos YAML ou arquivos de dump temporários na inicialização | BigQuery, Mongo, Keycloak            |
+| **Injeção automática de variáveis de ambiente** — `WithReference(xxx)` define connection strings e project IDs | Todos os helpers                     |
+| **Anotações de prevenção de duplicação** — evitam registrar o mesmo recurso duas vezes                         | Mongo, Spanner                       |
+
+---
+
+## Dependências
+
+Todas as versões de pacotes são gerenciadas centralmente em [`Directory.Packages.props`](Directory.Packages.props) (`ManagePackageVersionsCentrally = true`). Principais dependências de runtime:
+
+| Dependência                                     | Versão   |
+| ----------------------------------------------- | -------- |
+| `Aspire.Hosting`                                | `13.6.5` |
+| `Google.Cloud.PubSub.V1`                        | `3.39.0` |
+| `Google.Cloud.Storage.V1`                       | `5.0.0`  |
+| `Google.Cloud.Firestore`                        | `4.6.0`  |
+| `Google.Cloud.BigQuery.V2`                      | `3.12.0` |
+| `Google.Cloud.Spanner.*`                        | `5.12.0` |
+| `MongoDB.Driver`                                | `3.14.0` |
+| `RabbitMQ.Client`                               | `7.2.2`  |
+| `StackExchange.Redis`                           | `3.4.35` |
+| `WireMock.Net.minimal`                          | `2.31.0` |
+| `Bogus` (seed data)                             | `35.6.5` |
+| `Microsoft.Extensions.Diagnostics.HealthChecks` | por TFM  |
+| `MinVer` (SemVer por git tags)                  | `8.0.0`  |
+
+---
+
+## Testes
+
+```
+tests/MVFC.Aspire.Helpers.Tests/
+  Unit/        ← testes isolados por helper, sem containers
+  Integration/ ← boot completo do AppHost via Aspire.Hosting.Testing
+```
+
+- **Framework:** xUnit v3 + `Microsoft.Testing.Platform`
+- **Cobertura:** Coverlet (`coverlet.collector`)
+- **Testes de integração** sobem o `Playground.AppHost` e exercem containers reais.
+
+---
+
+## Publicação
+
+Os pacotes são publicados automaticamente no CI quando uma tag `v*` é criada. As versões são derivadas das tags git pelo **MinVer** e cada pacote tem como alvo `net9.0;net10.0;net11.0`.
 
 ---
 
 ## Requisitos
 
-- .NET 9 ou .NET 10
-- Aspire.Hosting >= 13.5.3
+- .NET 9, 10 ou 11
+- Aspire.Hosting >= 13.6.5
 - Docker em execução
+
+> **Ambiente de desenvolvimento:** o SDK fixado em `global.json` é o `10.0.100` (com `latestMajor` roll-forward e pré-releases habilitados). Consumidores da biblioteca precisam apenas de um runtime que suporte `net9.0`, `net10.0` ou `net11.0`.
 
 ---
 

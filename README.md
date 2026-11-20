@@ -170,17 +170,117 @@ src/
   MVFC.Aspire.Helpers.ApigeeEmulator/
 tests/
   MVFC.Aspire.Helpers.Tests/
+    Unit/          <- per-helper unit tests (xUnit v3, Microsoft.Testing.Platform)
+    Integration/   <- integration tests wired to the AppHost (Aspire.Hosting.Testing)
 playground/
-  MVFC.Aspire.Helpers.Playground.Api/
+  MVFC.Aspire.Helpers.Playground.AppHost/   <- orchestrates all 13 helpers
+  MVFC.Aspire.Helpers.Playground.Api/       <- demo API consumed by the AppHost
 ```
+
+---
+
+## Architecture Overview
+
+```mermaid
+flowchart TD
+    subgraph Playground
+        AppHost["Playground.AppHost (orchestrates all 13 helpers)"]
+        Api["Playground.Api (demo API)"]
+    end
+
+    subgraph Helpers["Helper Libraries (src/)"]
+        direction LR
+        CS[CloudStorage]
+        MG[Mongo]
+        FS[Firestore]
+        BQ[BigQuery]
+        PS[PubSub]
+        SP[Spanner]
+        GB[Gotenberg]
+        WM[WireMock]
+        MP[Mailpit]
+        RB[RabbitMQ]
+        RD[Redis]
+        KC[Keycloak]
+        AP[ApigeeEmulator]
+    end
+
+    subgraph Internals["Internal Mechanisms"]
+        HC[Health checks TCP / gRPC]
+        LH[Lifecycle hooks OnResourceReady]
+        ENV[Env-var injection WithReference]
+        SEED[Seed / bundle files YAML / dumps / realms]
+        DEDUP[Duplicate-prevention annotations]
+    end
+
+    AppHost --> Helpers
+    AppHost --> Api
+    Helpers --> Internals
+```
+
+### Internal mechanics (architectural note)
+
+Several helpers go beyond a simple `AddContainer` call:
+
+| Mechanism                                                                                                   | Helpers that use it                  |
+| ----------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| **`OnResourceReady` lifecycle hook** — provisions topics, schemas or indexes after the container is healthy | PubSub, Firestore, Spanner, BigQuery |
+| **Custom TCP / gRPC health checks**                                                                         | Firestore, Spanner                   |
+| **Seed / bundle file generation** — writes temporary YAML or archive files at startup                       | BigQuery, Mongo, Keycloak            |
+| **Automatic env-var injection** — `WithReference(xxx)` sets connection strings and project IDs              | All helpers                          |
+| **Duplicate-prevention annotations** — prevent registering the same resource twice                          | Mongo, Spanner                       |
+
+---
+
+## Dependencies
+
+All package versions are managed centrally in [`Directory.Packages.props`](Directory.Packages.props) (`ManagePackageVersionsCentrally = true`). Key runtime dependencies:
+
+| Dependency                                      | Version  |
+| ----------------------------------------------- | -------- |
+| `Aspire.Hosting`                                | `13.6.5` |
+| `Google.Cloud.PubSub.V1`                        | `3.39.0` |
+| `Google.Cloud.Storage.V1`                       | `5.0.0`  |
+| `Google.Cloud.Firestore`                        | `4.6.0`  |
+| `Google.Cloud.BigQuery.V2`                      | `3.12.0` |
+| `Google.Cloud.Spanner.*`                        | `5.12.0` |
+| `MongoDB.Driver`                                | `3.14.0` |
+| `RabbitMQ.Client`                               | `7.2.2`  |
+| `StackExchange.Redis`                           | `3.4.35` |
+| `WireMock.Net.minimal`                          | `2.31.0` |
+| `Bogus` (seed data)                             | `35.6.5` |
+| `Microsoft.Extensions.Diagnostics.HealthChecks` | per TFM  |
+| `MinVer` (SemVer via git tags)                  | `8.0.0`  |
+
+---
+
+## Testing
+
+```
+tests/MVFC.Aspire.Helpers.Tests/
+  Unit/        <- isolated tests per helper, no containers required
+  Integration/ <- full AppHost spin-up via Aspire.Hosting.Testing
+```
+
+- **Framework:** xUnit v3 + `Microsoft.Testing.Platform`
+- **Coverage:** Coverlet (`coverlet.collector`)
+- **Integration tests** boot the `Playground.AppHost` and exercise real containers.
+
+---
+
+## Publishing
+
+Packages are published automatically on CI when a `v*` tag is pushed. Version numbers are derived from git tags by **MinVer** and each package targets `net9.0;net10.0;net11.0`.
 
 ---
 
 ## Requirements
 
-- .NET 9 or .NET 10
-- Aspire.Hosting >= 13.5.3
+- .NET 9, 10 or 11
+- Aspire.Hosting >= 13.6.5
 - Docker running locally
+
+> **Development environment:** the SDK pin in `global.json` is `10.0.100` (with `latestMajor` roll-forward and pre-releases enabled). Library consumers only need a runtime that targets `net9.0`, `net10.0` or `net11.0`.
 
 ---
 
