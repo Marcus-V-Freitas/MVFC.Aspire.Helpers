@@ -1,16 +1,12 @@
 {
   "mcpServers": {
-    "graphify": {
+    "graphify-local": {
       "type": "stdio",
-      "command": "${GRAPHIFY_PATH}",
+      "command": "graphify-mcp",
       "args": [
-        "-m",
-        "graphify.serve",
         "graphify-out/graph.json"
       ],
-      "tools": [
-        "*"
-      ]
+      "tools": ["*"]
     }
   }
 }
