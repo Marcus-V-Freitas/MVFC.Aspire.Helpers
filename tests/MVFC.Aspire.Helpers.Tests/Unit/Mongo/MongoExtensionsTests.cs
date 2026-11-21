@@ -189,44 +189,39 @@ public sealed class MongoExtensionsTests
         act.Should().NotThrow();
     }
 
-    [Fact]
-    public void WithReference_WithDumps_ShouldNotThrow()
-    {
-        // Arrange
-        var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
-        IReadOnlyCollection<IMongoClassDump> dumps =
-        [
-            new NoOpMongoDump("db", "collection", 1)
-        ];
-        var mongoBuilder = appBuilder.AddMongoReplicaSet("mongo").WithDumps(dumps);
-
-        // Act
-        var act = () => project.WithReference(mongoBuilder);
-
-        // Assert
-        act.Should().NotThrow();
-    }
-
-    [Fact]
-    public void WithReference_CalledTwice_ShouldNotRegisterDumpsExecutorTwice()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task WithReference_ShouldExecuteDumpsOnce_RegardlessOfConfigurationOrder(bool configureDumpsFirst)
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
         var project1 = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api1");
         var project2 = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api2");
-        IReadOnlyCollection<IMongoClassDump> dumps =
-        [
-            new NoOpMongoDump("db", "collection", 1)
-        ];
-        var mongoBuilder = appBuilder.AddMongoReplicaSet("mongo").WithDumps(dumps);
+        var mongoBuilder = appBuilder.AddMongoReplicaSet("mongo");
+        var endpoint = mongoBuilder.Resource.Annotations.OfType<EndpointAnnotation>().Single();
+        endpoint.AllocatedEndpoint = new AllocatedEndpoint(endpoint, "localhost", 27017);
+        var dump = new Mock<IMongoClassDump>();
+        var cancellationToken = TestContext.Current.CancellationToken;
+        dump.Setup(d => d.ExecuteDumpAsync(It.IsAny<IMongoClient>(), cancellationToken)).Returns(Task.CompletedTask);
 
-        // Act
+        if (configureDumpsFirst)
+            mongoBuilder.WithDumps(dump.Object);
+
         project1.WithReference(mongoBuilder);
         project2.WithReference(mongoBuilder);
 
+        if (!configureDumpsFirst)
+            mongoBuilder.WithDumps(dump.Object);
+
+        using var services = new ServiceCollection().BuildServiceProvider();
+
+        // Act
+        await appBuilder.Eventing.PublishAsync(new ResourceReadyEvent(project1.Resource, services), cancellationToken);
+        await appBuilder.Eventing.PublishAsync(new ResourceReadyEvent(project2.Resource, services), cancellationToken);
+
         // Assert
-        mongoBuilder.Resource.Annotations.OfType<MongoDumpsExecutedAnnotation>().Should().ContainSingle();
+        dump.Verify(d => d.ExecuteDumpAsync(It.IsAny<IMongoClient>(), cancellationToken), Times.Once);
     }
 
     [Fact]

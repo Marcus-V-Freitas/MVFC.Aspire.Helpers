@@ -45,7 +45,8 @@ public static class MongoExtensions
     }
 
     /// <summary>
-    /// Configures data dumps to be executed when the resource is referenced by projects.
+    /// Configures data dumps to be executed when the first referencing project becomes ready.
+    /// Can be called before or after WithReference.
     /// </summary>
     public static IResourceBuilder<MongoReplicaSetResource> WithDumps(
         this IResourceBuilder<MongoReplicaSetResource> builder,
@@ -98,10 +99,6 @@ public static class MongoExtensions
         IResourceBuilder<ProjectResource> project,
         IResourceBuilder<MongoReplicaSetResource> mongo)
     {
-        var dumps = mongo.Resource.Dumps;
-        if (dumps?.Count is not > 0)
-            return;
-
         if (mongo.Resource.TryGetAnnotationsOfType<MongoDumpsExecutedAnnotation>(out _))
             return;
 
@@ -109,6 +106,10 @@ public static class MongoExtensions
 
         project.OnResourceReady(async (_, _, ct) =>
         {
+            var dumps = mongo.Resource.Dumps;
+            if (dumps?.Count is not > 0)
+                return;
+
             var connectionString = await mongo.Resource.ConnectionStringExpression.GetValueAsync(ct).ConfigureAwait(false);
             await MongoClientFactory.ExecuteDumpsAsync(connectionString!, dumps, ct).ConfigureAwait(false);
         });

@@ -33,7 +33,7 @@ With .NET Aspire you can already model a MongoDB container, but you still have t
 
 - `AddMongoReplicaSet(...)` to get a ready‑to‑use Replica Set container.
 - Fluent methods like `WithDumps(...)` and `WithDataVolume(...)`.
-- `project.WithReference(mongo)` to inject the connection string and trigger dumps automatically when the resource is ready.
+- `project.WithReference(mongo)` to inject the connection string and register automatic dump execution.
 
 ## Overview
 
@@ -85,6 +85,7 @@ Minimal example in your `AppHost` using Bogus to seed test data:
 using Aspire.Hosting;
 using Bogus;
 using MVFC.Aspire.Helpers.Mongo;
+using MVFC.Aspire.Helpers.Mongo.Models;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -101,15 +102,18 @@ IReadOnlyCollection<IMongoClassDump> dumps =
 ];
 
 var mongo = builder.AddMongoReplicaSet("mongo")
-    .WithDumps(dumps)
     .WithDataVolume("mongo-data");
 
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
        .WithReference(mongo)
        .WaitFor(mongo);
 
+mongo.WithDumps(dumps);
+
 await builder.Build().RunAsync();
 ```
+
+You can call `mongo.WithDumps(dumps)` before or after `project.WithReference(mongo)` while configuring the AppHost. When multiple projects reference the same MongoDB resource, the configured dumps run once, when the project from the first `WithReference` call becomes ready.
 
 What this setup gives you:
 
@@ -124,15 +128,16 @@ What this setup gives you:
 sequenceDiagram
     participant Aspire as .NET Aspire
     participant Container as MongoDB Container
-    participant Configurator as Mongo Replica Set Processor
-    
+    participant Project as First referencing project
+    participant Executor as Mongo dump executor
+
     Aspire->>Container: Start container (mongo)
-    Container-->>Aspire: Ready (port 27017 available)
-    Aspire->>Configurator: Trigger OnResourceReady
-    Configurator->>Container: Initialize Replica Set
-    Configurator->>Container: Execute Dumps (if configured)
-    Configurator-->>Aspire: Provisioning Completed
-    Aspire->>App: Start App with ConnectionString
+    Container->>Container: Run Replica Set initialization script on first initialization
+    Container-->>Aspire: Resource ready
+    Aspire->>Project: Start project with the connection string (WaitFor in this example)
+    Project-->>Aspire: Project ready
+    Aspire->>Executor: Dispatch the project's ResourceReadyEvent
+    Executor->>Container: Execute configured dumps
 ```
 
 ## Fluent methods

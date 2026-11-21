@@ -149,6 +149,8 @@ var apigee = builder.AddApigeeEmulator("apigee-emulator")
 await builder.Build().RunAsync().ConfigureAwait(false);
 ```
 
+Você pode configurar os dumps do MongoDB com `WithDumps` antes ou depois de `WithReference`. Os dumps são executados uma vez quando o projeto da primeira chamada a `WithReference` fica pronto. Consulte a [documentação do helper MongoDB](src/MVFC.Aspire.Helpers.Mongo/README.pt-BR.md#uso-rápido-no-aspire-apphost).
+
 > Veja o exemplo completo em [playground/](playground/).
 
 ---

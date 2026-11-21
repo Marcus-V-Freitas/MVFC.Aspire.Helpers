@@ -33,7 +33,7 @@ O `MVFC.Aspire.Helpers.Mongo` empacota essas preocupações em uma API focada:
 
 - `AddMongoReplicaSet(...)` para ter um Replica Set pronto para uso.
 - Métodos fluentes como `WithDumps(...)` e `WithDataVolume(...)`.
-- `project.WithReference(mongo)` para injetar a connection string e disparar dumps automaticamente quando o recurso estiver pronto.
+- `project.WithReference(mongo)` para injetar a connection string e registrar a execução automática dos dumps.
 
 ## Visão Geral
 
@@ -84,6 +84,7 @@ Exemplo mínimo usando Bogus para popular dados de teste:
 using Aspire.Hosting;
 using Bogus;
 using MVFC.Aspire.Helpers.Mongo;
+using MVFC.Aspire.Helpers.Mongo.Models;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -100,15 +101,18 @@ IReadOnlyCollection<IMongoClassDump> dumps =
 ];
 
 var mongo = builder.AddMongoReplicaSet("mongo")
-    .WithDumps(dumps)
     .WithDataVolume("mongo-data");
 
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
        .WithReference(mongo)
        .WaitFor(mongo);
 
+mongo.WithDumps(dumps);
+
 await builder.Build().RunAsync();
 ```
+
+Durante a configuração do AppHost, você pode chamar `mongo.WithDumps(dumps)` antes ou depois de `project.WithReference(mongo)`. Quando vários projetos referenciam o mesmo recurso MongoDB, os dumps configurados são executados uma vez, quando o projeto da primeira chamada a `WithReference` fica pronto.
 
 O que essa configuração entrega:
 
@@ -122,16 +126,17 @@ O que essa configuração entrega:
 ```mermaid
 sequenceDiagram
     participant Aspire as .NET Aspire
-    participant Container as MongoDB Container
-    participant Configurator as Mongo Replica Set Processor
-    
-    Aspire->>Container: Start container (mongo)
-    Container-->>Aspire: Ready (port 27017 available)
-    Aspire->>Configurator: Trigger OnResourceReady
-    Configurator->>Container: Initialize Replica Set
-    Configurator->>Container: Execute Dumps (if configured)
-    Configurator-->>Aspire: Provisioning Completed
-    Aspire->>App: Start App with ConnectionString
+    participant Container as Container MongoDB
+    participant Project as Primeiro projeto a referenciar o MongoDB
+    participant Executor as Executor de dumps
+
+    Aspire->>Container: Inicia o container (mongo)
+    Container->>Container: Executa o script do Replica Set na primeira inicialização
+    Container-->>Aspire: Recurso pronto
+    Aspire->>Project: Inicia o projeto com a connection string (WaitFor no exemplo)
+    Project-->>Aspire: Projeto pronto
+    Aspire->>Executor: Dispara o ResourceReadyEvent do projeto
+    Executor->>Container: Executa os dumps configurados
 ```
 
 ## Métodos Fluentes

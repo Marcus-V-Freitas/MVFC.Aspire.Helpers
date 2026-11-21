@@ -1,5 +1,6 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
+    <SolutionDir Condition="'$(SolutionDir)' == '' or '$(SolutionDir)' == '*Undefined*'">$(MSBuildThisFileDirectory)</SolutionDir>
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <MinVerTagPrefix>v</MinVerTagPrefix>

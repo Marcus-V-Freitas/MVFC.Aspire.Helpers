@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [11.0.2] - 2026-11-21
+
+### Fixed
+
+- Fixed MongoDB dump execution when `WithReference` is invoked before `WithDumps`. Dump execution callback now resolves `mongo.Resource.Dumps` dynamically during the `OnResourceReady` event instead of discarding registration early when dumps are configured after references.
+- Fixed MSBuild `MSB3021` file copy error targeting `*Undefined*\.editorconfig` by defining a fallback `SolutionDir` in `Directory.Build.props` when projects are built independently.
+
+### Documentation
+
+- Updated root and package READMEs (English and Portuguese) to document that `WithDumps` can be called before or after `WithReference`, detailing execution lifecycle behavior across multiple consumer projects.
+
 ## [11.0.1] - 2026-11-20
 
 ### Documentation
@@ -554,6 +565,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[11.0.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v11.0.1...v11.0.2
 [11.0.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v11.0.0...v11.0.1
 [11.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.7...v11.0.0
 [10.1.7]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.6...v10.1.7
