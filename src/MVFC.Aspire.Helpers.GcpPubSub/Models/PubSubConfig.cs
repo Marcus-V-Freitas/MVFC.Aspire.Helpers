@@ -2,7 +2,7 @@
 
 /// <summary>
 /// Represents the Pub/Sub configuration for a project, including the project ID, message configurations (topics and subscriptions),
-/// and the startup delay for resource initialization.
+/// and a legacy startup delay value that is not used during initialization.
 /// </summary>
 public sealed record class PubSubConfig
 {
@@ -11,7 +11,7 @@ public sealed record class PubSubConfig
     /// </summary>
     /// <param name="projectId">GCP project ID used by Pub/Sub.</param>
     /// <param name="messageConfig">Message configuration (topic and subscription) to be used.</param>
-    /// <param name="secondsDelay">(Optional) Startup delay in seconds for resource initialization. Default: 5.</param>
+    /// <param name="secondsDelay">(Optional) Legacy delay in seconds, stored in UpDelay but not used during initialization. Default: 5.</param>
     public PubSubConfig(string projectId, MessageConfig messageConfig, int secondsDelay = 5) : this(projectId, secondsDelay, [messageConfig])
     {
 
@@ -21,7 +21,7 @@ public sealed record class PubSubConfig
     /// Initializes a new instance of <see cref="PubSubConfig"/> with multiple message configurations.
     /// </summary>
     /// <param name="projectId">GCP project ID used by Pub/Sub.</param>
-    /// <param name="secondsDelay">(Optional) Startup delay in seconds for resource initialization. Default: 5.</param>
+    /// <param name="secondsDelay">(Optional) Legacy delay in seconds, stored in UpDelay but not used during initialization. Default: 5.</param>
     /// <param name="messageConfigs">(Optional) List of message configurations (topics and subscriptions) to be used.</param>
     public PubSubConfig(string projectId, int secondsDelay = 5, IReadOnlyList<MessageConfig>? messageConfigs = null)
     {
@@ -47,7 +47,7 @@ public sealed record class PubSubConfig
     }
 
     /// <summary>
-    /// Startup delay for Pub/Sub resource initialization.
+    /// Legacy delay value. Currently not used by emulator or subscription initialization.
     /// </summary>
     public TimeSpan UpDelay
     {

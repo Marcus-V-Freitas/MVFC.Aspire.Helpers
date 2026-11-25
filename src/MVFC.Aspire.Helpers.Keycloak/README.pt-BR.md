@@ -16,6 +16,8 @@ Com ele, você pode não apenas inicializar um container Keycloak, como também 
 
 ## Motivação
 
+Chamadas repetidas de `WithSeeds` substituem a lista de seeds configurada. Uma chamada com lista vazia limpa as seeds anteriores.
+
 O Keycloak é poderoso, mas montar um ambiente local costuma ser doloroso:
 
 - Comandos docker enormes com variáveis de ambiente e flags de import.

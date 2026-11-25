@@ -105,8 +105,11 @@ public sealed class PubSubConfiguratorTests
         // Arrange
         var configs = Array.Empty<PubSubConfig>();
 
-        // Act & Assert
-        await PubSubConfigurator.ConfigureAsync(configs, 8080, CancellationToken.None);
+        // Act
+        var act = () => PubSubConfigurator.ConfigureAsync(configs, "localhost:8080", CancellationToken.None);
+
+        // Assert
+        await act.Should().NotThrowAsync();
     }
 
     [Fact]
@@ -115,8 +118,11 @@ public sealed class PubSubConfiguratorTests
         // Arrange
         var configs = new[] { new PubSubConfig("project", new MessageConfig("topic", null)) };
 
-        // Act & Assert
-        await PubSubConfigurator.ConfigureAsync(configs, 8080, CancellationToken.None);
+        // Act
+        var act = () => PubSubConfigurator.ConfigureAsync(configs, "localhost:8080", CancellationToken.None);
+
+        // Assert
+        await act.Should().NotThrowAsync();
     }
 
     [Fact]
@@ -124,7 +130,7 @@ public sealed class PubSubConfiguratorTests
     {
         // Arrange
         var messageConfig = new MessageConfig("topic", "sub");
-        
+
         // Act
         var act = () => PubSubConfigurator.ModifyPushEndpoint("project", messageConfig, "http://localhost:1234", CancellationToken.None);
 
@@ -214,4 +220,3 @@ public sealed class PubSubConfiguratorTests
         result.Should().BeNull();
     }
 }
-

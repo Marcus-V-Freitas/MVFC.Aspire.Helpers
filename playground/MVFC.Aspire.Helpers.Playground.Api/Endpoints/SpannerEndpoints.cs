@@ -20,7 +20,7 @@ public static class SpannerEndpoints
 
         apiGroup.MapGet("/spanner/users", async (ISpannerService service) =>
         {
-            var users = service.GetAllUsers().ConfigureAwait(false);
+            var users = await service.GetAllUsers().ConfigureAwait(false);
 
             return Results.Ok(users);
         });

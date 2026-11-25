@@ -8,7 +8,7 @@ public static class PubSubEmulatorExtensions
 {
     /// <summary>
     /// Adds the Google Pub/Sub emulator to the distributed application.
-    /// Use fluent methods such as WithPubSubConfig and WithWaitTimeout to customize.
+    /// Use fluent methods such as WithPubSubConfigs and WithWaitTimeout to customize.
     /// </summary>
     public static IResourceBuilder<PubSubEmulatorResource> AddGcpPubSub(
         this IDistributedApplicationBuilder builder,
@@ -54,6 +54,7 @@ public static class PubSubEmulatorExtensions
         ArgumentNullException.ThrowIfNull(configs);
 
         builder.Resource.PubSubConfigs = [.. builder.Resource.PubSubConfigs, .. configs];
+        RegisterPubSubConfigurator(builder);
         return builder;
     }
 
@@ -72,9 +73,9 @@ public static class PubSubEmulatorExtensions
     }
 
     /// <summary>
-    /// Adds a reference to the PubSub resource in the project, configuring WaitFor for the emulator,
-    /// PUBSUB_EMULATOR_HOST environment variable, and automatic topic/subscription configuration
-    /// ensuring global single execution via IResourceAnnotation.
+    /// Adds a reference to the PubSub resource in the project, configuring the
+    /// PUBSUB_EMULATOR_HOST environment variable, and automatic subscription settings configuration
+    /// ensuring global single registration via IResourceAnnotation. Add WaitFor explicitly when needed.
     /// </summary>
     public static IResourceBuilder<ProjectResource> WithReference(
         this IResourceBuilder<ProjectResource> project,
@@ -84,10 +85,10 @@ public static class PubSubEmulatorExtensions
         ArgumentNullException.ThrowIfNull(pubSub);
 
         project.WithReference(source: pubSub)
-               .AddGCPProjectsIds(pubSub.Resource.PubSubConfigs)
+               .AddGCPProjectsIds(pubSub.Resource)
                .WithEnvironment(PubSubDefaults.EMULATOR_HOST_ENV_VAR, pubSub.Resource.ConnectionStringExpression);
 
-        RegisterPubSubConfigurator(project, pubSub);
+        RegisterPubSubConfigurator(pubSub);
 
         return project;
     }
@@ -108,31 +109,21 @@ public static class PubSubEmulatorExtensions
     }
 
     /// <summary>
-    /// Registers the OnResourceReady callback responsible for configuring topics and subscriptions
+    /// Registers the OnResourceReady callback responsible for updating subscription settings
     /// in the Pub/Sub emulator after initialization, ensuring single execution via annotation.
     /// </summary>
-    private static void RegisterPubSubConfigurator(
-        IResourceBuilder<ProjectResource> project,
-        IResourceBuilder<PubSubEmulatorResource> pubSub)
+    private static void RegisterPubSubConfigurator(IResourceBuilder<PubSubEmulatorResource> pubSub)
     {
-        if (pubSub.Resource.PubSubConfigs.Count == 0)
-            return;
-
         // Ensures the global emulator configuration callback is added only once
         if (pubSub.Resource.TryGetAnnotationsOfType<PubSubConfiguredAnnotation>(out _))
             return;
 
         pubSub.WithAnnotation(new PubSubConfiguredAnnotation());
 
-        project.OnResourceReady(async (context, _, ct) =>
+        pubSub.OnResourceReady(async (context, readyEvent, ct) =>
         {
-            var connectionString = await pubSub.Resource.ConnectionStringExpression.GetValueAsync(ct).ConfigureAwait(false);
-            Environment.SetEnvironmentVariable(
-                PubSubDefaults.EMULATOR_HOST_ENV_VAR,
-                connectionString);
-
-            var portEndpoint = context.GetEndpoint(PubSubEmulatorResource.HTTP_ENDPOINT_NAME).Port;
-            await PubSubConfigurator.ConfigureAsync(pubSub.Resource.PubSubConfigs, portEndpoint, ct).ConfigureAwait(false);
+            var logger = readyEvent.Services.GetRequiredService<ResourceLoggerService>().GetLogger(context);
+            await PubSubEmulatorInitializer.InitializeAsync(pubSub.Resource, logger, ct).ConfigureAwait(false);
         });
     }
 
@@ -141,18 +132,19 @@ public static class PubSubEmulatorExtensions
     /// </summary>
     private static IResourceBuilder<T> AddGCPProjectsIds<T>(
         this IResourceBuilder<T> resource,
-        IReadOnlyList<PubSubConfig> pubSubConfigs)
+        PubSubEmulatorResource emulator)
         where T : IResourceWithEnvironment
     {
-        if (pubSubConfigs.Count == 0)
-            return resource;
-        var projectIds = string.Join(PubSubDefaults.CREATION_DELIMITER,
-            pubSubConfigs.Select(c => c.ProjectId));
-        return resource.WithEnvironment(PubSubDefaults.GCP_PROJECT_IDS_ENV_VAR, projectIds);
+        return resource.WithEnvironment(ctx =>
+        {
+            if (emulator.PubSubConfigs.Count > 0)
+                ctx.EnvironmentVariables[PubSubDefaults.GCP_PROJECT_IDS_ENV_VAR] = string.Join(
+                    PubSubDefaults.CREATION_DELIMITER, emulator.PubSubConfigs.Select(c => c.ProjectId));
+        });
     }
 
     /// <summary>
-    /// Configures the HTTP endpoint of the Pub/Sub emulator, without proxy, with HTTP health check.
+    /// Configures the HTTP endpoint of the Pub/Sub emulator, with a proxy and an HTTP health check.
     /// </summary>
     private static IResourceBuilder<PubSubEmulatorResource> WithPubSubEndpoint(
         this IResourceBuilder<PubSubEmulatorResource> resource,

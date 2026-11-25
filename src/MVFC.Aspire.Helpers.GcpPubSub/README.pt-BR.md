@@ -9,10 +9,15 @@
 ![NuGet Version](https://img.shields.io/nuget/v/MVFC.Aspire.Helpers.GcpPubSub)
 ![NuGet Downloads](https://img.shields.io/nuget/dt/MVFC.Aspire.Helpers.GcpPubSub)
 
-
 Helpers para integração com Google Pub/Sub em projetos .NET Aspire, incluindo suporte ao emulador e interface de administração (UI).
 
 ## Motivação
+
+A configuração das subscriptions tem um prazo total de 60 segundos, incluindo a resolução dos endpoints do emulador e do consumidor, a criação do cliente e os retries do SDK. As consultas repetem erros transitórios do SDK e `NotFound` enquanto a imagem cria as subscriptions declaradas, com backoff exponencial, jitter e até 30 tentativas. As atualizações mantêm a política de retry do SDK. O cancelamento do AppHost interrompe chamadas e esperas; o esgotamento do prazo total gera `TimeoutException`. Início, conclusão e falhas finais são registrados no recurso do emulador no dashboard Aspire. `WithWaitTimeout` continua controlando somente o timeout de inicialização da imagem.
+
+As configurações podem ser adicionadas antes ou depois das referências. O provisionamento lê a configuração vigente quando o emulador fica pronto. Cada assinatura push deve selecionar seu consumidor por `MessageConfig.PushEndpointReference`. Não há destino implícito derivado de `WithReference(pubSub)`.
+
+Para assinaturas push, a rota de `PushEndpoint` é combinada com a porta alocada de `PushEndpointReference`, acessível pelo container via host Docker. A porta é resolvida por assinatura dentro do prazo compartilhado. O destino explícito é obrigatório quando houver uma rota push; a ausência dele gera `InvalidOperationException`. Para entregar as mensagens de um tópico a vários consumidores, use uma assinatura diferente por destino. No playground, `GET /api/pub-sub-enter` publica a mensagem e `POST /api/pub-sub-exit` recebe o push. A resposta de publicação no Scalar não contém a resposta desse callback assíncrono.
 
 Trabalhar com Google Pub/Sub localmente normalmente significa:
 
@@ -48,6 +53,31 @@ Este projeto facilita a configuração e integração do Google Pub/Sub em aplic
 - Suporte a testes de assinaturas push e pull sem depender da infraestrutura do Google Cloud.
 - Facilita o desenvolvimento e depuração de integrações assíncronas.
 
+### Entrega push para múltiplos consumidores
+
+```csharp
+var first = builder.AddProject<Projects.FirstApi>("first");
+var second = builder.AddProject<Projects.SecondApi>("second");
+
+var pubSub = builder.AddGcpPubSub("pubsub")
+    .WithPubSubConfigs(new PubSubConfig("project", messageConfigs:
+    [
+        new MessageConfig("events", "first-subscription", "/events")
+        {
+            PushEndpointReference = first.GetEndpoint("http"),
+        },
+        new MessageConfig("events", "second-subscription", "/notifications")
+        {
+            PushEndpointReference = second.GetEndpoint("http"),
+        },
+    ]));
+
+first.WithReference(pubSub);
+second.WithReference(pubSub);
+```
+
+Destinos explícitos independem da ordem das referências. Configurações sem rota push continuam sendo assinaturas pull, mesmo quando uma referência de endpoint é informada.
+
 ## Imagens compatíveis
 
 - **Emulator**:
@@ -80,14 +110,17 @@ dotnet add package MVFC.Aspire.Helpers.GcpPubSub
 ```csharp
 using Aspire.Hosting;
 using MVFC.Aspire.Helpers.GcpPubSub;
+using MVFC.Aspire.Helpers.GcpPubSub.Models;
 
 var builder = DistributedApplication.CreateBuilder(args);
+var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api");
 
 var messageConfig = new MessageConfig(
     TopicName: "test-topic",
     SubscriptionName: "test-subscription",
     PushEndpoint: "/api/pub-sub-exit")
 {
+    PushEndpointReference = api.GetEndpoint("http"),
     DeadLetterTopic = "test-dead-letter-topic",
     MaxDeliveryAttempts = 5,
     AckDeadlineSeconds = 300,
@@ -99,14 +132,13 @@ var pubSubConfig = new PubSubConfig(
 
 var gcpPubSub = builder.AddGcpPubSub("gcp-pubsub")
     .WithPubSubConfigs([pubSubConfig])
-    .WithWaitTimeout(secondsDelay: 5);
+    .WithWaitTimeout(seconds: 5);
 
 var ui = builder.AddGcpPubSubUI("pubsub-ui")
     .WithReference(gcpPubSub)
     .WaitFor(gcpPubSub);
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
-       .WithReference(gcpPubSub)
+api.WithReference(gcpPubSub)
        .WaitFor(gcpPubSub);
 
 await builder.Build().RunAsync();
@@ -120,7 +152,9 @@ await builder.Build().RunAsync();
 | --------------- | --------------- | ------ | ----------------------------------------------- |
 | `projectId`     | string          | —      | ID do projeto GCP.                              |
 | `messageConfig` | `MessageConfig` | —      | Configuração de mensagem (tópico + assinatura). |
-| `secondsDelay`  | int             | `5`    | Delay em segundos para inicialização.           |
+| `secondsDelay`  | int             | `5`    | Valor legado armazenado em `UpDelay`; atualmente não afeta a inicialização.           |
+
+`secondsDelay` e `UpDelay` não controlam retries nem timeouts. Use `WithWaitTimeout(seconds)` para o timeout da imagem do emulador; a configuração das assinaturas usa um prazo compartilhado de 60 segundos.
 
 ### `MessageConfig`
 
@@ -128,7 +162,8 @@ await builder.Build().RunAsync();
 | --------------------- | ------- | ------ | ------------------------------------------- |
 | `TopicName`           | string  | —      | Nome do tópico.                             |
 | `SubscriptionName`    | string? | `null` | Nome da assinatura.                         |
-| `PushEndpoint`        | string? | `null` | Endpoint HTTP para entrega via push.        |
+| `PushEndpoint`        | string? | `null` | Rota HTTP para entrega via push. |
+| `PushEndpointReference` | EndpointReference? | `null` | Endpoint do consumidor; obrigatório quando houver uma rota push. |
 | `DeadLetterTopic`     | string? | `null` | Nome do tópico de dead letter (DLQ).        |
 | `MaxDeliveryAttempts` | int?    | `null` | Máximo de tentativas antes de enviar à DLQ. |
 | `AckDeadlineSeconds`  | int?    | `null` | Tempo em segundos para confirmação (ack).   |
@@ -163,16 +198,22 @@ E --> F
 ```mermaid
 sequenceDiagram
     participant Aspire as .NET Aspire
-    participant Container as Pub/Sub Emulator
-    participant Configurator as Pub/Sub Processor
-    
-    Aspire->>Container: Start container (gcloud-pubsub-emulator)
-    Container-->>Aspire: Ready (port 8681 available)
-    Aspire->>Configurator: Trigger OnResourceReady
-    Configurator->>Container: Create Topics
-    Configurator->>Container: Create Subscriptions
-    Configurator-->>Aspire: Provisioning Completed
-    Aspire->>App: Start App with PUBSUB_EMULATOR_HOST
+    participant Container as Emulador Pub/Sub
+    participant Configurator as Configurador Pub/Sub
+
+    Aspire->>Container: Iniciar com declarações PUBSUBn_PROJECT
+    Note over Container: A imagem provisiona os tópicos e as assinaturas declarados
+    Container-->>Aspire: Health check HTTP aprovado
+    Aspire->>Configurator: OnResourceReady (prazo compartilhado de 60 segundos)
+    Configurator->>Aspire: Resolver endpoint do emulador
+    loop Cada assinatura configurada
+        opt Rota push configurada
+            Configurator->>Aspire: Resolver porta de MessageConfig.PushEndpointReference
+        end
+        Configurator->>Container: GetSubscription (retries limitados do SDK)
+        Configurator->>Container: UpdateSubscription (push, prazo de ack, DLQ)
+    end
+    Configurator-->>Aspire: Configuração concluída
 ```
 
 ## Métodos Públicos
@@ -180,7 +221,7 @@ sequenceDiagram
 - `AddGcpPubSub` – adiciona o emulador.
 - `AddGcpPubSubUI` – adiciona a UI do Pub/Sub.
 - `WithPubSubConfigs` – configura projetos, tópicos e assinaturas.
-- `WithWaitTimeout` – define o delay de inicialização.
+- `WithWaitTimeout` – define o timeout de inicialização da imagem do emulador em segundos; não altera o prazo da configuração das assinaturas.
 - `WithReference` – liga projetos ao emulador/UI e configura variáveis de ambiente.
 
 ## Requisitos

@@ -1,4 +1,5 @@
 var builder = DistributedApplication.CreateBuilder(args);
+var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo");
 
 // --- GCP Spanner Configs ---
 var spannerConfig = new SpannerConfig(
@@ -21,6 +22,7 @@ var messageConfig = new MessageConfig(
                             TopicName: "test-topic",
                             SubscriptionName: "test-subscription",
                             PushEndpoint: "/api/pub-sub-exit") {
+    PushEndpointReference = api.GetEndpoint("http"),
     DeadLetterTopic = "test-dead-letter-topic",
     MaxDeliveryAttempts = 5,
     AckDeadlineSeconds = 300,
@@ -112,8 +114,7 @@ var redis = builder.AddRedis("redis")
 var gotenberg = builder.AddGotenberg("gotenberg", port: 3000);
 
 // Referenciar recursos no projeto
-var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
-                 .WithReference(cloudStorage)
+api.WithReference(cloudStorage)
                  .WaitFor(cloudStorage)
                  .WithReference(mongo)
                  .WaitFor(mongo)

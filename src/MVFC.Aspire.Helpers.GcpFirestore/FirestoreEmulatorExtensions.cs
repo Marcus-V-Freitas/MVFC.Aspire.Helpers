@@ -83,35 +83,15 @@ public static class FirestoreEmulatorExtensions
         ArgumentNullException.ThrowIfNull(firestore);
 
         project.WithReference(source: firestore)
-               .AddGCPProjectsIds(firestore.Resource.FirestoreConfigs)
                .WithEnvironment(
                    FirestoreDefaults.EMULATOR_HOST_ENV_VAR,
                    firestore.Resource.ConnectionStringExpression);
 
-        return project;
-    }
-
-    /// <summary>
-    /// Injects all ProjectIds as a delimited environment variable — same pattern as PubSub.
-    /// ASP.NET Core converts Firestore__ProjectIds → Firestore:ProjectIds in IConfiguration.
-    /// </summary>
-    /// <typeparam name="T">The resource type implementing IResourceWithEnvironment.</typeparam>
-    /// <param name="resource">The resource builder.</param>
-    /// <param name="firestoreConfigs">The Firestore project configurations.</param>
-    /// <returns>The resource builder for chaining.</returns>
-    private static IResourceBuilder<T> AddGCPProjectsIds<T>(
-        this IResourceBuilder<T> resource,
-        IReadOnlyList<FirestoreConfig> firestoreConfigs)
-        where T : IResourceWithEnvironment
-    {
-        if (firestoreConfigs.Count == 0)
-            return resource;
-
-        var projectIds = string.Join(
+        project.WithEnvironment(FirestoreDefaults.GCP_PROJECT_IDS_ENV_VAR, () => string.Join(
             FirestoreDefaults.CREATION_DELIMITER,
-            firestoreConfigs.Select(c => c.ProjectId));
+            firestore.Resource.FirestoreConfigs.Select(c => c.ProjectId)));
 
-        return resource.WithEnvironment(FirestoreDefaults.GCP_PROJECT_IDS_ENV_VAR, projectIds);
+        return project;
     }
 
     /// <summary>

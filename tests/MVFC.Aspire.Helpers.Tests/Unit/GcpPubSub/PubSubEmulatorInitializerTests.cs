@@ -1,0 +1,93 @@
+namespace MVFC.Aspire.Helpers.Tests.Unit.GcpPubSub;
+
+public sealed class PubSubEmulatorInitializerTests
+{
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InitializeAsync_WhenEndpointIsNotAllocated_ShouldHonorSharedDeadline(bool emulatorAllocated)
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+        var consumer = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("consumer");
+        var pubSub = builder.AddGcpPubSub("pubsub")
+            .WithPubSubConfigs(new PubSubConfig("project", new MessageConfig("topic", "sub", "/callback")
+            {
+                PushEndpointReference = consumer.GetEndpoint("http"),
+            }));
+
+        consumer.WithReference(pubSub);
+
+        if (emulatorAllocated)
+        {
+            var endpoint = pubSub.Resource.Annotations.OfType<EndpointAnnotation>().Single(e => e.Name == "http");
+            endpoint.AllocatedEndpoint = new AllocatedEndpoint(endpoint, "localhost", 8681);
+        }
+
+        TimerCallback? callback = null;
+        object? state = null;
+        var time = Substitute.For<TimeProvider>();
+
+        time.CreateTimer(Arg.Any<TimerCallback>(), Arg.Any<object?>(), Arg.Any<TimeSpan>(), Arg.Any<TimeSpan>())
+            .Returns(call =>
+            {
+                callback = call.ArgAt<TimerCallback>(0);
+                state = call.ArgAt<object?>(1);
+
+                return Substitute.For<ITimer>();
+            });
+
+        // Act
+        var task = PubSubEmulatorInitializer.InitializeAsync(pubSub.Resource, NullLogger.Instance, CancellationToken.None, time);
+
+        var wasWaiting = !task.IsCompleted;
+        callback!(state);
+
+        var act = () => task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+        // Assert
+        wasWaiting.Should().BeTrue();
+        await act.Should().ThrowAsync<TimeoutException>().WithMessage("*60 seconds*");
+
+        time.Received(1).CreateTimer(Arg.Any<TimerCallback>(), Arg.Any<object?>(),
+            TimeSpan.FromSeconds(PubSubDefaults.CONFIGURATION_TIMEOUT_SECONDS), Timeout.InfiniteTimeSpan);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WhenCallerCancelsEndpointResolution_ShouldPreserveCancellation()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+        var pubSub = builder.AddGcpPubSub("pubsub")
+            .WithPubSubConfigs(new PubSubConfig("project", new MessageConfig("topic", "sub")));
+        using var cancellation = new CancellationTokenSource();
+
+        // Act
+        var task = PubSubEmulatorInitializer.InitializeAsync(pubSub.Resource, NullLogger.Instance, cancellation.Token);
+
+        cancellation.Cancel();
+
+        var act = () => task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+        // Assert
+        var exception = (await act.Should().ThrowAsync<OperationCanceledException>()).Which;
+
+        exception.CancellationToken.Should().Be(cancellation.Token);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WhenNoSubscriptions_ShouldNotResolveEndpoints()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+        var pubSub = builder.AddGcpPubSub("pubsub")
+            .WithPubSubConfigs(new PubSubConfig("project", new MessageConfig("topic")));
+        var time = Substitute.For<TimeProvider>();
+
+        // Act
+        await PubSubEmulatorInitializer.InitializeAsync(pubSub.Resource, NullLogger.Instance, TestContext.Current.CancellationToken, time);
+
+        // Assert
+        time.DidNotReceive().CreateTimer(Arg.Any<TimerCallback>(), Arg.Any<object?>(), Arg.Any<TimeSpan>(), Arg.Any<TimeSpan>());
+    }
+}

@@ -6,24 +6,33 @@
 /// </summary>
 internal static class SpannerConfigProcessor
 {
+    /// <summary>
+    /// Builds emulator administration clients and provisions all configured instances and databases.
+    /// </summary>
     internal static async Task ConfigureAsync(
         IReadOnlyList<SpannerConfig> configs,
+        string endpoint,
         CancellationToken ct)
     {
         var instanceAdminClient = await new InstanceAdminClientBuilder
         {
-            EmulatorDetection = EmulatorDetection.EmulatorOnly,
+            ChannelCredentials = Grpc.Core.ChannelCredentials.Insecure,
+            Endpoint = endpoint,
         }.BuildAsync(ct).ConfigureAwait(false);
 
         var dbAdminClient = await new DatabaseAdminClientBuilder
         {
-            EmulatorDetection = EmulatorDetection.EmulatorOnly,
+            ChannelCredentials = Grpc.Core.ChannelCredentials.Insecure,
+            Endpoint = endpoint,
         }.BuildAsync(ct).ConfigureAwait(false);
 
         foreach (var config in configs)
             await ProvisionAsync(instanceAdminClient, dbAdminClient, config, ct).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Ensures that the configured instance and database exist.
+    /// </summary>
     private static async Task ProvisionAsync(
         InstanceAdminClient instanceAdminClient,
         DatabaseAdminClient dbAdminClient,
@@ -34,6 +43,9 @@ internal static class SpannerConfigProcessor
         await EnsureDatabaseAsync(dbAdminClient, config, ct).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Creates the configured instance when it does not already exist.
+    /// </summary>
     private static async Task EnsureInstanceAsync(InstanceAdminClient client, SpannerConfig config, CancellationToken ct)
     {
         var instanceName = InstanceName.FromProjectInstance(config.ProjectId, config.InstanceId);
@@ -67,6 +79,9 @@ internal static class SpannerConfigProcessor
         await operation.PollUntilCompletedAsync().ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Creates the configured database with its DDL statements when it does not already exist.
+    /// </summary>
     private static async Task EnsureDatabaseAsync(DatabaseAdminClient client, SpannerConfig config, CancellationToken ct)
     {
         var databaseName = DatabaseName.FromProjectInstanceDatabase(config.ProjectId, config.InstanceId, config.DatabaseId);

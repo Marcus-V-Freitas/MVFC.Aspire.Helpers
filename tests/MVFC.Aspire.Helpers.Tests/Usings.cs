@@ -77,3 +77,7 @@ global using MVFC.Aspire.Helpers.GcpFirestore.Resources;
 global using MVFC.Aspire.Helpers.GcpBigQuery;
 global using MVFC.Aspire.Helpers.GcpBigQuery.Resources;
 global using BigQueryConfig = MVFC.Aspire.Helpers.GcpBigQuery.Models.BigQueryConfig;
+global using Google.Api.Gax.Grpc;
+global using Grpc.Core;
+global using Microsoft.Extensions.Logging;
+global using MVFC.Aspire.Helpers.GcpFirestore.HealthChecks;

@@ -52,6 +52,7 @@ public static class RedisExtensions
         ArgumentNullException.ThrowIfNullOrWhiteSpace(password);
         ArgumentNullException.ThrowIfNull(builder);
 
+        builder.Resource.Password = password;
         return builder.WithEnvironment(RedisDefaults.PASSWORD_ENV_VAR, password)
                       .WithArgs(RedisDefaults.REQUIRE_PASS_ARG, password);
     }
@@ -77,6 +78,7 @@ public static class RedisExtensions
                 name: RedisDefaults.COMMANDER_HTTP_ENDPOINT_NAME)
             .WithEnvironment(RedisDefaults.HOST_ENV_VAR, builder.Resource.Name)
             .WithEnvironment(RedisDefaults.PORT_ENV_VAR, RedisDefaults.DEFAULT_REDIS_PORT.ToString(CultureInfo.InvariantCulture))
+            .WithEnvironment(RedisDefaults.PASSWORD_ENV_VAR, () => builder.Resource.Password ?? string.Empty)
             .WithReference(builder);
 
         return builder;
@@ -97,7 +99,7 @@ public static class RedisExtensions
     }
 
     /// <summary>
-    /// Configures the Redis endpoint on the container, without proxy.
+    /// Configures the Redis endpoint on the container, using a proxy.
     /// </summary>
     private static IResourceBuilder<RedisResource> WithRedisEndpoint(
         this IResourceBuilder<RedisResource> resource,

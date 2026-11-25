@@ -41,9 +41,10 @@ All libraries follow the same convention:
 - `AddXxx(...)` — registers the infrastructure resource in the `IDistributedApplicationBuilder`.
 - Fluent methods (`WithDataVolume`, `WithDumps`, `WithSeeds`, etc.) — customize the resource.
 - `project.WithReference(xxx)` — links a project to the resource, automatically configuring:
-  - `WaitFor` dependency.
   - Environment variables (connection strings, base URLs, etc.).
   - Initialization actions (e.g. executing Mongo dumps).
+
+When a consumer must wait for a resource to become ready, add `.WaitFor(resource)` explicitly. `WithReference(...)` does not guarantee a startup dependency for every helper.
 
 Once you learn how one helper works, the others feel immediately familiar.
 
@@ -91,6 +92,7 @@ dotnet add package MVFC.Aspire.Helpers.ApigeeEmulator
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
+var api = builder.AddProject<Projects.MyApi>("api");
 
 var cloudStorage = builder.AddCloudStorage("cloud-storage")
     .WithBucketFolder("./bucket-data");
@@ -105,8 +107,16 @@ var bigQuery = builder.AddGcpBigQuery("gcp-bigquery")
     .WithBigQueryConfigs(new BigQueryConfig("test-project", "test_dataset"))
     .WithDataSeed("./bigquery-data/dump.yaml");
 
+var pubSubConfig = new PubSubConfig("test-project", new MessageConfig("events", "api-events", "/events")
+{
+    PushEndpointReference = api.GetEndpoint("http"),
+});
+
 var pubSub = builder.AddGcpPubSub("gcp-pubsub")
     .WithPubSubConfigs(pubSubConfig);
+
+api.WithReference(pubSub)
+    .WaitFor(pubSub);
 
 var spanner = builder.AddGcpSpanner("spanner")
     .WithSpannerConfigs(spannerConfig);
@@ -135,8 +145,6 @@ var wireMock = builder.AddWireMock("wireMock", port: 7070, configure: (server) =
           .OnGet<string>(() => ("OK", HttpStatusCode.OK, null));
 });
 
-var api = builder.AddProject<Projects.MyApi>("api");
-
 var apigeeWorkspace = Path.Combine(Directory.GetCurrentDirectory(), "apigee-workspace");
 
 var apigee = builder.AddApigeeEmulator("apigee-emulator")
@@ -148,6 +156,16 @@ await builder.Build().RunAsync().ConfigureAwait(false);
 ```
 
 You can configure MongoDB dumps with `WithDumps` before or after `WithReference`. The dumps run once when the project from the first `WithReference` call becomes ready. See the [MongoDB helper documentation](src/MVFC.Aspire.Helpers.Mongo/README.md#quick-aspire-usage-apphost).
+
+### Pub/Sub: migration to version 12
+
+Push subscriptions now require both the HTTP route in `MessageConfig.PushEndpoint` and the consumer endpoint in `MessageConfig.PushEndpointReference`, as shown above. Create the consumer project before its message configuration. `WithReference(pubSub)` configures the connection and project IDs; it no longer selects the push destination. A push route without an endpoint reference raises `InvalidOperationException` at initialization.
+
+Each subscription can target a different consumer, independently of reference order. To deliver a topic's messages to multiple consumers, configure a separate subscription and endpoint reference for each. Pull subscriptions do not require an endpoint reference.
+
+The allocated consumer port is resolved per subscription within the shared 60-second initialization deadline, including emulator endpoint resolution, client creation and SDK retries. AppHost cancellation interrupts initialization; expiration of the deadline raises `TimeoutException`. `WithWaitTimeout` controls the emulator image's own initialization timeout.
+
+See the [Pub/Sub configuration and multiple-consumer example](src/MVFC.Aspire.Helpers.GcpPubSub/README.md#push-delivery-to-multiple-consumers) and the [version 12 breaking changes](CHANGELOG.md#1200---2026-11-24).
 
 > See [playground/](playground/) for the full working example.
 
@@ -230,7 +248,7 @@ Several helpers go beyond a simple `AddContainer` call:
 | **Custom TCP / gRPC health checks**                                                                         | Firestore, Spanner                   |
 | **Seed / bundle file generation** — writes temporary YAML or archive files at startup                       | BigQuery, Mongo, Keycloak            |
 | **Automatic env-var injection** — `WithReference(xxx)` sets connection strings and project IDs              | All helpers                          |
-| **Duplicate-prevention annotations** — prevent registering the same resource twice                          | Mongo, Spanner                       |
+| **Duplicate-prevention annotations** — prevent registering the same resource twice                          | Mongo, PubSub, Spanner, Keycloak     |
 
 ---
 
@@ -265,7 +283,7 @@ tests/MVFC.Aspire.Helpers.Tests/
 ```
 
 - **Framework:** xUnit v3 + `Microsoft.Testing.Platform`
-- **Coverage:** Coverlet (`coverlet.collector`)
+- **Coverage:** `dotnet cake` collects coverage with `dotnet-coverage` and generates the HTML report with ReportGenerator in `CoverageReport/index.html`.
 - **Integration tests** boot the `Playground.AppHost` and exercise real containers.
 
 ---

@@ -13,6 +13,8 @@ Helpers para integração com Google Cloud Spanner em projetos .NET Aspire, incl
 
 ## Motivação
 
+As configurações do Spanner podem ser adicionadas antes ou depois de `WithReference`; o provisionamento lê a configuração vigente quando o emulador fica pronto.
+
 Trabalhar com Google Cloud Spanner localmente normalmente significa:
 
 - Subir um container de emulador na mão.

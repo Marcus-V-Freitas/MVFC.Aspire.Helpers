@@ -14,6 +14,8 @@ Helper para integração com Redis em projetos .NET Aspire, incluindo cache dist
 
 ## Motivação
 
+Quando `WithPassword` é usado, `WithCommander` repassa a mesma senha ao Redis Commander pela variável `REDIS_PASSWORD`.
+
 Para desenvolvimento local, o Redis é muitas vezes iniciado via container ad-hoc:
 
 - Sem um lugar claro para centralizar a configuração de senha.

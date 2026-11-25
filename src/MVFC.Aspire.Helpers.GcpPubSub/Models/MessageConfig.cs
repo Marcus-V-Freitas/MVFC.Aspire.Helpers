@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.GcpPubSub.Models;
+namespace MVFC.Aspire.Helpers.GcpPubSub.Models;
 
 /// <summary>
 /// Represents the message configuration for Pub/Sub, including the topic name, subscription name,
@@ -11,7 +11,7 @@
 /// (Optional) Subscription name associated with the topic.
 /// </param>
 /// <param name="PushEndpoint">
-/// (Optional) HTTP endpoint for push message delivery. If not provided, the subscription will be pull-based.
+/// (Optional) HTTP route for push message delivery, combined with PushEndpointReference. If not provided, the subscription will be pull-based.
 /// </param>
 public sealed record class MessageConfig(
     string TopicName,
@@ -30,9 +30,16 @@ public sealed record class MessageConfig(
     public string? SubscriptionName { get; init; } = SubscriptionName;
 
     /// <summary>
-    /// (Optional) HTTP endpoint for push message delivery. If not provided, the subscription will be pull-based.
+    /// (Optional) HTTP route for push message delivery, combined with PushEndpointReference. If not provided, the subscription will be pull-based.
     /// </summary>
     public string? PushEndpoint { get; init; } = PushEndpoint;
+
+    /// <summary>
+    /// Consumer endpoint used for this subscription's push delivery.
+    /// Its allocated port is resolved at startup and combined with <see cref="PushEndpoint"/>.
+    /// Required when a push route is configured; ignored for pull subscriptions.
+    /// </summary>
+    public EndpointReference? PushEndpointReference { get; init; }
 
     /// <summary>
     /// (Optional) Dead letter topic (DLQ) name where unprocessed messages will be forwarded after the maximum delivery attempts.

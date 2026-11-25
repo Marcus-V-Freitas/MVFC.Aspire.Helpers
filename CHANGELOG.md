@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [12.0.0] - 2026-11-24
+
+### Breaking changes
+
+- Push subscriptions now require `MessageConfig.PushEndpointReference` alongside their `PushEndpoint` route. `WithReference(pubSub)` no longer selects a push destination. To migrate, create the consumer project before the message configuration and set `PushEndpointReference = consumer.GetEndpoint("http")` on each push message. Pull subscriptions are unchanged. The single push destination was removed from the emulator resource.
+
+### Added
+
+- Added `MessageConfig.PushEndpointReference` for independent push destinations per subscription. Destination ports are resolved during subscription configuration under the shared deadline; each push subscription must explicitly specify its consumer endpoint. Added regression tests for multiple destinations, pull subscriptions, endpoint allocation and cancellation.
+- Added a shared 60-second deadline for Pub/Sub subscription configuration, including endpoint resolution, client creation, SDK retries and cancellation support. Subscription reads now use bounded exponential backoff with jitter for transient errors and subscriptions still being created by the emulator image; updates retain the SDK retry policy.
+- Added structured Pub/Sub initialization logs in the Aspire dashboard, including subscription and project details on failure, completion duration, and timeout diagnostics.
+- Added Pub/Sub resilience tests covering transient recovery, permanent failures, retry exhaustion, cancellation, endpoint resolution timeout, repeated configuration after partial failure, configuration ordering, and structured logging. Added Redis Commander tests for password configuration before and after registration and for passwordless use. Expanded Firestore TCP health check tests for reachable ports, allocated and unallocated endpoints, missing configuration, and cancellation.
+
+### Changed
+
+- Reused the Redis password environment constant, centralized Keycloak HTTP port and import strategy identifiers and the Apigee backend URL environment variable, completed XML summaries on affected members, and standardized spacing between test methods.
+- Separated runtime Pub/Sub initialization, deadline handling and per-subscription configuration; moved callback annotations into individual files without changing their namespaces.
+- Standardized Arrange / Act / Assert sections and spacing in the affected tests, and centralized their imports and Pub/Sub imports in each project's `Usings.cs`.
+
+### Fixed
+
+- Fixed Pub/Sub push subscriptions targeting the emulator's port instead of the configured consumer endpoint's allocated port. Added regression tests for consumer endpoint selection and missing push destinations.
+- Registered Pub/Sub and Spanner configuration callbacks when configurations are supplied, including configurations added after resource references, while preventing duplicate callback registration.
+- Resolved Pub/Sub and Spanner emulator endpoints explicitly for configuration clients instead of changing process-wide emulator environment variables. Pub/Sub configuration now runs from the emulator's readiness callback.
+- Deferred Firestore project ID environment resolution until execution so configurations added after references are included.
+- Made Keycloak seed callbacks read the latest configured seeds and prevented duplicate callback registration.
+- Deferred Pub/Sub consumer/UI project IDs and Redis Commander password resolution until execution, including configuration added after references or Commander registration.
+
+### Documentation
+
+- Corrected root and package documentation for explicit startup dependencies, the dotnet-coverage workflow, image-driven Pub/Sub provisioning, and the currently unused legacy `secondsDelay`/`UpDelay` values; removed duplicate Firestore documentation.
+- Updated package READMEs in English and Portuguese with configuration ordering and initialization behavior, including Pub/Sub retry, timeout, cancellation, and logging semantics.
+
 ## [11.0.2] - 2026-11-21
 
 ### Fixed
@@ -565,6 +598,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[12.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v11.0.2...v12.0.0
 [11.0.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v11.0.1...v11.0.2
 [11.0.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v11.0.0...v11.0.1
 [11.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v10.1.7...v11.0.0

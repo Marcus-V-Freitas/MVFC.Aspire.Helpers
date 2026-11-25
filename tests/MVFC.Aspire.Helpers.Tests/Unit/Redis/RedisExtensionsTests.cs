@@ -1,7 +1,50 @@
-﻿namespace MVFC.Aspire.Helpers.Tests.Unit.Redis;
+namespace MVFC.Aspire.Helpers.Tests.Unit.Redis;
 
 public sealed class RedisExtensionsTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task WithCommander_ShouldResolvePasswordRegardlessOfConfigurationOrder(bool passwordFirst)
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+        var redis = builder.AddRedis("redis");
+
+        if (passwordFirst)
+            redis.WithPassword("secret");
+
+        redis.WithCommander();
+
+        if (!passwordFirst)
+            redis.WithPassword("secret");
+
+        var commander = builder.Resources.Single(r => r.Name == "redis-commander");
+
+        // Act
+        var environment = await builder.GetConfiguredEnvironmentAsync(commander, TestContext.Current.CancellationToken);
+
+        // Assert
+        environment["REDIS_PASSWORD"].Should().Be("secret");
+    }
+
+    [Fact]
+    public async Task WithCommander_WithoutPassword_ShouldUseEmptyPassword()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+
+        builder.AddRedis("redis").WithCommander();
+
+        var commander = builder.Resources.Single(r => r.Name == "redis-commander");
+
+        // Act
+        var environment = await builder.GetConfiguredEnvironmentAsync(commander, TestContext.Current.CancellationToken);
+
+        // Assert
+        environment["REDIS_PASSWORD"].Should().Be(string.Empty);
+    }
+
     [Fact]
     public void AddRedis_ShouldThrow_WhenBuilderIsNull()
     {

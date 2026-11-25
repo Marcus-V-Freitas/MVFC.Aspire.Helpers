@@ -138,7 +138,7 @@ public static class ApigeeEmulatorExtensions
 
         // Force ASP.NET Core apps to bind to 0.0.0.0 instead of localhost, which is required
         // when IsProxied = false for Docker containers to reach it via host.docker.internal
-        backend.WithEnvironment("ASPNETCORE_URLS", ReferenceExpression.Create($"http://0.0.0.0:{endpoint.Property(EndpointProperty.Port)}"));
+        backend.WithEnvironment(ApigeeEmulatorDefaults.BACKEND_URLS_ENV_VAR, ReferenceExpression.Create($"http://0.0.0.0:{endpoint.Property(EndpointProperty.Port)}"));
 
         builder.Resource.Annotations.Add(new ApigeeTargetBackendAnnotation
         {
@@ -150,6 +150,9 @@ public static class ApigeeEmulatorExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Rejects a backend target server name that is already registered on the emulator.
+    /// </summary>
     private static void ThrowIfTargetServerAlreadyRegistered(IResourceBuilder<ApigeeEmulatorResource> builder, string targetServerName)
     {
         var alreadyRegistered = builder.Resource.Annotations

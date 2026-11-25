@@ -13,6 +13,8 @@ Helpers para integração com Google Cloud Firestore em projetos .NET Aspire, in
 
 ## Motivação
 
+Os IDs de projeto Firestore são avaliados ao montar o ambiente do projeto consumidor, permitindo adicionar configurações antes ou depois de `WithReference`.
+
 Trabalhar com Google Cloud Firestore localmente normalmente significa:
 
 - Subir um container de emulador na mão.

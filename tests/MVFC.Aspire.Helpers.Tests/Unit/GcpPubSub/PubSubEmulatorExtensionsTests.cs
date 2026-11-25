@@ -3,6 +3,77 @@ namespace MVFC.Aspire.Helpers.Tests.Unit.GcpPubSub;
 public sealed class PubSubEmulatorExtensionsTests
 {
     [Fact]
+    public void WithReference_ShouldNotChangeExplicitDestinations()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+        var first = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("first");
+        var second = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("second");
+        var destination = second.GetEndpoint("http");
+        var message = new MessageConfig("topic", "sub", "/callback") { PushEndpointReference = destination };
+        var pubSub = builder.AddGcpPubSub("pubsub").WithPubSubConfigs(new PubSubConfig("project", message));
+
+        // Act
+        first.WithReference(pubSub);
+        second.WithReference(pubSub);
+
+        // Assert
+
+        message.PushEndpointReference.Should().BeSameAs(destination);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task WithReference_ShouldResolveLatestProjectIdsForConsumerAndUi(bool configureBeforeReference)
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+        var pubSub = builder.AddGcpPubSub("pubsub");
+        var consumer = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("consumer");
+        var ui = builder.AddGcpPubSubUI("ui");
+
+        if (configureBeforeReference)
+            pubSub.WithPubSubConfigs(new PubSubConfig("first", new MessageConfig("topic")));
+
+        consumer.WithReference(pubSub);
+        ui.WithReference(pubSub);
+
+        pubSub.WithPubSubConfigs(new PubSubConfig("last", new MessageConfig("topic")));
+
+        // Act
+        var consumerEnvironment = await builder.GetConfiguredEnvironmentAsync(consumer.Resource, TestContext.Current.CancellationToken);
+        var uiEnvironment = await builder.GetConfiguredEnvironmentAsync(ui.Resource, TestContext.Current.CancellationToken);
+
+        // Assert
+        var expected = configureBeforeReference ? "first,last" : "last";
+
+        consumerEnvironment[PubSubDefaults.GCP_PROJECT_IDS_ENV_VAR].Should().Be(expected);
+        uiEnvironment[PubSubDefaults.GCP_PROJECT_IDS_ENV_VAR].Should().Be(expected);
+    }
+
+    [Fact]
+    public async Task WithReference_WithoutConfigurations_ShouldOmitProjectIds()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+        var pubSub = builder.AddGcpPubSub("pubsub");
+        var consumer = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("consumer");
+        var ui = builder.AddGcpPubSubUI("ui");
+
+        consumer.WithReference(pubSub);
+        ui.WithReference(pubSub);
+
+        // Act
+        var consumerEnvironment = await builder.GetConfiguredEnvironmentAsync(consumer.Resource, TestContext.Current.CancellationToken);
+        var uiEnvironment = await builder.GetConfiguredEnvironmentAsync(ui.Resource, TestContext.Current.CancellationToken);
+
+        // Assert
+        consumerEnvironment.Should().NotContainKey(PubSubDefaults.GCP_PROJECT_IDS_ENV_VAR);
+        uiEnvironment.Should().NotContainKey(PubSubDefaults.GCP_PROJECT_IDS_ENV_VAR);
+    }
+
+    [Fact]
     public void AddGcpPubSub_ShouldThrow_WhenBuilderIsNull()
     {
         // Arrange
@@ -288,8 +359,23 @@ public sealed class PubSubEmulatorExtensionsTests
         project1.WithReference(pubSub);
         project2.WithReference(pubSub);
 
-        // Assert — annotation should be added only once
+        // Assert
+        pubSub.Resource.Annotations.OfType<PubSubConfiguredAnnotation>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void WithReference_BeforeWithPubSubConfigs_ShouldRegisterConfigurator()
+    {
+        // Arrange
+        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var pubSub = appBuilder.AddGcpPubSub("pubsub");
+
+        // Act
+        project.WithReference(pubSub);
+        pubSub.WithPubSubConfigs(new PubSubConfig("project-a", new MessageConfig("topic-a", "sub-a")));
+
+        // Assert
         pubSub.Resource.Annotations.OfType<PubSubConfiguredAnnotation>().Should().ContainSingle();
     }
 }
-

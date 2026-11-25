@@ -8,34 +8,131 @@ internal static class PubSubConfigurator
     /// <summary>
     /// Configures all topics and subscriptions for a list of Pub/Sub configs.
     /// </summary>
+    internal static Task ConfigureAsync(
+        IReadOnlyList<PubSubConfig> pubSubConfigs,
+        string endpoint,
+        CancellationToken ct,
+        ILogger? logger = null) =>
+        ConfigureAsync(pubSubConfigs, new SubscriberServiceApiClientBuilder
+        {
+            ChannelCredentials = ChannelCredentials.Insecure,
+            Endpoint = endpoint,
+            Settings = CreateSubscriberSettings(),
+        }, ct, logger);
+
+    /// <summary>
+    /// Configures subscriptions within a shared deadline, including client creation and SDK retries.
+    /// </summary>
     internal static async Task ConfigureAsync(
         IReadOnlyList<PubSubConfig> pubSubConfigs,
-        int portEndpoint,
+        SubscriberServiceApiClientBuilder clientBuilder,
+        CancellationToken ct,
+        ILogger? logger = null,
+        TimeProvider? timeProvider = null)
+    {
+        if (!HasSubscriptions(pubSubConfigs))
+            return;
+
+        logger ??= NullLogger.Instance;
+        timeProvider ??= TimeProvider.System;
+
+        await PubSubConfigurationTimeout.RunAsync(
+            token => ConfigureSubscriptionsAsync(pubSubConfigs, clientBuilder, logger, timeProvider, token),
+            logger, timeProvider, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Determines whether any message configuration declares a subscription.
+    /// </summary>
+    internal static bool HasSubscriptions(IReadOnlyList<PubSubConfig> pubSubConfigs) =>
+        pubSubConfigs.Any(c => c.MessageConfigs.Any(m => !string.IsNullOrWhiteSpace(m.SubscriptionName)));
+
+    /// <summary>
+    /// Creates an emulator client and configures subscriptions using the supplied cancellation budget.
+    /// </summary>
+    internal static Task ConfigureSubscriptionsAsync(
+        IReadOnlyList<PubSubConfig> pubSubConfigs,
+        string endpoint,
+        ILogger logger,
+        TimeProvider timeProvider,
+        CancellationToken ct) =>
+        ConfigureSubscriptionsAsync(pubSubConfigs, new SubscriberServiceApiClientBuilder
+        {
+            ChannelCredentials = ChannelCredentials.Insecure,
+            Endpoint = endpoint,
+            Settings = CreateSubscriberSettings(),
+        }, logger, timeProvider, ct);
+
+    /// <summary>
+    /// Configures all declared subscriptions concurrently and logs the completion duration.
+    /// </summary>
+    private static async Task ConfigureSubscriptionsAsync(
+        IReadOnlyList<PubSubConfig> pubSubConfigs,
+        SubscriberServiceApiClientBuilder clientBuilder,
+        ILogger logger,
+        TimeProvider timeProvider,
         CancellationToken ct)
     {
-        if (pubSubConfigs.Count == 0)
-            return;
-
-        var tasksToRun = pubSubConfigs
+        var subscriptions = pubSubConfigs
             .SelectMany(c => c.MessageConfigs
-                .Where(p => !string.IsNullOrWhiteSpace(p.SubscriptionName))
-                .Select(mc => (c.ProjectId, MessageConfig: mc)))
+                .Where(m => !string.IsNullOrWhiteSpace(m.SubscriptionName))
+                .Select(m => (c.ProjectId, MessageConfig: m)))
             .ToList();
 
-        if (tasksToRun.Count == 0)
-            return;
+        var started = timeProvider.GetTimestamp();
+        logger.LogConfigurationStarting(subscriptions.Count);
+        ct.ThrowIfCancellationRequested();
 
-        var client = await new SubscriberServiceApiClientBuilder
-        {
-            EmulatorDetection = EmulatorDetection.EmulatorOnly,
-        }.BuildAsync(ct).ConfigureAwait(false);
-
-        var pushEndpoint = $"http://{PubSubDefaults.DockerInternalHost}:{portEndpoint.ToString(CultureInfo.InvariantCulture)}";
-        var tasks = tasksToRun
-            .ConvertAll(t => ModifyPushEndpoint(client, t.ProjectId, t.MessageConfig, pushEndpoint, ct))
-;
+        var client = await clientBuilder.BuildAsync(ct).ConfigureAwait(false);
+        var tasks = subscriptions.ConvertAll(s => ConfigureSubscriptionAsync(
+            client, s.ProjectId, s.MessageConfig, logger, ct));
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
+
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogConfigurationCompleted(subscriptions.Count, timeProvider.GetElapsedTime(started).TotalMilliseconds);
+    }
+
+    /// <summary>
+    /// Resolves one subscription destination, updates its settings and logs final RPC failures.
+    /// </summary>
+    private static async Task ConfigureSubscriptionAsync(
+        SubscriberServiceApiClient client,
+        string projectId,
+        MessageConfig messageConfig,
+        ILogger logger,
+        CancellationToken ct)
+    {
+        try
+        {
+            var pushEndpoint = await PubSubPushEndpointResolver.ResolveAsync(messageConfig, ct).ConfigureAwait(false);
+
+            await ModifyPushEndpoint(client, projectId, messageConfig, pushEndpoint, ct).ConfigureAwait(false);
+        }
+        catch (RpcException ex) when (!ct.IsCancellationRequested)
+        {
+            logger.LogSubscriptionConfigurationFailed(projectId, messageConfig.SubscriptionName!, ex.StatusCode, ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Adds a bounded startup window for subscriptions created by the emulator image.
+    /// Other read failures retain the SDK's transient-error classification; updates retain SDK defaults.
+    /// </summary>
+    internal static SubscriberServiceApiSettings CreateSubscriberSettings()
+    {
+        var settings = SubscriberServiceApiSettings.GetDefault();
+        var retryFilter = settings.GetSubscriptionSettings.Retry.RetryFilter;
+        settings.GetSubscriptionSettings = settings.GetSubscriptionSettings.WithRetry(
+            RetrySettings.FromExponentialBackoff(
+                maxAttempts: PubSubDefaults.CONFIGURATION_MAX_ATTEMPTS,
+                initialBackoff: TimeSpan.FromMilliseconds(200),
+                maxBackoff: TimeSpan.FromSeconds(2),
+                backoffMultiplier: 1.5,
+                retryFilter: ex => ex is RpcException { StatusCode: StatusCode.NotFound } || retryFilter(ex)));
+        return settings;
     }
 
     /// <summary>

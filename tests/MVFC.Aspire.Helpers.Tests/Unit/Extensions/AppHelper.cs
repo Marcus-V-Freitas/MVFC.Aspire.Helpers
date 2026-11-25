@@ -1,7 +1,19 @@
-﻿namespace MVFC.Aspire.Helpers.Tests.Unit.Extensions;
+namespace MVFC.Aspire.Helpers.Tests.Unit.Extensions;
 
 internal static class AppHelper
 {
+    internal static async Task<Dictionary<string, object>> GetConfiguredEnvironmentAsync(
+        this IDistributedApplicationBuilder builder, IResource resource, CancellationToken ct)
+    {
+        var environment = new Dictionary<string, object>();
+        var context = new EnvironmentCallbackContext(builder.ExecutionContext, resource, environment, ct);
+
+        foreach (var annotation in resource.Annotations.OfType<EnvironmentCallbackAnnotation>())
+            await annotation.Callback(context).ConfigureAwait(false);
+
+        return environment;
+    }
+
     internal static async Task<Dictionary<string, string>> GetEnvs(this IDistributedApplicationBuilder builder, IResource resource)
     {
         using var app = builder.Build();

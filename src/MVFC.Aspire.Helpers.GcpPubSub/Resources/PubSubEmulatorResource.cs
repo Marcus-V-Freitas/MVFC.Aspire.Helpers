@@ -1,4 +1,4 @@
-﻿namespace MVFC.Aspire.Helpers.GcpPubSub.Resources;
+namespace MVFC.Aspire.Helpers.GcpPubSub.Resources;
 
 /// <summary>
 /// Represents the Google Pub/Sub emulator resource for use in distributed applications.
@@ -8,6 +8,9 @@ public sealed class PubSubEmulatorResource(string name) : ContainerResource(name
     /// <summary>Internal HTTP endpoint name for the Pub/Sub emulator.</summary>
     internal const string HTTP_ENDPOINT_NAME = "http";
 
+    /// <summary>
+    /// Cached reference to the emulator HTTP endpoint.
+    /// </summary>
     private EndpointReference? _httpReference;
 
     /// <summary>
@@ -33,11 +36,4 @@ public sealed class PubSubEmulatorResource(string name) : ContainerResource(name
     /// Wait timeout for emulator initialization in seconds.
     /// </summary>
     internal int WaitTimeoutSeconds { get; set; } = PubSubDefaults.WAIT_TIMEOUT_SECONDS_DEFAULT;
-}
-
-/// <summary>
-/// Annotation to mark that topics and subscriptions have already been configured.
-/// </summary>
-internal sealed class PubSubConfiguredAnnotation : IResourceAnnotation
-{
 }

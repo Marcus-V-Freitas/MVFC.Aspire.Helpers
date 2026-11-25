@@ -16,6 +16,8 @@ With it, you can not only initialize an official Keycloak container but also inj
 
 ## Motivation
 
+Calling `WithSeeds` more than once replaces the configured seed list. Calling it with an empty list clears prior seeds.
+
 Keycloak is powerful, but local setup is often painful:
 
 - Large docker commands with many environment variables and import flags.

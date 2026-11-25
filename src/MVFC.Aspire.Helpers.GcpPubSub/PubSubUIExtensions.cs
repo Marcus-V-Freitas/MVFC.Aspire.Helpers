@@ -44,7 +44,7 @@ public static class PubSubUIExtensions
 
     /// <summary>
     /// Associates the Pub/Sub admin UI with a specific emulator, establishing
-    /// the required environment variable and initialization dependency.
+    /// the emulator host and project ID environment variables. Add WaitFor explicitly when needed.
     /// </summary>
     public static IResourceBuilder<PubSubUIResource> WithReference(
         this IResourceBuilder<PubSubUIResource> ui,
@@ -54,7 +54,7 @@ public static class PubSubUIExtensions
         ArgumentNullException.ThrowIfNull(emulator);
 
         ui.WithEnvironment(PubSubDefaults.EMULATOR_HOST_ENV_VAR, emulator.Resource.ConnectionStringExpression);
-        ApplyProjectIdsEnv(ui, emulator.Resource.PubSubConfigs);
+        ApplyProjectIdsEnv(ui, emulator.Resource);
         return ui;
     }
 
@@ -63,17 +63,18 @@ public static class PubSubUIExtensions
     /// </summary>
     private static void ApplyProjectIdsEnv(
         IResourceBuilder<PubSubUIResource> ui,
-        IReadOnlyList<PubSubConfig> pubSubConfigs)
+        PubSubEmulatorResource emulator)
     {
-        if (pubSubConfigs.Count == 0)
-            return;
-
-        var projectIds = string.Join(PubSubDefaults.CREATION_DELIMITER, pubSubConfigs.Select(c => c.ProjectId));
-        ui.WithEnvironment(PubSubDefaults.GCP_PROJECT_IDS_ENV_VAR, projectIds);
+        ui.WithEnvironment(ctx =>
+        {
+            if (emulator.PubSubConfigs.Count > 0)
+                ctx.EnvironmentVariables[PubSubDefaults.GCP_PROJECT_IDS_ENV_VAR] = string.Join(
+                    PubSubDefaults.CREATION_DELIMITER, emulator.PubSubConfigs.Select(c => c.ProjectId));
+        });
     }
 
     /// <summary>
-    /// Configures the HTTP endpoint of the Pub/Sub UI, without proxy, with HTTP health check.
+    /// Configures the HTTP endpoint of the Pub/Sub UI, with a proxy and an HTTP health check.
     /// </summary>
     private static IResourceBuilder<PubSubUIResource> WithPubSubUiEndpoint(
         this IResourceBuilder<PubSubUIResource> resource,

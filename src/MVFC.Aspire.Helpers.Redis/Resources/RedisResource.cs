@@ -10,6 +10,14 @@
 /// </remarks>
 public sealed class RedisResource(string name) : ContainerResource(name), IResourceWithConnectionString
 {
+    /// <summary>
+    /// Password supplied to Redis and its associated Commander container.
+    /// </summary>
+    internal string? Password { get; set; }
+
+    /// <summary>
+    /// Cached reference to the Redis endpoint.
+    /// </summary>
     private EndpointReference? _redisReference;
 
     /// <summary>

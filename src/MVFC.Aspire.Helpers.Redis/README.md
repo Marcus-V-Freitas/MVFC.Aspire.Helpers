@@ -14,6 +14,8 @@ Helper for integrating with Redis in .NET Aspire projects, including distributed
 
 ## Motivation
 
+When `WithPassword` is used, `WithCommander` passes the same value to Redis Commander as `REDIS_PASSWORD`.
+
 For local dev, Redis is often set up via an ad‑hoc container:
 
 - No clear place to centralize password configuration.

@@ -247,8 +247,13 @@ public sealed class SpannerEmulatorExtensionsTests
     [Fact]
     public void SpannerConfig_WithNullDdlStatements_ShouldDefaultToEmptyList()
     {
-        // Arrange & Act
-        var config = new SpannerConfig("proj", "inst", "db", DdlStatements: null);
+        // Arrange
+        const string projectId = "proj";
+        const string instanceId = "inst";
+        const string databaseId = "db";
+
+        // Act
+        var config = new SpannerConfig(projectId, instanceId, databaseId, DdlStatements: null);
 
         // Assert
         config.DdlStatements.Should().BeEmpty();
@@ -266,5 +271,21 @@ public sealed class SpannerEmulatorExtensionsTests
         // Assert
         config.DdlStatements.Should().ContainSingle();
         config.DdlStatements[0].Should().Contain("CREATE TABLE");
+    }
+
+    [Fact]
+    public void WithReference_BeforeWithSpannerConfigs_ShouldRegisterConfigurator()
+    {
+        // Arrange
+        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var spanner = appBuilder.AddGcpSpanner("spanner");
+
+        // Act
+        project.WithReference(spanner);
+        spanner.WithSpannerConfigs(new SpannerConfig("project-a", "instance-a", "database-a"));
+
+        // Assert
+        spanner.Resource.Annotations.OfType<SpannerConfiguredAnnotation>().Should().ContainSingle();
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace MVFC.Aspire.Helpers.Playground.Api.Endpoints;
 
-public static class PubSubEndpoints 
+public static class PubSubEndpoints
 {
     public static void MapPubSubEndpoints(this IEndpointRouteBuilder apiGroup) 
     {
@@ -11,10 +11,11 @@ public static class PubSubEndpoints
             return Results.Ok();
         });
 
-        apiGroup.MapPost("/pub-sub-exit", async (HttpRequest request) => 
+        apiGroup.MapPost("/pub-sub-exit", async (HttpRequest request) =>
         {
             using var reader = new StreamReader(request.Body);
             var body = await reader.ReadToEndAsync().ConfigureAwait(false);
+
             return Results.Ok(body);
         });
     }

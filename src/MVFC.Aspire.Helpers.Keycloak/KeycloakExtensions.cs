@@ -1,7 +1,13 @@
 namespace MVFC.Aspire.Helpers.Keycloak;
 
+/// <summary>
+/// Extension methods for configuring and referencing Keycloak resources in Aspire.
+/// </summary>
 public static class KeycloakExtensions
 {
+    /// <summary>
+    /// Adds a Keycloak container with HTTP and management endpoints.
+    /// </summary>
     public static IResourceBuilder<KeycloakResource> AddKeycloak(
         this IDistributedApplicationBuilder builder,
         string name,
@@ -21,6 +27,9 @@ public static class KeycloakExtensions
             .WithKeycloakEndpoint(httpPort, managementPort);
     }
 
+    /// <summary>
+    /// Replaces the Keycloak container image and tag.
+    /// </summary>
     public static IResourceBuilder<KeycloakResource> WithDockerImage(
         this IResourceBuilder<KeycloakResource> builder,
         string image,
@@ -33,6 +42,9 @@ public static class KeycloakExtensions
         return builder.WithImage(image).WithImageTag(tag);
     }
 
+    /// <summary>
+    /// Sets the administrator credentials used by the Keycloak container.
+    /// </summary>
     public static IResourceBuilder<KeycloakResource> WithAdminCredentials(
         this IResourceBuilder<KeycloakResource> builder,
         string username,
@@ -50,6 +62,9 @@ public static class KeycloakExtensions
             .WithEnvironment(KeycloakDefaults.ADMIN_PASSWORD_ENV, password);
     }
 
+    /// <summary>
+    /// Replaces the realm seeds read by the single callback before application startup.
+    /// </summary>
     public static IResourceBuilder<KeycloakResource> WithSeeds(
         this IResourceBuilder<KeycloakResource> builder,
         params IReadOnlyCollection<IKeycloakRealmSeed> seeds)
@@ -59,12 +74,14 @@ public static class KeycloakExtensions
 
         builder.Resource.Seeds = seeds;
 
-        if (seeds.Count == 0)
+        if (builder.Resource.TryGetAnnotationsOfType<KeycloakSeedsCallbackAnnotation>(out _))
             return builder;
 
+        builder.WithAnnotation(new KeycloakSeedsCallbackAnnotation());
         builder.ApplicationBuilder.Eventing.Subscribe<BeforeStartEvent>((_, _) =>
         {
-            var realmFiles = seeds.Select(seed => new ContainerFile
+            var currentSeeds = builder.Resource.Seeds ?? [];
+            var realmFiles = currentSeeds.Select(seed => new ContainerFile
             {
                 Name = $"{seed.RealmName}-realm.json",
                 Contents = KeycloakRealmJsonBuilder.Build(seed),
@@ -72,8 +89,11 @@ public static class KeycloakExtensions
                            UnixFileMode.GroupRead | UnixFileMode.OtherRead,
             }).ToArray();
 
-            builder.WithContainerFiles(KeycloakDefaults.IMPORT_PATH, realmFiles)
-                   .WithArgs(KeycloakDefaults.IMPORT_REALM_ARG);
+            if (realmFiles.Length > 0)
+            {
+                builder.WithContainerFiles(KeycloakDefaults.IMPORT_PATH, realmFiles)
+                       .WithArgs(KeycloakDefaults.IMPORT_REALM_ARG);
+            }
 
             return Task.CompletedTask;
         });
@@ -81,17 +101,23 @@ public static class KeycloakExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Selects whether realm imports preserve or overwrite existing realms.
+    /// </summary>
     public static IResourceBuilder<KeycloakResource> WithImportStrategy(
         this IResourceBuilder<KeycloakResource> builder,
         KeycloakImportStrategy strategy = KeycloakImportStrategy.IgnoreExisting)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var strategyValue = strategy == KeycloakImportStrategy.IgnoreExisting ? "IGNORE_EXISTING" : "OVERWRITE_EXISTING";
+        var strategyValue = strategy == KeycloakImportStrategy.IgnoreExisting ? KeycloakDefaults.IGNORE_EXISTING_IMPORT_STRATEGY : KeycloakDefaults.OVERWRITE_EXISTING_IMPORT_STRATEGY;
 
-        return builder.WithArgs($"--spi-import-importer-file-strategy={strategyValue}");
+        return builder.WithArgs($"{KeycloakDefaults.IMPORT_STRATEGY_ARG}={strategyValue}");
     }
 
+    /// <summary>
+    /// Mounts a named volume for persistent Keycloak data.
+    /// </summary>
     public static IResourceBuilder<KeycloakResource> WithDataVolume(
         this IResourceBuilder<KeycloakResource> builder,
         string volumeName)
@@ -129,6 +155,9 @@ public static class KeycloakExtensions
         return project;
     }
 
+    /// <summary>
+    /// Configures proxied HTTP and management endpoints with a readiness health check.
+    /// </summary>
     private static IResourceBuilder<KeycloakResource> WithKeycloakEndpoint(
         this IResourceBuilder<KeycloakResource> resource,
         int httpPort,
@@ -149,7 +178,7 @@ public static class KeycloakExtensions
                 name: KeycloakDefaults.MANAGEMENT_ENDPOINT,
                 isProxied: true)
             .WithEnvironment(KeycloakDefaults.MANAGEMENT_ENV, "true")
-            .WithEnvironment("KC_HTTP_PORT", KeycloakDefaults.HOST_PORT.ToString(CultureInfo.InvariantCulture))
+            .WithEnvironment(KeycloakDefaults.HTTP_PORT_ENV, KeycloakDefaults.HOST_PORT.ToString(CultureInfo.InvariantCulture))
             .WithHttpHealthCheck(
                 path: KeycloakDefaults.HEALTH_PATH,
                 endpointName: KeycloakDefaults.MANAGEMENT_ENDPOINT);

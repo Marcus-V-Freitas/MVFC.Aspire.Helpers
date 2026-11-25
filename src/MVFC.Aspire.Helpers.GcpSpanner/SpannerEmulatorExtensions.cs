@@ -37,6 +37,7 @@ public static class SpannerEmulatorExtensions
         ArgumentNullException.ThrowIfNull(configs);
 
         builder.Resource.SpannerConfigs = [.. builder.Resource.SpannerConfigs, .. configs];
+        RegisterSpannerConfigurator(builder);
         return builder;
     }
 
@@ -153,9 +154,6 @@ public static class SpannerEmulatorExtensions
     private static void RegisterSpannerConfigurator(
         IResourceBuilder<SpannerEmulatorResource> spanner)
     {
-        if (spanner.Resource.SpannerConfigs.Count == 0)
-            return;
-
         if (spanner.Resource.TryGetAnnotationsOfType<SpannerConfiguredAnnotation>(out _))
             return;
 
@@ -163,13 +161,12 @@ public static class SpannerEmulatorExtensions
 
         spanner.OnResourceReady(async (_, _, ct) =>
         {
-            var connectionString = await spanner.Resource.ConnectionStringExpression.GetValueAsync(ct).ConfigureAwait(false);
-            Environment.SetEnvironmentVariable(SpannerDefaults.EMULATOR_HOST_ENV_VAR, connectionString);
-
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             cts.CancelAfter(TimeSpan.FromSeconds(spanner.Resource.WaitTimeoutSeconds));
 
-            await SpannerConfigProcessor.ConfigureAsync(spanner.Resource.SpannerConfigs, cts.Token).ConfigureAwait(false);
+            var connectionString = await spanner.Resource.ConnectionStringExpression.GetValueAsync(cts.Token).ConfigureAwait(false)
+                ?? throw new InvalidOperationException("Spanner emulator endpoint was not resolved.");
+            await SpannerConfigProcessor.ConfigureAsync(spanner.Resource.SpannerConfigs, connectionString, cts.Token).ConfigureAwait(false);
         });
     }
 }
