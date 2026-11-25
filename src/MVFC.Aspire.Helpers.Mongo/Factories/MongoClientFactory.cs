@@ -5,7 +5,7 @@
 /// </summary>
 internal static class MongoClientFactory
 {
-    private static readonly ConcurrentDictionary<string, IMongoClient> _clients = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<string, IMongoClient> _clients = new(StringComparer.Ordinal);
 
     /// <summary>
     /// Gets or creates a MongoDB client for the provided connection string and executes all configured dumps.

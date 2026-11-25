@@ -1,0 +1,9 @@
+# @import ./variables.http
+
+### ATENCAO: esta rota lista, baixa E APAGA os arquivos do bucket
+# Desabilitada por padrao. Leia README.md antes de habilitar.
+# @name storageDownloadAndDelete
+# @disabled allowStorageDelete !== true && allowStorageDelete !== "true"
+GET {{apiUrl}}/api/bucket/{{storageBucket}}
+
+?? status == 200

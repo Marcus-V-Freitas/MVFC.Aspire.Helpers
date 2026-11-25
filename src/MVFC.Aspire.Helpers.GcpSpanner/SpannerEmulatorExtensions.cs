@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.GcpSpanner;
+﻿namespace MVFC.Aspire.Helpers.GcpSpanner;
 
 /// <summary>
 /// Extension methods para registrar o Google Cloud Spanner emulator no Aspire.
@@ -159,14 +159,6 @@ public static class SpannerEmulatorExtensions
 
         spanner.WithAnnotation(new SpannerConfiguredAnnotation());
 
-        spanner.OnResourceReady(async (_, _, ct) =>
-        {
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            cts.CancelAfter(TimeSpan.FromSeconds(spanner.Resource.WaitTimeoutSeconds));
-
-            var connectionString = await spanner.Resource.ConnectionStringExpression.GetValueAsync(cts.Token).ConfigureAwait(false)
-                ?? throw new InvalidOperationException("Spanner emulator endpoint was not resolved.");
-            await SpannerConfigProcessor.ConfigureAsync(spanner.Resource.SpannerConfigs, connectionString, cts.Token).ConfigureAwait(false);
-        });
+        spanner.OnResourceReady((_, _, ct) => SpannerEmulatorInitializer.ConfigureAsync(spanner.Resource, ct));
     }
 }

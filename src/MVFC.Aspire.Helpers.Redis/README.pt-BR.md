@@ -136,3 +136,17 @@ sequenceDiagram
 ## Licença
 
 Apache-2.0
+
+## Autenticação do consumidor
+
+`project.WithReference(redis)` fornece `ConnectionStrings:<nome-do-recurso>` (host/porta) e a configuração secreta `Redis:<nome-do-recurso>:Password`. As credenciais são resolvidas após a configuração fluente, inclusive com `WithPassword` depois de `WithReference`. Chamadas repetidas de `WithPassword` usam a senha final e uma única opção `--requirepass`. Conexões sem senha continuam disponíveis.
+
+O formato de conexão do StackExchange.Redis não permite escapar vírgulas em senhas. Mantenha a senha separada e configure o cliente sem duplicar credenciais:
+
+```csharp
+var options = ConfigurationOptions.Parse(configuration.GetConnectionString("redis")!);
+options.Password = configuration["Redis:redis:Password"];
+var connection = await ConnectionMultiplexer.ConnectAsync(options);
+```
+
+Use o nome real do recurso nas duas configurações. Um projeto pode referenciar vários recursos Redis com senhas independentes. Consumidores em containers que usam o `WithReference` nativo do Aspire devem fornecer explicitamente a configuração de senha do seu cliente; `WithCommander` configura o Redis Commander.

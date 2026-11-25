@@ -200,3 +200,25 @@ Each `:` indicates a level/section within the `appsettings.json` file:
 ## License
 
 Apache-2.0
+
+## Repeatable seeds
+
+`MongoClassDump<T>` retains its append behavior. Opt into `MongoUpsertDump<T>` through the same `WithDumps` API to replace or insert documents by their serialized `_id`:
+
+```csharp
+var dump = new MongoUpsertDump<BsonDocument>(
+    DatabaseName: "catalog",
+    CollectionName: "items",
+    Quantity: 1,
+    Faker: new Faker<BsonDocument>().CustomInstantiator(_ => new BsonDocument
+    {
+        ["_id"] = "default-item",
+        ["name"] = "Default item",
+    }));
+
+mongo.WithDumps(dump);
+```
+
+Supply stable, non-null identities. Missing/null IDs and duplicate IDs within a batch are rejected before writing. Reexecution replaces the complete document; it does not delete documents absent from the batch. A canceled or failed batch may leave partial writes; rerun with the same IDs to reconcile. MongoDB's unique `_id` index prevents duplicate identities; other unique constraints can still reject writes. Concurrent updates to the same ID have last-writer semantics.
+
+Client caching compares complete connection strings using ordinal case-sensitive identity, preserving differences in passwords and database names.

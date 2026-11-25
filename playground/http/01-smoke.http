@@ -1,0 +1,25 @@
+# @import ./variables.http
+
+### MongoDB: conectividade
+# @name mongoPing
+GET {{apiUrl}}/api/mongo
+
+?? status == 200
+?? body includes Funcionou
+
+### Firestore: conectividade
+# @name firestorePing
+GET {{apiUrl}}/api/firestore/ping
+
+?? status == 200
+
+### Spanner: conectividade
+# @name spannerPing
+GET {{apiUrl}}/api/spanner
+
+?? status == 200
+{{
+  test("Spanner responde ao ping", () => {
+    require("assert").strictEqual(response.parsedBody.status, "Spanner emulador OK");
+  });
+}}

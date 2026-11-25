@@ -12,3 +12,4 @@ global using MVFC.Aspire.Helpers.Mongo.Helpers;
 global using MVFC.Aspire.Helpers.Mongo.Models;
 global using MVFC.Aspire.Helpers.Mongo.Processors;
 global using MVFC.Aspire.Helpers.Mongo.Resources;
+global using MongoDB.Bson;

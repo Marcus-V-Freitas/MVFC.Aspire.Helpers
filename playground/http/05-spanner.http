@@ -1,0 +1,27 @@
+# @import ./variables.http
+
+### Criar usuario
+# @name spannerCreate
+{{
+  exports.spannerName = "httpyac-" + require("crypto").randomUUID();
+}}
+POST {{apiUrl}}/api/spanner/users
+Content-Type: application/json
+
+{ "name": "{{spannerName}}" }
+
+?? status == 201
+
+### Consultar o usuario desta execucao
+# @name spannerList
+# @ref spannerCreate
+GET {{apiUrl}}/api/spanner/users
+
+?? status == 200
+{{
+  test("Spanner persiste o usuario criado", () => {
+    const assert = require("assert");
+    assert.ok(Array.isArray(response.parsedBody));
+    assert.ok(response.parsedBody.some(user => (user.name ?? user.Name) === spannerName));
+  });
+}}

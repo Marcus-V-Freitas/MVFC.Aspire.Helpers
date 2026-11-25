@@ -1,0 +1,19 @@
+# @import ./variables.http
+
+### Enviar email para o SMTP capturado pelo Mailpit local
+# @name mailpitSend
+{{
+  exports.mailSubject = "httpyac-" + require("crypto").randomUUID();
+}}
+POST {{apiUrl}}/api/send-email
+Content-Type: application/json
+
+{
+  "from": "httpyac@example.test",
+  "to": "recipient@example.test",
+  "subject": "{{mailSubject}}",
+  "body": "Mensagem de simulacao do Aspire playground."
+}
+
+?? status == 200
+?? body includes Email enviado

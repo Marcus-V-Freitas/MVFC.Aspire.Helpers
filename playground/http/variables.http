@@ -1,0 +1,17 @@
+# Valores de desenvolvimento do playground; nao utilize credenciais reais neste arquivo.
+# Defaults condicionais preservam sobrescritas por --var no CLI.
+{{
+  exports.apiUrl = typeof apiUrl !== "undefined" ? apiUrl : "http://localhost:5050";
+  exports.wireMockUrl = typeof wireMockUrl !== "undefined" ? wireMockUrl : "http://localhost:7070";
+  exports.keycloakUrl = typeof keycloakUrl !== "undefined" ? keycloakUrl : "http://localhost:8081";
+  exports.rabbitManagementUrl = typeof rabbitManagementUrl !== "undefined" ? rabbitManagementUrl : "http://localhost:15672";
+  exports.brokerLocalAccount = typeof brokerLocalAccount !== "undefined" ? brokerLocalAccount : "teste";
+  exports.brokerLocalValue = typeof brokerLocalValue !== "undefined" ? brokerLocalValue : "teste";
+  exports.keycloakRealm = typeof keycloakRealm !== "undefined" ? keycloakRealm : "my-app";
+  exports.identityLocalClient = typeof identityLocalClient !== "undefined" ? identityLocalClient : "my-api";
+  exports.identityClientValue = typeof identityClientValue !== "undefined" ? identityClientValue : "api-secret-1234";
+  exports.identityLocalAccount = typeof identityLocalAccount !== "undefined" ? identityLocalAccount : "marcus.admin";
+  exports.identityLocalValue = typeof identityLocalValue !== "undefined" ? identityLocalValue : "Admin@123";
+  exports.storageBucket = typeof storageBucket !== "undefined" ? storageBucket : "bucket-teste";
+  exports.allowStorageDelete = typeof allowStorageDelete !== "undefined" ? allowStorageDelete : false;
+}}

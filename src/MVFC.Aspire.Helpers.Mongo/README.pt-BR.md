@@ -195,3 +195,25 @@ O `MongoClassDump<T>` é uma classe utilizada para facilitar a inserção autom�
 ## Licença
 
 Apache-2.0
+
+## Seeds repetíveis
+
+`MongoClassDump<T>` continua inserindo documentos. Para substituir ou inserir pelo `_id` serializado, escolha explicitamente `MongoUpsertDump<T>` e registre-o pela mesma API `WithDumps`:
+
+```csharp
+var dump = new MongoUpsertDump<BsonDocument>(
+    DatabaseName: "catalog",
+    CollectionName: "items",
+    Quantity: 1,
+    Faker: new Faker<BsonDocument>().CustomInstantiator(_ => new BsonDocument
+    {
+        ["_id"] = "default-item",
+        ["name"] = "Item padrão",
+    }));
+
+mongo.WithDumps(dump);
+```
+
+Forneça identidades estáveis e não nulas. IDs ausentes/nulos ou duplicados na massa são rejeitados antes da escrita. A repetição substitui o documento completo, sem remover documentos ausentes da massa. Cancelamento ou falha podem deixar escritas parciais; repita com os mesmos IDs para reconciliar. O índice único de `_id` impede identidades duplicadas; outras restrições únicas ainda podem rejeitar escritas. Em atualizações concorrentes do mesmo ID, prevalece a última escrita.
+
+O cache compara a conexão completa com identidade ordinal sensível à capitalização, preservando diferenças em senhas e nomes de bancos.

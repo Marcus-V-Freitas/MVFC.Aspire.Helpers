@@ -26,6 +26,18 @@ internal static class SpannerConfigProcessor
             Endpoint = endpoint,
         }.BuildAsync(ct).ConfigureAwait(false);
 
+        await ConfigureAsync(configs, instanceAdminClient, dbAdminClient, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Provisions resources using administration clients and one shared cancellation budget.
+    /// </summary>
+    internal static async Task ConfigureAsync(
+        IReadOnlyList<SpannerConfig> configs,
+        InstanceAdminClient instanceAdminClient,
+        DatabaseAdminClient dbAdminClient,
+        CancellationToken ct)
+    {
         foreach (var config in configs)
             await ProvisionAsync(instanceAdminClient, dbAdminClient, config, ct).ConfigureAwait(false);
     }
@@ -76,7 +88,10 @@ internal static class SpannerConfigProcessor
                 },
             }, ct).ConfigureAwait(false);
 
-        await operation.PollUntilCompletedAsync().ConfigureAwait(false);
+        var completed = await operation.PollUntilCompletedAsync(
+            callSettings: CallSettings.FromCancellationToken(ct)).ConfigureAwait(false);
+
+        _ = completed.Result;
     }
 
     /// <summary>
@@ -106,6 +121,9 @@ internal static class SpannerConfigProcessor
                 ExtraStatements = { config.DdlStatements },
             }, ct).ConfigureAwait(false);
 
-        await operation.PollUntilCompletedAsync().ConfigureAwait(false);
+        var completed = await operation.PollUntilCompletedAsync(
+            callSettings: CallSettings.FromCancellationToken(ct)).ConfigureAwait(false);
+
+        _ = completed.Result;
     }
 }

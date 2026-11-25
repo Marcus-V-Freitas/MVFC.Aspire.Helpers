@@ -155,7 +155,7 @@ sequenceDiagram
 ```json
 {
   "ConnectionStrings": {
-    "rabbitmq": "localhost:5672"
+    "rabbitmq": "amqp://user:password@localhost:5672"
   }
 }
 ```
@@ -169,3 +169,17 @@ sequenceDiagram
 ## License
 
 Apache-2.0
+
+## Authenticated connection references
+
+The AMQP connection now includes the configured username and password, escaped as URI components. `WithReference` resolves the final credentials even when `WithCredentials` is called afterward. The password is represented by an Aspire secret parameter, rather than embedded in the manifest expression. The default virtual host remains `/`.
+
+```csharp
+var factory = new ConnectionFactory
+{
+    Uri = new Uri(configuration.GetConnectionString("rabbitmq")!),
+};
+await using var connection = await factory.CreateConnectionAsync();
+```
+
+Do not repeat `UserName` or `Password` in the consumer. Consumers that manually parse the previous host/port-only URI must account for AMQP user information. Treat the resolved connection string as a secret.

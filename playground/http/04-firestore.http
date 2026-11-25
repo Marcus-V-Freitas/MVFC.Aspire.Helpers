@@ -1,0 +1,34 @@
+# @import ./variables.http
+
+### Criar usuario com nome exclusivo
+# @name firestoreCreate
+{{
+  exports.firestoreName = "httpyac-" + require("crypto").randomUUID();
+}}
+POST {{apiUrl}}/api/firestore/users
+Content-Type: application/json
+
+{ "name": "{{firestoreName}}" }
+
+?? status == 201
+{{
+  test("Firestore retorna a identidade criada", () => {
+    require("assert").ok(response.parsedBody.id);
+  });
+}}
+
+### Consultar e localizar especificamente o usuario criado
+# @name firestoreList
+# @ref firestoreCreate
+GET {{apiUrl}}/api/firestore/users
+
+?? status == 200
+{{
+  test("Firestore persiste o usuario desta execucao", () => {
+    const assert = require("assert");
+    assert.ok(Array.isArray(response.parsedBody));
+    assert.ok(response.parsedBody.some(user =>
+      (user.Id ?? user.id) === firestoreCreate.id &&
+      (user.Name ?? user.name) === firestoreName));
+  });
+}}

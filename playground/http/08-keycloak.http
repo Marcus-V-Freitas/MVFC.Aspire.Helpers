@@ -1,0 +1,52 @@
+# @import ./variables.http
+
+### Sem token: acesso negado
+# @name keycloakAnonymous
+GET {{apiUrl}}/api/key-cloak
+
+?? status == 401
+
+### Obter token usando o realm e usuario do seed local
+# @name keycloakToken
+{{
+  exports.encodedClientName = encodeURIComponent(identityLocalClient);
+  exports.encodedClientValue = encodeURIComponent(identityClientValue);
+  exports.encodedAccountName = encodeURIComponent(identityLocalAccount);
+  exports.encodedAccountValue = encodeURIComponent(identityLocalValue);
+}}
+POST {{keycloakUrl}}/realms/{{keycloakRealm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{encodedClientName}}&client_secret={{encodedClientValue}}&username={{encodedAccountName}}&password={{encodedAccountValue}}
+
+?? status == 200
+{{
+  test("Keycloak retorna access_token", () => {
+    require("assert").ok(response.parsedBody.access_token);
+  });
+}}
+
+### Token capturado no request anterior
+# @name keycloakAuthorized
+# @ref keycloakToken
+GET {{apiUrl}}/api/key-cloak
+Authorization: Bearer {{keycloakToken.access_token}}
+
+?? status == 200
+{{
+  test("API identifica o usuario autenticado e sua role", () => {
+    const assert = require("assert");
+    assert.strictEqual(response.parsedBody.username, identityLocalAccount);
+    assert.ok(response.parsedBody.roles.includes("admin"));
+  });
+}}
+
+### Credenciais invalidas: rejeicao do grant
+# @name keycloakInvalidGrant
+# @ref keycloakToken
+POST {{keycloakUrl}}/realms/{{keycloakRealm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{encodedClientName}}&client_secret={{encodedClientValue}}&username={{encodedAccountName}}&password=httpyac-invalid-password
+
+?? status == 400

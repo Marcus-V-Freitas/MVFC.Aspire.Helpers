@@ -1,0 +1,32 @@
+# @import ./variables.http
+
+### Chave inexistente: nao depende dos dados de outras execucoes
+# @name redisMissing
+{{
+  exports.missingKey = "httpyac-missing-" + require("crypto").randomUUID();
+}}
+GET {{apiUrl}}/api/redis/get/{{missingKey}}
+
+?? status == 404
+
+### Gravar valor com identidade exclusiva
+# @name redisSet
+{{
+  exports.redisKey = "httpyac-" + require("crypto").randomUUID();
+  exports.redisValue = "valor-" + require("crypto").randomUUID();
+}}
+GET {{apiUrl}}/api/redis/set/{{redisKey}}/{{redisValue}}
+
+?? status == 200
+
+### Ler e comparar o valor desta execucao
+# @name redisGet
+# @ref redisSet
+GET {{apiUrl}}/api/redis/get/{{redisKey}}
+
+?? status == 200
+{{
+  test("Redis devolve o valor gravado", () => {
+    require("assert").strictEqual(response.body, redisValue);
+  });
+}}

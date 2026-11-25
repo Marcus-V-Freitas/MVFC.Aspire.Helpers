@@ -1,0 +1,20 @@
+# @import ./variables.http
+
+### Gerar PDF a partir de HTML
+# @name gotenbergPdf
+POST {{apiUrl}}/api/pdf
+Content-Type: application/json
+Accept: application/pdf
+
+{
+  "html": "<!doctype html><html><head><meta charset='utf-8'><title>httpyac</title></head><body><h1>Aspire playground</h1><p>PDF gerado pelo Gotenberg.</p></body></html>"
+}
+
+?? status == 200
+?? header content-type includes application/pdf
+{{
+  test("Gotenberg retorna um arquivo PDF", () => {
+    const bytes = Buffer.from(response.body);
+    require("assert").strictEqual(bytes.subarray(0, 5).toString("ascii"), "%PDF-");
+  });
+}}

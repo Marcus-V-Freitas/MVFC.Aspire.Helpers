@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.RabbitMQ.Resources;
+﻿namespace MVFC.Aspire.Helpers.RabbitMQ.Resources;
 
 /// <summary>
 /// Represents the RabbitMQ resource as an Aspire container, providing AMQP and Management endpoints
@@ -17,6 +17,21 @@ public sealed class RabbitMQResource(string name) : ContainerResource(name), IRe
     internal const string MANAGEMENT_ENDPOINT_NAME = "management";
 
     private EndpointReference? _amqpReference;
+    /// <summary>Cached deferred username parameter.</summary>
+    private ParameterResource? _usernameParameter;
+
+    /// <summary>Cached deferred secret parameter.</summary>
+    private ParameterResource? _passwordParameter;
+
+    /// <summary>
+    /// Deferred username supplied to the broker and connection expression.
+    /// </summary>
+    internal ParameterResource UsernameParameter => _usernameParameter ??= new($"{Name}-username", _ => Username);
+
+    /// <summary>
+    /// Deferred secret supplied to the broker and connection expression.
+    /// </summary>
+    internal ParameterResource PasswordParameter => _passwordParameter ??= new($"{Name}-password", _ => Password, secret: true);
 
     /// <summary>
     /// Reference to the AMQP endpoint of the RabbitMQ resource.
@@ -29,7 +44,7 @@ public sealed class RabbitMQResource(string name) : ContainerResource(name), IRe
     /// </summary>
     public ReferenceExpression ConnectionStringExpression =>
         ReferenceExpression.Create(
-            $"amqp://{AmqpEndpoint.Property(EndpointProperty.Host)}:{AmqpEndpoint.Property(EndpointProperty.Port)}"
+            $"amqp://{UsernameParameter:uri}:{PasswordParameter:uri}@{AmqpEndpoint.Property(EndpointProperty.Host)}:{AmqpEndpoint.Property(EndpointProperty.Port)}"
         );
 
     /// <summary>

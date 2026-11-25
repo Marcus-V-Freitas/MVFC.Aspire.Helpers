@@ -1,0 +1,75 @@
+# @import ./variables.http
+
+# Autenticacao da Management API, recalculada por request sem imprimir credenciais.
+{{
+  exports.rabbitAuth = "Basic " + Buffer.from(brokerLocalAccount + ":" + brokerLocalValue).toString("base64");
+}}
+
+### Criar fila isolada; x-expires remove a fila apos 5 minutos sem uso
+# @name rabbitQueue
+{{
+  const id = require("crypto").randomUUID();
+  exports.rabbitQueueName = "httpyac-" + id;
+  exports.rabbitRoutingKey = "httpyac." + id;
+  exports.rabbitMessage = "mensagem-" + id;
+}}
+PUT {{rabbitManagementUrl}}/api/queues/%2F/{{rabbitQueueName}}
+Authorization: {{rabbitAuth}}
+Content-Type: application/json
+
+{
+  "durable": false,
+  "auto_delete": false,
+  "arguments": { "x-expires": 300000 }
+}
+
+?? status == 201
+
+### Binding exclusivo no exchange do playground
+# @name rabbitBinding
+# @ref rabbitQueue
+POST {{rabbitManagementUrl}}/api/bindings/%2F/e/test-exchange/q/{{rabbitQueueName}}
+Authorization: {{rabbitAuth}}
+Content-Type: application/json
+
+{ "routing_key": "{{rabbitRoutingKey}}", "arguments": {} }
+
+?? status == 201
+
+### Publicar pela API real, sem usar a test-queue
+# @name rabbitPublish
+# @ref rabbitQueue
+# @ref rabbitBinding
+POST {{apiUrl}}/api/rabbitmq/publish/test-exchange/{{rabbitRoutingKey}}/{{rabbitMessage}}
+
+?? status == 200
+
+### Consumir somente a mensagem desta execucao
+# @name rabbitConsume
+# @ref rabbitQueue
+# @ref rabbitPublish
+GET {{apiUrl}}/api/rabbitmq/consume/{{rabbitQueueName}}
+
+?? status == 200
+{{
+  test("RabbitMQ devolve a mensagem publicada", () => {
+    require("assert").strictEqual(response.parsedBody, rabbitMessage);
+  });
+}}
+
+### Segunda leitura: fila vazia
+# @name rabbitEmpty
+# @ref rabbitQueue
+# @ref rabbitConsume
+GET {{apiUrl}}/api/rabbitmq/consume/{{rabbitQueueName}}
+
+?? status == 204
+
+### Remover apenas a fila temporaria criada neste arquivo
+# @name rabbitCleanup
+# @ref rabbitQueue
+# @ref rabbitEmpty
+DELETE {{rabbitManagementUrl}}/api/queues/%2F/{{rabbitQueueName}}?if-empty=true&if-unused=true
+Authorization: {{rabbitAuth}}
+
+?? status == 204

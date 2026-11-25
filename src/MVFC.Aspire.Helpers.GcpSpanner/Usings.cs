@@ -17,3 +17,4 @@ global using Grpc.Core;
 global using System.Net.Sockets;
 global using MVFC.Aspire.Helpers.GcpSpanner.Processors;
 
+global using Google.Api.Gax.Grpc;

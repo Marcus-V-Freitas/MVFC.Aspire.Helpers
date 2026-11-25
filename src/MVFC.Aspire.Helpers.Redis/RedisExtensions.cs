@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.Redis;
+﻿namespace MVFC.Aspire.Helpers.Redis;
 
 /// <summary>
 /// Provides extension methods to simplify the configuration and integration of the Redis resource
@@ -6,6 +6,11 @@ namespace MVFC.Aspire.Helpers.Redis;
 /// </summary>
 public static class RedisExtensions
 {
+    /// <summary>
+    /// Cached format for per-resource password configuration keys.
+    /// </summary>
+    private static readonly CompositeFormat _passwordConfigurationKeyFormat = CompositeFormat.Parse(RedisDefaults.PASSWORD_CONFIGURATION_KEY_FORMAT);
+
     /// <summary>
     /// Adds a Redis resource to the distributed application with default settings.
     /// Use fluent methods such as WithPassword, WithCommander, WithDataVolume to customize.
@@ -19,6 +24,7 @@ public static class RedisExtensions
         ArgumentNullException.ThrowIfNull(builder);
 
         var resource = new RedisResource(name);
+        builder.AddResource(resource.PasswordParameter);
 
         return builder.AddResource(resource)
             .WithDockerImage(
@@ -53,8 +59,35 @@ public static class RedisExtensions
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Resource.Password = password;
-        return builder.WithEnvironment(RedisDefaults.PASSWORD_ENV_VAR, password)
-                      .WithArgs(RedisDefaults.REQUIRE_PASS_ARG, password);
+
+        if (!builder.Resource.Annotations.OfType<RedisPasswordAnnotation>().Any())
+        {
+            builder.WithAnnotation(new RedisPasswordAnnotation());
+            builder.WithArgs(context =>
+            {
+                context.Args.Add(RedisDefaults.REQUIRE_PASS_ARG);
+                context.Args.Add(builder.Resource.PasswordParameter);
+            });
+        }
+
+        return builder.WithEnvironment(RedisDefaults.PASSWORD_ENV_VAR, builder.Resource.PasswordParameter);
+    }
+
+    /// <summary>
+    /// Supplies the endpoint and a separate secret password setting to a consuming project.
+    /// Separate configuration preserves passwords that cannot be escaped by Redis connection-string parsers.
+    /// </summary>
+    public static IResourceBuilder<ProjectResource> WithReference(
+        this IResourceBuilder<ProjectResource> project,
+        IResourceBuilder<RedisResource> redis)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+        ArgumentNullException.ThrowIfNull(redis);
+
+        var key = string.Format(CultureInfo.InvariantCulture, _passwordConfigurationKeyFormat, redis.Resource.Name);
+
+        return project.WithReference(source: redis)
+                      .WithEnvironment(key.Replace(":", "__", StringComparison.Ordinal), redis.Resource.PasswordParameter);
     }
 
     /// <summary>

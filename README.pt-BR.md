@@ -313,3 +313,22 @@ Veja [CONTRIBUTING.md](CONTRIBUTING.md).
 ## Licença
 
 [Apache-2.0](LICENSE)
+
+## Resiliência e configuração dos consumidores
+
+- [MongoDB](src/MVFC.Aspire.Helpers.Mongo/README.pt-BR.md#seeds-repetíveis): seed opcional por `_id` estável, preservando o dump por inserção.
+- [Redis](src/MVFC.Aspire.Helpers.Redis/README.pt-BR.md#autenticação-do-consumidor): referências de projeto fornecem host/porta e a senha secreta em `Redis:<nome-do-recurso>:Password`, preservando senhas com vírgulas.
+- [RabbitMQ](src/MVFC.Aspire.Helpers.RabbitMQ/README.pt-BR.md#referências-com-autenticação): referências fornecem a URI AMQP autenticada, sem duplicar credenciais no consumidor.
+- [Spanner](src/MVFC.Aspire.Helpers.GcpSpanner/README.pt-BR.md#prazo-de-provisionamento-e-recuperação) e [WireMock](src/MVFC.Aspire.Helpers.WireMock/README.pt-BR.md#prontidão): prazo compartilhado de provisionamento e prontidão coerente.
+
+Para uma verificação local opcional após o build regular pelo Cake, execute `pwsh -File eng/verify-compatibility.ps1` para validar APIs contra os pacotes publicados 12.0.0 e consumir os pacotes locais em .NET 9, 10 e 11. No Windows PowerShell, se scripts estiverem desabilitados, use `powershell -NoProfile -ExecutionPolicy Bypass -File eng/verify-compatibility.ps1`; a liberação vale somente para esse processo. O consumidor de compatibilidade não referencia o AppHost do playground e fica intencionalmente fora da solução principal.
+
+## Cenários HTTP do playground
+
+A [coleção httpyac](playground/http/README.pt-BR.md) possui 12 cenários e 40 chamadas para conectividade, persistência, autenticação, mensageria, geração de PDF e captura local de email. Com o playground Aspire em execução, configure as URLs do dashboard em [variables.http](playground/http/variables.http) e abra um cenário na extensão httpyac do VS Code ou execute diretamente:
+
+```sh
+httpyac send playground/http/01-smoke.http --all --bail --output short
+```
+
+As variáveis compartilhadas são importadas pelos cenários, sem arquivos de ambiente ou executor PowerShell. RabbitMQ usa uma fila temporária isolada. O cenário de Storage apaga objetos do bucket e fica desabilitado por padrão; consulte o guia da coleção antes de habilitá-lo. Apigee está fora do escopo desta coleção.

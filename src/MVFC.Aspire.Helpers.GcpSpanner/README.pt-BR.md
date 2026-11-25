@@ -156,3 +156,9 @@ sequenceDiagram
 ## Licença
 
 Apache-2.0
+
+## Prazo de provisionamento e recuperação
+
+`WithWaitTimeout` aplica um único prazo à resolução do endpoint, às chamadas administrativas e ao polling de operações. O resultado final da operação concluída é verificado; falhas remotas são propagadas. A expiração gera `TimeoutException` com a causa de cancelamento; o cancelamento do AppHost continua sendo cancelamento.
+
+Cancelar a espera não desfaz operações remotas já aceitas. Na próxima execução, instâncias e bancos existentes são reutilizados. Recursos nunca são excluídos automaticamente, e mudanças de DDL não são aplicadas a bancos existentes. Corridas de criação e outros erros gRPC são propagados, sem serem aceitos silenciosamente.

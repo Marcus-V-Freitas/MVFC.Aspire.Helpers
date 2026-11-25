@@ -156,3 +156,9 @@ sequenceDiagram
 ## License
 
 Apache-2.0
+
+## Provisioning deadline and recovery
+
+`WithWaitTimeout` applies one shared deadline to endpoint resolution, administration calls and long-running operation polling. A completed operation is checked for its final result; remote failures propagate. Expiration raises `TimeoutException` with the cancellation cause, while AppHost cancellation remains cancellation.
+
+Cancellation does not undo remote operations already accepted. On the next execution, existing instances and databases are reused. Resources are never deleted automatically, and DDL changes are not applied to databases that already exist. Creation races and unrelated gRPC errors propagate instead of being silently accepted.

@@ -202,3 +202,7 @@ await builder.Build().RunAsync();
 ## License
 
 Apache-2.0
+
+## Readiness
+
+The lifecycle hook observes the server created by the resource. It publishes the `Running` state and URL before the ready event, and publishes readiness only when the server is started. A stopped server reports `Error`, with no active URL or ready event. The hook does not restart a stopped server.

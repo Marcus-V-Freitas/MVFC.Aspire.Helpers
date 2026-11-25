@@ -311,3 +311,22 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 ## License
 
 [Apache-2.0](LICENSE)
+
+## Resilience and consumer configuration
+
+- [MongoDB](src/MVFC.Aspire.Helpers.Mongo/README.md#repeatable-seeds): optional seeds by stable `_id`; append seeds remain available.
+- [Redis](src/MVFC.Aspire.Helpers.Redis/README.md#consumer-authentication): project references provide host/port and the separate secret `Redis:<resource-name>:Password` setting, preserving passwords with commas.
+- [RabbitMQ](src/MVFC.Aspire.Helpers.RabbitMQ/README.md#authenticated-connection-references): references provide the authenticated AMQP URI; no duplicate consumer credentials are required.
+- [Spanner](src/MVFC.Aspire.Helpers.GcpSpanner/README.md#provisioning-deadline-and-recovery) and [WireMock](src/MVFC.Aspire.Helpers.WireMock/README.md#readiness): bounded provisioning and truthful readiness.
+
+For optional local verification after the regular Cake build, run `pwsh -File eng/verify-compatibility.ps1` to validate package APIs against published 12.0.0 and consume locally packed artifacts on .NET 9, 10 and 11. On Windows PowerShell, use `powershell -NoProfile -ExecutionPolicy Bypass -File eng/verify-compatibility.ps1` if script execution is disabled; this applies only to that process. The harness has no reference to the playground AppHost and is intentionally outside the main solution.
+
+## Playground HTTP scenarios
+
+The [httpyac collection](playground/http/README.md) includes 12 scenarios and 40 requests covering connectivity, persistence, authentication, messaging, PDF generation and local email capture. With the Aspire playground running, set the dashboard URLs in [variables.http](playground/http/variables.http), then open a scenario in the httpyac VS Code extension or run it directly:
+
+```sh
+httpyac send playground/http/01-smoke.http --all --bail --output short
+```
+
+Shared variables are imported by every scenario; no environment files or PowerShell runner are required. RabbitMQ uses a temporary isolated queue. The Storage scenario deletes bucket objects and is disabled by default; see the collection guide before enabling it. Apigee is outside this collection's scope.

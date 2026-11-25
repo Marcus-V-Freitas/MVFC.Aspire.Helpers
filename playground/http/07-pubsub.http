@@ -1,0 +1,35 @@
+# @import ./variables.http
+
+### Publicar no topico real configurado pelo AppHost
+# @name pubSubPublish
+GET {{apiUrl}}/api/pub-sub-enter
+
+?? status == 200
+
+### Simular o envelope push diretamente no receptor HTTP
+# Este request valida o receptor; nao comprova a entrega assincrona do emulador.
+# @name pubSubPushSimulation
+{{
+  exports.pushMessageId = require("crypto").randomUUID();
+  exports.pushData = Buffer.from("ola mundo do httpyac", "utf8").toString("base64");
+}}
+POST {{apiUrl}}/api/pub-sub-exit
+Content-Type: application/json
+
+{
+  "message": {
+    "data": "{{pushData}}",
+    "messageId": "{{pushMessageId}}",
+    "attributes": { "origin": "httpyac" }
+  },
+  "subscription": "projects/test-project/subscriptions/test-subscription"
+}
+
+?? status == 200
+{{
+  test("Receptor preserva o envelope push", () => {
+    const echoed = JSON.parse(response.parsedBody);
+    require("assert").strictEqual(echoed.message.messageId, pushMessageId);
+    require("assert").strictEqual(echoed.message.data, pushData);
+  });
+}}

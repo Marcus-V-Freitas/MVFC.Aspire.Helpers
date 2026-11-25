@@ -2,74 +2,77 @@
 
 public sealed class WireMockLifecycleHookTests
 {
-    [Fact]
-    public async Task OnBeforeStartAsync_WhenServerIsStarted_ShouldPublishRunningState()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task OnBeforeStartAsync_ShouldPublishStateBeforeReadiness(bool started)
     {
         // Arrange
-        var randomPort = new Random().Next(10000, 60000);
-        var appBuilder = DistributedApplication.CreateBuilder([]);
-        var wmBuilder = appBuilder.AddWireMock("wm-started", port: randomPort);
+        var builder = DistributedApplication.CreateBuilder([]);
+        var wireMock = builder.AddWireMock("wiremock", port: null);
+        using var server = wireMock.Resource.Server;
 
-        var app = appBuilder.Build();
+        if (!started)
+            server.Stop();
+
+        using var app = builder.Build();
         var eventing = app.Services.GetRequiredService<IDistributedApplicationEventing>();
-        var appModel = app.Services.GetRequiredService<DistributedApplicationModel>();
+        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
+        var notifications = app.Services.GetRequiredService<ResourceNotificationService>();
+        var hook = new WireMockLifecycleHook(
+            app.Services.GetRequiredService<ResourceNotificationService>(), eventing,
+            app.Services.GetRequiredService<ResourceLoggerService>(), app.Services);
+        await hook.SubscribeAsync(eventing, builder.ExecutionContext, TestContext.Current.CancellationToken);
+        var readyCount = 0;
+        eventing.Subscribe<ResourceReadyEvent>((@event, _) =>
+        {
+            if (@event.Resource == wireMock.Resource)
+            {
+                notifications.TryGetCurrentState(wireMock.Resource.Name, out var current).Should().BeTrue();
+                current!.Snapshot.State!.Text.Should().Be("Running");
+                readyCount++;
+            }
 
-        var @event = new BeforeStartEvent(app.Services, appModel);
+            return Task.CompletedTask;
+        });
 
         // Act
-        Func<Task> act = async () => await eventing.PublishAsync(@event, CancellationToken.None);
-
-        // Assert - should not throw, and exercises the full started=true path
-        // (LogReadyAspireWireMock, BuildUrls with URL, BuildResourceState = Running)
-        await act.Should().NotThrowAsync();
-
-        // Cleanup
-        wmBuilder.Resource.Server.Stop();
-    }
-
-    [Fact]
-    public async Task OnBeforeStartAsync_WhenServerIsStopped_ShouldPublishErrorState()
-    {
-        // Arrange
-        var randomPort = new Random().Next(10000, 60000);
-        var appBuilder = DistributedApplication.CreateBuilder([]);
-        var wmBuilder = appBuilder.AddWireMock("wm-stopped", port: randomPort);
-        wmBuilder.Resource.Server.Stop(); // Force the error branch
-
-        var app = appBuilder.Build();
-        var eventing = app.Services.GetRequiredService<IDistributedApplicationEventing>();
-        var appModel = app.Services.GetRequiredService<DistributedApplicationModel>();
-
-        var @event = new BeforeStartEvent(app.Services, appModel);
-
-        // Act
-        Func<Task> act = async () => await eventing.PublishAsync(@event, CancellationToken.None);
-
-        // Assert - exercises the started=false path
-        // (LogErrorAspireWireMock, BuildUrls = empty, BuildResourceState = Error, StopTimeStamp set)
-        await act.Should().NotThrowAsync();
-    }
-
-    [Fact]
-    public async Task OnBeforeStartAsync_WithNoWireMockResources_ShouldNotThrow()
-    {
-        // Arrange
-        var appBuilder = DistributedApplication.CreateBuilder([]);
-        // No WireMock resources added
-
-        var app = appBuilder.Build();
-        var eventing = app.Services.GetRequiredService<IDistributedApplicationEventing>();
-        var appModel = app.Services.GetRequiredService<DistributedApplicationModel>();
-
-        var @event = new BeforeStartEvent(app.Services, appModel);
-
-        // Act
-        Func<Task> act = async () => await eventing.PublishAsync(@event, CancellationToken.None);
+        await eventing.PublishAsync(new BeforeStartEvent(app.Services, model), TestContext.Current.CancellationToken);
 
         // Assert
-        await act.Should().NotThrowAsync();
+        readyCount.Should().Be(started ? 1 : 0);
+        notifications.TryGetCurrentState(wireMock.Resource.Name, out var state).Should().BeTrue();
+        state!.Snapshot.State!.Text.Should().Be(started ? "Running" : "Error");
+        state.Snapshot.Urls.Should().HaveCount(started ? 1 : 0);
+        state.Snapshot.StartTimeStamp.HasValue.Should().Be(started);
+        state.Snapshot.StopTimeStamp.HasValue.Should().Be(!started);
     }
 
+    [Fact]
+    public async Task OnBeforeStartAsync_WithNoWireMockResources_ShouldNotPublishReadiness()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+        using var app = builder.Build();
+        var eventing = app.Services.GetRequiredService<IDistributedApplicationEventing>();
+        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
+        var hook = new WireMockLifecycleHook(
+            app.Services.GetRequiredService<ResourceNotificationService>(), eventing,
+            app.Services.GetRequiredService<ResourceLoggerService>(), app.Services);
+        await hook.SubscribeAsync(eventing, builder.ExecutionContext, TestContext.Current.CancellationToken);
+        var readyCount = 0;
+        eventing.Subscribe<ResourceReadyEvent>((_, _) =>
+        {
+            readyCount++;
+            return Task.CompletedTask;
+        });
+
+        // Act
+        await eventing.PublishAsync(new BeforeStartEvent(app.Services, model), TestContext.Current.CancellationToken);
+
+        // Assert
+        readyCount.Should().Be(0);
+    }
     [Fact]
     public void LogExtensions_LogStartingAspireWireMock_ShouldNotThrow()
     {

@@ -29,6 +29,9 @@ public static class RedisDefaults
     /// <summary>Environment variable for the Redis password.</summary>
     public const string PASSWORD_ENV_VAR = "REDIS_PASSWORD";
 
+    /// <summary>Configuration key format for the password of a referenced Redis resource.</summary>
+    public const string PASSWORD_CONFIGURATION_KEY_FORMAT = "Redis:{0}:Password";
+
     /// <summary>Environment variable for the Redis Commander host.</summary>
     public const string HOST_ENV_VAR = "REDIS_HOST";
 

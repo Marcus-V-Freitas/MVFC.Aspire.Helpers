@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.RabbitMQ;
+﻿namespace MVFC.Aspire.Helpers.RabbitMQ;
 
 /// <summary>
 /// Provides extension methods to simplify the configuration and integration of the RabbitMQ resource
@@ -20,6 +20,8 @@ public static class RabbitMQExtensions
         ArgumentNullException.ThrowIfNull(builder);
 
         var resource = new RabbitMQResource(name);
+        builder.AddResource(resource.UsernameParameter);
+        builder.AddResource(resource.PasswordParameter);
 
         var rb = builder.AddResource(resource)
             .WithDockerImage(
@@ -159,7 +161,7 @@ public static class RabbitMQExtensions
         RabbitMQResource resource,
         IResourceBuilder<RabbitMQResource> rb)
     {
-        // Deferred definitions.json generation — runs after all With* calls
+        // Deferred definitions.json generation - runs after all With* calls
         appBuilder.Eventing.Subscribe<BeforeStartEvent>((_, _) =>
         {
             if (resource.Exchanges?.Count > 0 || resource.Queues?.Count > 0)

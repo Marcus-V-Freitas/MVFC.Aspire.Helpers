@@ -16,6 +16,17 @@ public sealed class RedisResource(string name) : ContainerResource(name), IResou
     internal string? Password { get; set; }
 
     /// <summary>
+    /// Cached secret parameter used for deferred credential resolution.
+    /// </summary>
+    private ParameterResource? _passwordParameter;
+
+    /// <summary>
+    /// Password resolved after fluent configuration, including passwordless use.
+    /// </summary>
+    internal ParameterResource PasswordParameter =>
+        _passwordParameter ??= new($"{Name}-password", _ => Password ?? string.Empty, secret: true);
+
+    /// <summary>
     /// Cached reference to the Redis endpoint.
     /// </summary>
     private EndpointReference? _redisReference;

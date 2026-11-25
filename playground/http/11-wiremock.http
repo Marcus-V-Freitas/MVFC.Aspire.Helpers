@@ -1,0 +1,105 @@
+# @import ./variables.http
+
+### GET configurado no WireMock
+# @name wireMockGet
+GET {{wireMockUrl}}/api/test
+
+?? status == 200
+?? body includes Aspire GET OK
+
+### Echo com status Created
+# @name wireMockEcho
+POST {{wireMockUrl}}/api/echo
+Content-Type: text/plain
+
+ola-httpyac
+
+?? status == 201
+?? body includes Echo: ola-httpyac
+
+### Autenticacao ausente
+# @name wireMockUnauthorized
+GET {{wireMockUrl}}/api/secure
+
+?? status == 401
+
+### Autenticacao configurada no mock
+# @name wireMockAuthorized
+GET {{wireMockUrl}}/api/secure
+Authorization: Bearer mytoken
+
+?? status == 200
+?? body includes Secret Data
+
+### Autenticacao customizada negada
+# @name wireMockForbidden
+GET {{wireMockUrl}}/api/customauth
+
+?? status == 403
+
+### Autenticacao customizada aceita
+# @name wireMockCustomAuth
+GET {{wireMockUrl}}/api/customauth
+X-Test: httpyac
+
+?? status == 200
+?? body includes Authorized
+
+### Headers configurados
+# @name wireMockHeaders
+GET {{wireMockUrl}}/api/headers
+
+?? status == 200
+?? header X-Other == v3
+
+### Status de erro intencional do mock
+# @name wireMockTeapot
+GET {{wireMockUrl}}/api/error
+
+?? status == 418
+
+### PUT
+# @name wireMockPut
+PUT {{wireMockUrl}}/api/put
+Content-Type: text/plain
+
+httpyac-put
+
+?? status == 202
+?? body includes Echo: httpyac-put
+
+### PATCH
+# @name wireMockPatch
+PATCH {{wireMockUrl}}/api/patch
+Content-Type: text/plain
+
+httpyac-patch
+
+?? status == 200
+?? body includes Patched: httpyac-patch
+
+### DELETE sem corpo
+# @name wireMockDelete
+DELETE {{wireMockUrl}}/api/delete
+
+?? status == 204
+
+### JSON tipado
+# @name wireMockJson
+POST {{wireMockUrl}}/api/json
+Content-Type: application/json
+
+{ "message": "httpyac-json" }
+
+?? status == 200
+?? body includes httpyac-json
+
+### Callback da API: simular payload de pagamento
+# @name paymentCallback
+POST {{apiUrl}}/api/payment-callback
+Content-Type: application/json
+
+{ "amount": 2000, "currency": "BRL" }
+
+?? status == 200
+?? body includes BRL

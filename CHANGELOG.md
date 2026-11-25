@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [12.1.0] - 2026-11-25
+
+### Added
+
+- Added 12 httpyac playground scenarios with 40 HTTP requests, JavaScript assertions and chained requests. Shared development variables are imported from `playground/http/variables.http`; scenarios run directly in the VS Code extension or CLI. RabbitMQ uses a temporary isolated queue, and the destructive Storage scenario is disabled by default.
+- Added opt-in `MongoUpsertDump<T>` for full-document upserts by stable serialized `_id`, with batch identity validation and recovery tests after partial failure. The existing append dump remains unchanged.
+- Added per-resource secret Redis password configuration through project references, preserving passwords containing commas and passwordless connections.
+- Added optional local package API validation against published 12.0.0 packages and a package consumer harness for .NET 9, 10 and 11. This verification is not part of CI/CD.
+
+### Fixed
+
+- MongoDB client caching now distinguishes case-sensitive connection strings, including passwords and database names.
+- WireMock publishes its state before readiness and does not signal readiness for stopped servers.
+- Spanner forwards cancellation to operation polling, observes final operation failures and distinguishes provisioning deadline expiration from AppHost cancellation.
+- RabbitMQ connection references now include URI-escaped credentials, resolved after fluent configuration. The playground no longer duplicates RabbitMQ or Redis credentials.
+- Repeated Redis password configuration produces a single server argument using the final secret.
+
+### Changed
+
+- Expanded behavioral tests for lifecycle ordering, cancellation, credential parsing, real authenticated connections, repeated seeds and partial-write recovery. Documented the consumer configuration contracts in English and Portuguese.
+
 ## [12.0.0] - 2026-11-24
 
 ### Breaking changes

@@ -49,8 +49,13 @@ internal sealed class WireMockLifecycleHook(
             var logger = _resourceLoggerService.GetLogger(wireMockResource);
 
             await PublishStartEventAsync(wireMockResource, logger, cancellationToken).ConfigureAwait(false);
-            await PublishReadyEventAsync(wireMockResource, cancellationToken).ConfigureAwait(false);
-            await NotifyWireMockAsync(wireMockResource, logger).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var started = wireMockResource.Server.IsStarted;
+            await NotifyWireMockAsync(wireMockResource, logger, started).ConfigureAwait(false);
+
+            if (started)
+                await PublishReadyEventAsync(wireMockResource, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -93,12 +98,12 @@ internal sealed class WireMockLifecycleHook(
     /// <param name="resource">WireMock resource.</param>
     /// <param name="logger">Logger associated with the resource.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <param name="started">Server state observed for this notification and ready event.</param>
     private async Task NotifyWireMockAsync(
         WireMockResource resource,
-        ILogger logger)
+        ILogger logger,
+        bool started)
     {
-
-        var started = resource.Server.IsStarted;
 
         LogStatusMessage(logger, resource, started);
 

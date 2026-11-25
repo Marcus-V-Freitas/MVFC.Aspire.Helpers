@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.Playground.Api.Helpers;
+﻿namespace MVFC.Aspire.Helpers.Playground.Api.Helpers;
 
 public static class InstanceHelpers
 {
@@ -96,7 +96,7 @@ public static class InstanceHelpers
         ArgumentNullException.ThrowIfNull(builder);
 
         var options = ConfigurationOptions.Parse(builder.Configuration.GetConnectionString("redis")!);
-        options.Password = "teste";
+        options.Password = builder.Configuration["Redis:redis:Password"];
 
         return await ConnectionMultiplexer.ConnectAsync(options).ConfigureAwait(false);
     }
@@ -110,8 +110,6 @@ public static class InstanceHelpers
         var factory = new ConnectionFactory
         {
             Uri = new Uri(builder.Configuration.GetConnectionString("rabbitmq")!),
-            Password = "teste",
-            UserName = "teste",
         };
         return await factory.CreateConnectionAsync().ConfigureAwait(false);
     }

@@ -1,0 +1,26 @@
+# @import ./variables.http
+
+### Dataset provisionado pelo AppHost
+# @name bigQueryDatasets
+GET {{apiUrl}}/api/bigquery/datasets
+
+?? status == 200
+{{
+  test("BigQuery possui o dataset de exemplo", () => {
+    require("assert").ok(response.parsedBody.includes("test_dataset"));
+  });
+}}
+
+### Massa carregada no emulador
+# @name bigQueryUsers
+GET {{apiUrl}}/api/bigquery/users
+
+?? status == 200
+{{
+  test("BigQuery retorna os usuarios do seed", () => {
+    const assert = require("assert");
+    const names = response.parsedBody.map(user => user.name ?? user.Name);
+    assert.ok(names.includes("Alice"));
+    assert.ok(names.includes("Bob"));
+  });
+}}

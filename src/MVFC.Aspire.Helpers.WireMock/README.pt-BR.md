@@ -202,3 +202,7 @@ await builder.Build().RunAsync();
 ## Licença
 
 Apache-2.0
+
+## Prontidão
+
+O hook observa o servidor criado pelo recurso. Publica o estado `Running` e a URL antes do evento de prontidão, emitido somente quando o servidor está iniciado. Um servidor parado informa `Error`, sem URL ativa nem evento de prontidão. O hook não reinicia um servidor parado.

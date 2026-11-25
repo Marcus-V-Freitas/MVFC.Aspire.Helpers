@@ -136,3 +136,17 @@ sequenceDiagram
 ## License
 
 Apache-2.0
+
+## Consumer authentication
+
+`project.WithReference(redis)` supplies both `ConnectionStrings:<resource-name>` (host/port) and the secret setting `Redis:<resource-name>:Password`. Credentials are resolved after fluent configuration, including calls to `WithPassword` after `WithReference`. Repeated `WithPassword` calls use the final password and one `--requirepass` option. Passwordless connections remain supported.
+
+StackExchange.Redis connection strings cannot escape commas in passwords. Keep the password separate and configure the client without duplicating credentials:
+
+```csharp
+var options = ConfigurationOptions.Parse(configuration.GetConnectionString("redis")!);
+options.Password = configuration["Redis:redis:Password"];
+var connection = await ConnectionMultiplexer.ConnectAsync(options);
+```
+
+Use the resource's actual name in both settings. The same project may reference multiple Redis resources with independent passwords. Container consumers using Aspire's native `WithReference` must explicitly supply their client's password setting; Redis Commander is configured by `WithCommander`.
