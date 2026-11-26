@@ -4,3 +4,7 @@ global using MVFC.Aspire.Helpers.Redis.Resources;
 global using System.Net;
 global using System.Globalization;
 global using System.Text;
+global using System.Net.Sockets;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Diagnostics.HealthChecks;
+global using MVFC.Aspire.Helpers.Redis.HealthChecks;

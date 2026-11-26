@@ -18,6 +18,8 @@ Coleção para [httpyac](https://httpyac.github.io/guide/), com scripts JavaScri
 
 ## VS Code
 
+Antes de enviar requisições, confirme que `GET <apiUrl>/health/ready` retorna HTTP 200. A API inicia independentemente da UI administrativa do Pub/Sub. Cenários que chamam RabbitMQ Management ou Keycloak diretamente também exigem que esses endpoints estejam disponíveis. Se um cliente de infraestrutura exceder o prazo de inicialização, consulte o erro de startup da API; configure `Infrastructure__StartupTimeoutSeconds` para alterar o padrão de 30 segundos por cliente Redis/RabbitMQ. Uma API pronta não garante que todos os callbacks de dados de exemplo tenham terminado.
+
 Com a extensão **httpyac** instalada, abra um cenário `.http` e execute **Send All Requests**. Não é necessário selecionar ambiente ou carregar arquivos `.env`: os valores vêm de [variables.http](variables.http), via `@import`. Cada região tem um nome para execução individual. Requests encadeados usam `@ref`; para repetir um cenário completo, use **httpyac: Reset** e execute novamente.
 
 ## Linha de comando

@@ -71,7 +71,7 @@ Task("Test-Coverage")
     Information("Gerando relatório HTML...");
     var rgArgs = $"-reports:\"{reportArgs}\" -targetdir:\"{reportDir}\" "
                + "-reporttypes:\"Html;Cobertura;MarkdownSummaryGithub\" "
-               + "-assemblyfilters:\"+MVFC.Aspire.Helpers*\" "
+               + "-assemblyfilters:\"+MVFC.Aspire.Helpers*;-MVFC.Aspire.Helpers.Tests;-MVFC.Aspire.Helpers.Playground.*\" "
                + "-classfilters:\"-*.Tests.*;-*.Playground.*\"";
     var rgCode = StartProcess("dotnet", $"tool run reportgenerator -- {rgArgs}");
     if (rgCode != 0)

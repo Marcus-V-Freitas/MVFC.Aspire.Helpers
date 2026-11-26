@@ -12,15 +12,19 @@ internal static class PubSubConfigurationTimeout
         Func<CancellationToken, Task> configure,
         ILogger logger,
         TimeProvider timeProvider,
-        CancellationToken ct)
+        CancellationToken ct,
+        int timeoutSeconds = PubSubDefaults.CONFIGURATION_TIMEOUT_SECONDS)
     {
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(PubSubDefaults.CONFIGURATION_TIMEOUT_SECONDS), timeProvider);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(timeoutSeconds);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(timeoutSeconds, PubSubDefaults.MAX_CONFIGURATION_TIMEOUT_SECONDS);
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds), timeProvider);
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(ct, timeout.Token);
 
         try
         {
             cancellation.Token.ThrowIfCancellationRequested();
-            
+
             await configure(cancellation.Token).ConfigureAwait(false);
 
             cancellation.Token.ThrowIfCancellationRequested();
@@ -30,9 +34,9 @@ internal static class PubSubConfigurationTimeout
             && cancellation.IsCancellationRequested)
         {
             ct.ThrowIfCancellationRequested();
-            logger.LogConfigurationTimedOut(PubSubDefaults.CONFIGURATION_TIMEOUT_SECONDS);
+            logger.LogConfigurationTimedOut(timeoutSeconds);
 
-            throw new TimeoutException($"Pub/Sub subscription configuration did not complete within {PubSubDefaults.CONFIGURATION_TIMEOUT_SECONDS} seconds.", ex);
+            throw new TimeoutException($"Pub/Sub subscription configuration did not complete within {timeoutSeconds} seconds.", ex);
         }
     }
 }

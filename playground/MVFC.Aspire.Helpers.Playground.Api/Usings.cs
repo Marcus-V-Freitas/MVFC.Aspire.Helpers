@@ -28,5 +28,8 @@ global using Microsoft.AspNetCore.Authentication.JwtBearer;
 global using System.Net;
 global using Google.Cloud.Spanner.Common.V1;
 global using Google.Cloud.Spanner.Data;
+global using RabbitMQ.Client.Exceptions;
+global using System.Net.Sockets;
+global using System.Diagnostics;
 global using MVFC.Aspire.Helpers.Playground.Api.Spanner;
 

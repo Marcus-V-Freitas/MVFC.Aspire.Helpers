@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [12.2.0] - 2026-11-25
+
+### Upgrading from 12.1.0
+
+- Existing package API signatures and default startup behavior are preserved. Opt into stronger startup checks with `WithPrimaryHealthCheck()` for MongoDB and `WithTcpHealthCheck()` for Redis, then use `WaitFor(resource)` explicitly. Redis TCP checks do not validate authentication, and MongoDB primary readiness does not imply dump completion.
+- Pub/Sub configuration still defaults to 60 seconds; use `WithConfigurationTimeout(seconds)` to override it per emulator. `WithWaitTimeout(seconds)` continues to control only image initialization.
+- The playground now waits for API HTTP readiness, uses bounded Redis/RabbitMQ startup connections, and no longer requires the Pub/Sub UI to start the API. Functional HTTP tests no longer retry unsafe methods. Use `Infrastructure__StartupTimeoutSeconds` to override the default 30-second budget per infrastructure client.
+
+### Added
+
+- Added opt-in MongoDB writable-primary and Redis TCP health checks with three-second probe deadlines, idempotent registration and explicit `WaitFor` semantics. Redis hosting remains independent of the Redis SDK.
+- Added per-emulator `WithConfigurationTimeout(seconds)`, preserving the shared 60-second default and separating subscription configuration from image initialization.
+- Added a playground API readiness endpoint and configurable Redis/RabbitMQ startup budgets through `Infrastructure__StartupTimeoutSeconds` (30 seconds per client by default).
+
+### Fixed
+
+- Enabled compiler-generated source files on disk under `obj` so ReportGenerator can display generated logging code without missing-source warnings.
+- Excluded test and playground assemblies explicitly from the Cake coverage report, preventing OpenAPI-generated types in the test assembly from lowering package coverage totals regardless of their namespace.
+- Isolated functional HTTP test retries from named Aspire health probes, restored standard request deadlines, restricted retries to transient failures of safe methods, and preserved observable HTTP 429 responses. The shared fixture now waits for API readiness before functional requests.
+- Removed the playground API startup dependency on the Pub/Sub administrative UI and replaced the RabbitMQ fixed startup delay with bounded connection retries. Redis requires an authenticated PING and disposes failed startup connections.
+
+### Changed
+
+- Pinned playground Pub/Sub emulator and UI images by digest without changing package image defaults. Added readiness, cancellation, timeout isolation and HTTP retry regression tests, and documented startup contracts in English and Portuguese.
+- Completed package fluent-method references, startup examples and HTTP scenario readiness instructions in English and Portuguese; documented explicit assembly exclusions in Cake coverage reports.
+
 ## [12.1.0] - 2026-11-25
 
 ### Added
@@ -620,6 +646,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[12.2.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v12.1.0...v12.2.0
 [12.1.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v12.0.0...v12.1.0
 [12.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v11.0.2...v12.0.0
 [11.0.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v11.0.1...v11.0.2

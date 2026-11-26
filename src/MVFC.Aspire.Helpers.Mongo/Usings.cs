@@ -13,3 +13,6 @@ global using MVFC.Aspire.Helpers.Mongo.Models;
 global using MVFC.Aspire.Helpers.Mongo.Processors;
 global using MVFC.Aspire.Helpers.Mongo.Resources;
 global using MongoDB.Bson;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Diagnostics.HealthChecks;
+global using MVFC.Aspire.Helpers.Mongo.HealthChecks;

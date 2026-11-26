@@ -100,6 +100,7 @@ var cloudStorage = builder.AddCloudStorage("cloud-storage")
     .WithBucketFolder("./bucket-data");
 
 var mongo = builder.AddMongoReplicaSet("mongo")
+    .WithPrimaryHealthCheck()
     .WithDumps(dumps);
 
 var firestore = builder.AddGcpFirestore("gcp-firestore")
@@ -131,6 +132,7 @@ var rabbitMQ = builder.AddRabbitMQ("rabbitmq")
     .WithDataVolume("rabbit-mq");
 
 var redis = builder.AddRedis("redis")
+    .WithTcpHealthCheck()
     .WithCommander()
     .WithDataVolume("redis-data");
 
@@ -165,7 +167,7 @@ Assinaturas push agora exigem a rota HTTP em `MessageConfig.PushEndpoint` e o en
 
 Cada assinatura pode apontar para um consumidor diferente, independentemente da ordem das referências. Para entregar as mensagens de um tópico a vários consumidores, configure uma assinatura e uma referência de endpoint para cada um. Assinaturas pull não precisam da referência de endpoint.
 
-A porta alocada do consumidor é resolvida por assinatura dentro do prazo compartilhado de 60 segundos da inicialização, incluindo a resolução do endpoint do emulador, a criação do cliente e os retries do SDK. O cancelamento do AppHost interrompe a inicialização; o esgotamento do prazo gera `TimeoutException`. `WithWaitTimeout` controla o timeout de inicialização da própria imagem do emulador.
+A porta alocada do consumidor é resolvida por assinatura dentro do prazo compartilhado da inicialização (60 segundos por padrão), incluindo a resolução do endpoint do emulador, a criação do cliente e os retries do SDK. O cancelamento do AppHost interrompe a inicialização; o esgotamento do prazo gera `TimeoutException`. `WithWaitTimeout` controla o timeout de inicialização da própria imagem do emulador.
 
 Consulte a [configuração do Pub/Sub e o exemplo com múltiplos consumidores](src/MVFC.Aspire.Helpers.GcpPubSub/README.pt-BR.md#entrega-push-para-múltiplos-consumidores) e as [mudanças incompatíveis da versão 12](CHANGELOG.md#1200---2026-11-24).
 
@@ -286,6 +288,8 @@ tests/MVFC.Aspire.Helpers.Tests/
 
 - **Framework:** xUnit v3 + `Microsoft.Testing.Platform`
 - **Cobertura:** `dotnet cake` coleta a cobertura com `dotnet-coverage` e gera o relatório HTML com ReportGenerator em `CoverageReport/index.html`.
+
+O relatório Cake inclui os assemblies das bibliotecas e exclui explicitamente os assemblies de testes e playground. Filtros por namespace não bastam para excluir tipos OpenAPI gerados no assembly de testes. Código gerado dentro dos assemblies das bibliotecas continua no relatório; `coverage.runsettings` pertence à configuração separada do coletor XPlat e não é consumido pelo comando `dotnet-coverage` do Cake.
 - **Testes de integração** sobem o `Playground.AppHost` e exercem containers reais. Os cenários isolados de resiliência de MongoDB/Redis também verificam prontidão pelo protocolo (primary gravável / PING autenticado), dentro do prazo existente de inicialização, antes de testar operações de dados.
 
 ---
@@ -315,6 +319,14 @@ Veja [CONTRIBUTING.md](CONTRIBUTING.md).
 [Apache-2.0](LICENSE)
 
 ## Resiliência e configuração dos consumidores
+
+A prontidão é explícita: use `mongo.WithPrimaryHealthCheck()` para exigir um primary gravável e `redis.WithTcpHealthCheck()` para verificar conectividade, seguidos por `consumer.WaitFor(resource)`. Ambos os checks são opcionais e cada probe tem prazo de três segundos. O check TCP do Redis não valida autenticação; o playground exige um PING autenticado antes de disponibilizar o cliente. A conclusão dos dumps do MongoDB é independente da prontidão do primary.
+
+A configuração Pub/Sub tem prazo compartilhado padrão de 60 segundos, personalizável por emulador com `.WithConfigurationTimeout(120)`. Ele inclui resolução dos endpoints e configuração das subscriptions; `.WithWaitTimeout(...)` continua controlando apenas a inicialização da imagem.
+
+A API do playground aguarda a infraestrutura, sem depender da UI administrativa do Pub/Sub, expõe `/health/ready` após a inicialização e fixa as imagens Pub/Sub/UI por digest. As conexões Redis e RabbitMQ usam retentativas limitadas na inicialização. Configure `Infrastructure__StartupTimeoutSeconds` para alterar o prazo individual padrão de 30 segundos. Tentativas de conexão Redis têm timeout de dois segundos e nenhum retry interno de conexão; conexões em andamento no SDK não podem ser canceladas e podem terminar após o prazo. Os timeouts normais de comandos Redis são preservados. Erros de autenticação não são repetidos como falhas de transporte.
+
+Os retries HTTP dos testes de integração são aplicados apenas aos clientes funcionais, com prazos padrão de dez segundos por tentativa e 30 segundos no total. Os probes nomeados do Aspire mantêm seu próprio agendamento e timeout. Métodos com efeitos não são repetidos e HTTP 429 permanece observável. A fixture aguarda até três minutos pelo health check da API antes das requisições funcionais.
 
 - [MongoDB](src/MVFC.Aspire.Helpers.Mongo/README.pt-BR.md#seeds-repetíveis): seed opcional por `_id` estável, preservando o dump por inserção.
 - [Redis](src/MVFC.Aspire.Helpers.Redis/README.pt-BR.md#autenticação-do-consumidor): referências de projeto fornecem host/porta e a senha secreta em `Redis:<nome-do-recurso>:Password`, preservando senhas com vírgulas.

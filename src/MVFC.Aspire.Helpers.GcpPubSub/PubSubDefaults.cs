@@ -87,6 +87,11 @@ internal static class PubSubDefaults
     internal const int CONFIGURATION_TIMEOUT_SECONDS = 60;
 
     /// <summary>
+    /// Largest whole-second deadline supported by CancellationTokenSource timers.
+    /// </summary>
+    internal const int MAX_CONFIGURATION_TIMEOUT_SECONDS = 4_294_967;
+
+    /// <summary>
     /// Maximum number of attempts for subscription reads during initialization.
     /// </summary>
     internal const int CONFIGURATION_MAX_ATTEMPTS = 30;

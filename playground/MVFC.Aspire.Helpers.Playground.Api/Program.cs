@@ -1,4 +1,5 @@
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddHealthChecks();
 
 var firestoreDbs = await builder.CreateFirestoreDbsAsync().ConfigureAwait(false);
 var storageClient = await InstanceHelpers.CreateStorageClientAsync().ConfigureAwait(false);
@@ -41,5 +42,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapAllEndpoints();
+app.MapHealthChecks("/health/ready");
 
 await app.RunAsync().ConfigureAwait(false);

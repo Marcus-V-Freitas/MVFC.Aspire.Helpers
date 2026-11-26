@@ -14,6 +14,8 @@ Helpers para integração com MongoDB em projetos .NET Aspire, incluindo suporte
 
 ## Motivação
 
+Habilite a verificação de primary gravável com `builder.AddMongoReplicaSet("mongo").WithPrimaryHealthCheck()` e adicione `consumer.WaitFor(mongo)` explicitamente. Cada probe tem prazo de três segundos e reutiliza o cliente MongoDB. A verificação usa `hello.isWritablePrimary`; ela não aguarda os dumps, que mantêm o ciclo existente associado à prontidão do consumidor. Sem essa opção, o comportamento de inicialização permanece igual.
+
 Subir o MongoDB localmente é fácil; subir um **Replica Set com comportamento realista e dados de seed** não é tão trivial.
 
 Pontos de atrito comuns no desenvolvimento local:
@@ -101,6 +103,7 @@ IReadOnlyCollection<IMongoClassDump> dumps =
 ];
 
 var mongo = builder.AddMongoReplicaSet("mongo")
+    .WithPrimaryHealthCheck()
     .WithDataVolume("mongo-data");
 
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
@@ -145,6 +148,7 @@ sequenceDiagram
 | ----------------------------- | ----------------------------------------------------- |
 | `WithDockerImage(image, tag)` | Substitui a imagem Docker utilizada.                  |
 | `WithDumps(dumps)`            | Configura dumps de dados a executar na inicialização. |
+| `WithPrimaryHealthCheck()` | Habilita checks de primary gravável com prazo de três segundos por probe; consumidores ainda precisam de `WaitFor(mongo)`. |
 | `WithDataVolume(volumeName)`  | Habilita persistência com volume Docker.              |
 
 ## Popular dados de exemplo

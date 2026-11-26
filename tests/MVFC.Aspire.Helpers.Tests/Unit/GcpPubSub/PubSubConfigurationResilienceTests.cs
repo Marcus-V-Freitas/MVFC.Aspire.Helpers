@@ -434,9 +434,23 @@ public sealed class PubSubConfigurationResilienceTests
             "Failed to configure Pub/Sub subscription '{Subscription}' in project '{ProjectId}' ({StatusCode})"));
         fields.Count.Should().Be(4);
 
+        var beforeStart = () => fields[-1];
+        var afterEnd = () => fields[fields.Count];
+
+        beforeStart.Should().Throw<IndexOutOfRangeException>();
+        afterEnd.Should().Throw<IndexOutOfRangeException>();
+
         var enumerated = ((System.Collections.IEnumerable)fields).Cast<KeyValuePair<string, object?>>().ToArray();
 
         enumerated.Should().BeEquivalentTo(fields);
+
+        var untyped = ((System.Collections.IEnumerable)fields).GetEnumerator();
+        var untypedFields = new List<object?>();
+
+        while (untyped.MoveNext())
+            untypedFields.Add(untyped.Current);
+
+        untypedFields.Should().BeEquivalentTo(fields.Cast<object?>());
 
         var formatter = (Delegate)arguments[4]!;
 

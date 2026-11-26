@@ -7,6 +7,25 @@
 public static class RedisExtensions
 {
     /// <summary>
+    /// Adds an opt-in TCP connectivity probe with a three-second deadline per check.
+    /// This does not validate authentication or commands. Consumers must use WaitFor explicitly.
+    /// </summary>
+    public static IResourceBuilder<RedisResource> WithTcpHealthCheck(this IResourceBuilder<RedisResource> builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        var key = $"redis_{builder.Resource.Name}_tcp";
+        if (builder.Resource.Annotations.OfType<HealthCheckAnnotation>().Any(annotation => annotation.Key == key))
+            return builder;
+
+        var check = new RedisTcpHealthCheck(builder.Resource.RedisEndpoint);
+        builder.ApplicationBuilder.Services.AddHealthChecks().Add(new HealthCheckRegistration(
+            key, _ => check, failureStatus: null, tags: null, timeout: TimeSpan.FromSeconds(3)));
+
+        return builder.WithHealthCheck(key);
+    }
+
+    /// <summary>
     /// Cached format for per-resource password configuration keys.
     /// </summary>
     private static readonly CompositeFormat _passwordConfigurationKeyFormat = CompositeFormat.Parse(RedisDefaults.PASSWORD_CONFIGURATION_KEY_FORMAT);

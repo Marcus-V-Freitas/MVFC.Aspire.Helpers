@@ -7,6 +7,26 @@ namespace MVFC.Aspire.Helpers.Mongo;
 public static class MongoExtensions
 {
     /// <summary>
+    /// Adds an opt-in writable-primary probe with a three-second deadline per check.
+    /// Consumers must use WaitFor explicitly. Dump completion is not part of this check.
+    /// </summary>
+    public static IResourceBuilder<MongoReplicaSetResource> WithPrimaryHealthCheck(
+        this IResourceBuilder<MongoReplicaSetResource> builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        var key = $"mongo_{builder.Resource.Name}_primary";
+        if (builder.Resource.Annotations.OfType<HealthCheckAnnotation>().Any(annotation => annotation.Key == key))
+            return builder;
+
+        var check = new MongoPrimaryHealthCheck(builder.Resource.MongoEndpoint);
+        builder.ApplicationBuilder.Services.AddHealthChecks().Add(new HealthCheckRegistration(
+            key, _ => check, failureStatus: null, tags: null, timeout: TimeSpan.FromSeconds(3)));
+
+        return builder.WithHealthCheck(key);
+    }
+
+    /// <summary>
     /// Adds a MongoDB resource configured as a Replica Set to the distributed application.
     /// Use fluent methods such as WithDumps and WithDataVolume to customize.
     /// </summary>
@@ -73,7 +93,7 @@ public static class MongoExtensions
     }
 
     /// <summary>
-    /// Adds a reference to the MongoDB resource in the project, configuring WaitFor, environment variable
+    /// Adds a reference to the MongoDB resource in the project, configuring an environment variable
     /// with the connection string, and automatic dump execution (if configured).
     /// </summary>
     public static IResourceBuilder<ProjectResource> WithReference(

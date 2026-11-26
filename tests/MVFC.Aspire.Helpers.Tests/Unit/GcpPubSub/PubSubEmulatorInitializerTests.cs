@@ -3,14 +3,17 @@ namespace MVFC.Aspire.Helpers.Tests.Unit.GcpPubSub;
 public sealed class PubSubEmulatorInitializerTests
 {
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task InitializeAsync_WhenEndpointIsNotAllocated_ShouldHonorSharedDeadline(bool emulatorAllocated)
+    [InlineData(false, 60)]
+    [InlineData(true, 60)]
+    [InlineData(false, 7)]
+    [InlineData(true, 7)]
+    public async Task InitializeAsync_WhenEndpointIsNotAllocated_ShouldHonorSharedDeadline(bool emulatorAllocated, int timeoutSeconds)
     {
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
         var consumer = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("consumer");
         var pubSub = builder.AddGcpPubSub("pubsub")
+            .WithConfigurationTimeout(timeoutSeconds)
             .WithPubSubConfigs(new PubSubConfig("project", new MessageConfig("topic", "sub", "/callback")
             {
                 PushEndpointReference = consumer.GetEndpoint("http"),
@@ -47,10 +50,10 @@ public sealed class PubSubEmulatorInitializerTests
 
         // Assert
         wasWaiting.Should().BeTrue();
-        await act.Should().ThrowAsync<TimeoutException>().WithMessage("*60 seconds*");
+        await act.Should().ThrowAsync<TimeoutException>().WithMessage($"*{timeoutSeconds} seconds*");
 
         time.Received(1).CreateTimer(Arg.Any<TimerCallback>(), Arg.Any<object?>(),
-            TimeSpan.FromSeconds(PubSubDefaults.CONFIGURATION_TIMEOUT_SECONDS), Timeout.InfiniteTimeSpan);
+            TimeSpan.FromSeconds(timeoutSeconds), Timeout.InfiniteTimeSpan);
     }
 
     [Fact]

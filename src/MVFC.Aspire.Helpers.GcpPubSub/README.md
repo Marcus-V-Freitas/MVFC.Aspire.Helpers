@@ -13,7 +13,9 @@ Helpers for integrating with Google Pub/Sub in .NET Aspire projects, including s
 
 ## Motivation
 
-Subscription configuration has a shared 60-second deadline, including emulator and consumer endpoint resolution, client creation and SDK retries. Reads retry transient SDK errors and `NotFound` while the emulator image creates the declared subscriptions, with exponential backoff, jitter and at most 30 attempts. Subscription updates retain the SDK retry policy. AppHost cancellation interrupts calls and retry waits; expiration of the shared deadline raises `TimeoutException`. Configuration start, completion and final failures are logged against the emulator resource in the Aspire dashboard. `WithWaitTimeout` continues to control only the image's initialization timeout.
+Use `.WithConfigurationTimeout(120)` to override the default 60-second configuration deadline per emulator. Positive whole seconds up to 4,294,967 are supported. This deadline is shared across endpoint resolution and all subscription configuration; it is not restarted for each subscription. `.WithWaitTimeout(...)` controls the image separately. The UI is an optional administrative dependency; consumers should wait for the emulator itself.
+
+Subscription configuration has a shared deadline of 60 seconds by default, including emulator and consumer endpoint resolution, client creation and SDK retries. Reads retry transient SDK errors and `NotFound` while the emulator image creates the declared subscriptions, with exponential backoff, jitter and at most 30 attempts. Subscription updates retain the SDK retry policy. AppHost cancellation interrupts calls and retry waits; expiration of the shared deadline raises `TimeoutException`. Configuration start, completion and final failures are logged against the emulator resource in the Aspire dashboard. `WithWaitTimeout` continues to control only the image's initialization timeout.
 
 Project configurations may be added before or after references. Provisioning reads the current configuration when the emulator is ready. Each push subscription must select its consumer through `MessageConfig.PushEndpointReference`. There is no implicit destination derived from `WithReference(pubSub)`.
 
@@ -132,7 +134,8 @@ var pubSubConfig = new PubSubConfig(
 
 var gcpPubSub = builder.AddGcpPubSub("gcp-pubsub")
     .WithPubSubConfigs([pubSubConfig])
-    .WithWaitTimeout(seconds: 5);
+    .WithWaitTimeout(seconds: 5)
+    .WithConfigurationTimeout(seconds: 120);
 
 var ui = builder.AddGcpPubSubUI("pubsub-ui")
     .WithReference(gcpPubSub)
@@ -154,7 +157,7 @@ await builder.Build().RunAsync();
 | `messageConfig` | `MessageConfig` | —       | Message configuration.    |
 | `secondsDelay`  | int             | `5`     | Legacy value stored in `UpDelay`; currently has no effect on initialization. |
 
-`secondsDelay` and `UpDelay` do not control retries or timeouts. Use `WithWaitTimeout(seconds)` for the emulator image timeout; subscription configuration uses a shared 60-second deadline.
+`secondsDelay` and `UpDelay` do not control retries or timeouts. Use `WithWaitTimeout(seconds)` for the emulator image timeout and `WithConfigurationTimeout(seconds)` for the shared subscription configuration deadline (60 seconds by default).
 
 ### `MessageConfig`
 
@@ -222,6 +225,7 @@ sequenceDiagram
 - `AddGcpPubSubUI` – adds the Pub/Sub UI.  
 - `WithPubSubConfigs` – configures projects, topics and subscriptions.  
 - `WithWaitTimeout` – sets the emulator image initialization timeout in seconds; it does not change the subscription configuration deadline.
+- `WithConfigurationTimeout` – sets the shared endpoint resolution and subscription configuration deadline per emulator, in seconds (default: 60); it does not change image initialization.
 - `WithReference` – wires projects to emulator/UI and sets env vars.
 
 ## Requirements

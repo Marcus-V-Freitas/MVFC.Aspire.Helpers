@@ -91,27 +91,32 @@ public static class InstanceHelpers
         };
     }
 
-    public static async Task<IConnectionMultiplexer> CreateRedisAsync(this WebApplicationBuilder builder)
+    /// <summary>
+    /// Connects to Redis and confirms authenticated readiness within the configured startup budget.
+    /// </summary>
+    public static async Task<IConnectionMultiplexer> CreateRedisAsync(this WebApplicationBuilder builder, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
         var options = ConfigurationOptions.Parse(builder.Configuration.GetConnectionString("redis")!);
         options.Password = builder.Configuration["Redis:redis:Password"];
 
-        return await ConnectionMultiplexer.ConnectAsync(options).ConfigureAwait(false);
+        return await RedisConnectionInitializer.ConnectAsync(options, builder.Configuration, cancellationToken).ConfigureAwait(false);
     }
 
-    public static async Task<IConnection> CreateRabbitAsync(this WebApplicationBuilder builder)
+    /// <summary>
+    /// Opens the AMQP connection with bounded retries for transient transport failures.
+    /// </summary>
+    public static async Task<IConnection> CreateRabbitAsync(this WebApplicationBuilder builder, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
-        await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
 
         var factory = new ConnectionFactory
         {
             Uri = new Uri(builder.Configuration.GetConnectionString("rabbitmq")!),
+            RequestedConnectionTimeout = TimeSpan.FromSeconds(2),
         };
-        return await factory.CreateConnectionAsync().ConfigureAwait(false);
+        return await RabbitConnectionInitializer.ConnectAsync(factory, builder.Configuration, cancellationToken).ConfigureAwait(false);
     }
 
     public static void AddGotenberg(this IServiceCollection services) =>

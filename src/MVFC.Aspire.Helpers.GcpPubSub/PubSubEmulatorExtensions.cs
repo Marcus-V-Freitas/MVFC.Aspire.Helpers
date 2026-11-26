@@ -7,6 +7,22 @@ namespace MVFC.Aspire.Helpers.GcpPubSub;
 public static class PubSubEmulatorExtensions
 {
     /// <summary>
+    /// Sets the shared endpoint resolution and subscription configuration deadline, in seconds.
+    /// This does not change the emulator image initialization timeout.
+    /// </summary>
+    public static IResourceBuilder<PubSubEmulatorResource> WithConfigurationTimeout(
+        this IResourceBuilder<PubSubEmulatorResource> builder,
+        int seconds)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(seconds);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(seconds, PubSubDefaults.MAX_CONFIGURATION_TIMEOUT_SECONDS);
+
+        builder.Resource.ConfigurationTimeoutSeconds = seconds;
+        return builder;
+    }
+
+    /// <summary>
     /// Adds the Google Pub/Sub emulator to the distributed application.
     /// Use fluent methods such as WithPubSubConfigs and WithWaitTimeout to customize.
     /// </summary>

@@ -12,11 +12,11 @@ public sealed class InfrastructureResilienceTests
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         cts.CancelAfter(TimeSpan.FromMinutes(2));
         var builder = CreateBuilder();
-        builder.AddMongoReplicaSet("seed-mongo", port: 0);
+        builder.AddMongoReplicaSet("seed-mongo", port: 0).WithPrimaryHealthCheck();
         await using var app = builder.Build();
         await app.StartAsync(cts.Token);
         var connection = await app.GetConnectionStringAsync("seed-mongo", cts.Token);
-        await WaitForMongoPrimaryAsync(connection!, cts.Token);
+        await app.ResourceNotifications.WaitForResourceHealthyAsync("seed-mongo", cts.Token);
         var client = new MongoClient(connection);
         var databaseName = $"seed_{Guid.NewGuid():N}";
         var collection = client.GetDatabase(databaseName).GetCollection<BsonDocument>("items");
@@ -48,11 +48,11 @@ public sealed class InfrastructureResilienceTests
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         cts.CancelAfter(TimeSpan.FromMinutes(2));
         var builder = CreateBuilder();
-        builder.AddMongoReplicaSet("partial-mongo", port: 0);
+        builder.AddMongoReplicaSet("partial-mongo", port: 0).WithPrimaryHealthCheck();
         await using var app = builder.Build();
         await app.StartAsync(cts.Token);
         var connection = await app.GetConnectionStringAsync("partial-mongo", cts.Token);
-        await WaitForMongoPrimaryAsync(connection!, cts.Token);
+        await app.ResourceNotifications.WaitForResourceHealthyAsync("partial-mongo", cts.Token);
         var client = new MongoClient(connection);
         var databaseName = $"seed_{Guid.NewGuid():N}";
 
@@ -119,7 +119,7 @@ public sealed class InfrastructureResilienceTests
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         cts.CancelAfter(TimeSpan.FromMinutes(2));
         var builder = CreateBuilder();
-        var redis = builder.AddRedis("authenticated-redis", port: 0);
+        var redis = builder.AddRedis("authenticated-redis", port: 0).WithTcpHealthCheck();
         var consumer = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("settings-consumer").WithReference(redis);
         builder.Resources.Remove(consumer.Resource);
 
@@ -135,6 +135,7 @@ public sealed class InfrastructureResilienceTests
         options.Password = secret;
         options.AbortOnConnectFail = true;
         await WaitForRedisAsync(options, cts.Token);
+        await app.ResourceNotifications.WaitForResourceHealthyAsync(redis.Resource.Name, cts.Token);
 
         // Act
         using var connection = await StackExchange.Redis.ConnectionMultiplexer.ConnectAsync(options);
@@ -149,40 +150,71 @@ public sealed class InfrastructureResilienceTests
         connection.IsConnected.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Waits for the replica set to elect a writable primary before testing writes.
-    /// Each probe is bounded and shares the test startup cancellation budget.
-    /// </summary>
-    private static async Task WaitForMongoPrimaryAsync(string connectionString, CancellationToken cancellationToken)
+    [Fact]
+    public async Task PlaygroundClients_WhenAuthenticationFails_ShouldNotRetryUntilDeadline()
     {
-        var settings = MongoClientSettings.FromConnectionString(connectionString);
-        settings.ConnectTimeout = TimeSpan.FromSeconds(2);
-        settings.ServerSelectionTimeout = TimeSpan.FromSeconds(2);
-        var probe = new MongoClient(settings);
-        using var polling = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
-
-        do
+        // Arrange
+        using var startup = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        startup.CancelAfter(TimeSpan.FromMinutes(2));
+        var builder = CreateBuilder();
+        var redis = builder.AddRedis("startup-redis", port: 0).WithPassword("expected").WithTcpHealthCheck();
+        var rabbit = builder.AddRabbitMQ("startup-rabbit", amqpPort: 0, httpPort: 0).WithCredentials("expected", "expected");
+        await using var app = builder.Build();
+        await app.StartAsync(startup.Token);
+        await Task.WhenAll(
+            app.ResourceNotifications.WaitForResourceHealthyAsync(redis.Resource.Name, startup.Token),
+            app.ResourceNotifications.WaitForResourceHealthyAsync(rabbit.Resource.Name, startup.Token));
+        var redisEndpoint = await app.GetConnectionStringAsync(redis.Resource.Name, startup.Token);
+        var rabbitEndpoint = await app.GetConnectionStringAsync(rabbit.Resource.Name, startup.Token);
+        var api = WebApplication.CreateBuilder([]);
+        var invalidRabbit = new UriBuilder(rabbitEndpoint!) { Password = "incorrect" };
+        api.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            ["ConnectionStrings:redis"] = redisEndpoint,
+            ["Redis:redis:Password"] = "incorrect",
+            ["ConnectionStrings:rabbitmq"] = invalidRabbit.Uri.ToString(),
+            ["Infrastructure:StartupTimeoutSeconds"] = "10",
+        });
 
-            try
-            {
-                var hello = await probe.GetDatabase("admin").RunCommandAsync<BsonDocument>(
-                    new BsonDocument("hello", 1), cancellationToken: cancellationToken);
+        // Act
+        var connectRedis = () => PlaygroundInstanceHelpers.CreateRedisAsync(api, startup.Token);
+        var connectRabbit = () => PlaygroundInstanceHelpers.CreateRabbitAsync(api, startup.Token);
 
-                if (hello.TryGetValue("isWritablePrimary", out var primary) && primary.IsBoolean && primary.AsBoolean)
-                    return;
-            }
-            catch (MongoConnectionException)
-            {
-                // The container can be running before the MongoDB listener is ready.
-            }
-            catch (TimeoutException)
-            {
-                // Server selection can time out during initialization or election.
-            }
-        }
-        while (await polling.WaitForNextTickAsync(cancellationToken));
+        // Assert
+        var redisFailure = (await connectRedis.Should().ThrowAsync<RedisConnectionException>()).Which;
+        redisFailure.FailureType.Should().Be(RedisConnectionFailureType.AuthenticationFailure);
+        await connectRabbit.Should().ThrowAsync<RabbitBrokerUnreachableException>();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task PlaygroundClients_WhenUnavailable_ShouldReportStartupDeadline(bool redis)
+    {
+        // Arrange
+        using var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        var builder = WebApplication.CreateBuilder([]);
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["ConnectionStrings:redis"] = $"localhost:{port}",
+            ["ConnectionStrings:rabbitmq"] = $"amqp://test:pass@localhost:{port}/",
+            ["Infrastructure:StartupTimeoutSeconds"] = "1",
+        });
+        using var guard = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        guard.CancelAfter(TimeSpan.FromSeconds(10));
+
+        // Act
+        Func<Task> connect = () => redis
+            ? PlaygroundInstanceHelpers.CreateRedisAsync(builder, guard.Token)
+            : PlaygroundInstanceHelpers.CreateRabbitAsync(builder, guard.Token);
+
+        // Assert
+        var error = (await connect.Should().ThrowAsync<TimeoutException>()).Which;
+        error.Message.Should().Contain("deadline expired after");
+        error.InnerException.Should().NotBeNull();
     }
 
     /// <summary>
@@ -218,6 +250,7 @@ public sealed class InfrastructureResilienceTests
         }
         while (await polling.WaitForNextTickAsync(cancellationToken));
     }
+
     /// <summary>
     /// Reuses build metadata for DCP without executing the playground entry point.
     /// </summary>

@@ -13,7 +13,9 @@ Helpers para integração com Google Pub/Sub em projetos .NET Aspire, incluindo 
 
 ## Motivação
 
-A configuração das subscriptions tem um prazo total de 60 segundos, incluindo a resolução dos endpoints do emulador e do consumidor, a criação do cliente e os retries do SDK. As consultas repetem erros transitórios do SDK e `NotFound` enquanto a imagem cria as subscriptions declaradas, com backoff exponencial, jitter e até 30 tentativas. As atualizações mantêm a política de retry do SDK. O cancelamento do AppHost interrompe chamadas e esperas; o esgotamento do prazo total gera `TimeoutException`. Início, conclusão e falhas finais são registrados no recurso do emulador no dashboard Aspire. `WithWaitTimeout` continua controlando somente o timeout de inicialização da imagem.
+Use `.WithConfigurationTimeout(120)` para alterar o prazo padrão de configuração de 60 segundos por emulador. São aceitos segundos inteiros positivos até 4.294.967. O prazo é compartilhado entre resolução dos endpoints e toda a configuração das subscriptions; não é reiniciado por subscription. `.WithWaitTimeout(...)` controla a imagem separadamente. A UI é uma dependência administrativa opcional; consumidores devem aguardar o próprio emulador.
+
+A configuração das subscriptions tem um prazo total padrão de 60 segundos, incluindo a resolução dos endpoints do emulador e do consumidor, a criação do cliente e os retries do SDK. As consultas repetem erros transitórios do SDK e `NotFound` enquanto a imagem cria as subscriptions declaradas, com backoff exponencial, jitter e até 30 tentativas. As atualizações mantêm a política de retry do SDK. O cancelamento do AppHost interrompe chamadas e esperas; o esgotamento do prazo total gera `TimeoutException`. Início, conclusão e falhas finais são registrados no recurso do emulador no dashboard Aspire. `WithWaitTimeout` continua controlando somente o timeout de inicialização da imagem.
 
 As configurações podem ser adicionadas antes ou depois das referências. O provisionamento lê a configuração vigente quando o emulador fica pronto. Cada assinatura push deve selecionar seu consumidor por `MessageConfig.PushEndpointReference`. Não há destino implícito derivado de `WithReference(pubSub)`.
 
@@ -132,7 +134,8 @@ var pubSubConfig = new PubSubConfig(
 
 var gcpPubSub = builder.AddGcpPubSub("gcp-pubsub")
     .WithPubSubConfigs([pubSubConfig])
-    .WithWaitTimeout(seconds: 5);
+    .WithWaitTimeout(seconds: 5)
+    .WithConfigurationTimeout(seconds: 120);
 
 var ui = builder.AddGcpPubSubUI("pubsub-ui")
     .WithReference(gcpPubSub)
@@ -154,7 +157,7 @@ await builder.Build().RunAsync();
 | `messageConfig` | `MessageConfig` | —      | Configuração de mensagem (tópico + assinatura). |
 | `secondsDelay`  | int             | `5`    | Valor legado armazenado em `UpDelay`; atualmente não afeta a inicialização.           |
 
-`secondsDelay` e `UpDelay` não controlam retries nem timeouts. Use `WithWaitTimeout(seconds)` para o timeout da imagem do emulador; a configuração das assinaturas usa um prazo compartilhado de 60 segundos.
+`secondsDelay` e `UpDelay` não controlam retries nem timeouts. Use `WithWaitTimeout(seconds)` para o timeout da imagem do emulador e `WithConfigurationTimeout(seconds)` para o prazo compartilhado de configuração das assinaturas (60 segundos por padrão).
 
 ### `MessageConfig`
 
@@ -222,6 +225,7 @@ sequenceDiagram
 - `AddGcpPubSubUI` – adiciona a UI do Pub/Sub.
 - `WithPubSubConfigs` – configura projetos, tópicos e assinaturas.
 - `WithWaitTimeout` – define o timeout de inicialização da imagem do emulador em segundos; não altera o prazo da configuração das assinaturas.
+- `WithConfigurationTimeout` – define o prazo compartilhado de resolução dos endpoints e configuração das assinaturas por emulador, em segundos (padrão: 60); não altera a inicialização da imagem.
 - `WithReference` – liga projetos ao emulador/UI e configura variáveis de ambiente.
 
 ## Requisitos

@@ -36,4 +36,9 @@ public sealed class PubSubEmulatorResource(string name) : ContainerResource(name
     /// Wait timeout for emulator initialization in seconds.
     /// </summary>
     internal int WaitTimeoutSeconds { get; set; } = PubSubDefaults.WAIT_TIMEOUT_SECONDS_DEFAULT;
+
+    /// <summary>
+    /// Shared deadline for endpoint resolution and subscription configuration, in seconds.
+    /// </summary>
+    internal int ConfigurationTimeoutSeconds { get; set; } = PubSubDefaults.CONFIGURATION_TIMEOUT_SECONDS;
 }

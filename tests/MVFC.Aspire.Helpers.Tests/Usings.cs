@@ -96,3 +96,11 @@ global using RedisConnectionMultiplexer = StackExchange.Redis.ConnectionMultiple
 global using RedisConnectionException = StackExchange.Redis.RedisConnectionException;
 global using RedisConnectionFailureType = StackExchange.Redis.ConnectionFailureType;
 global using RedisTimeoutException = StackExchange.Redis.RedisTimeoutException;
+global using MVFC.Aspire.Helpers.Mongo.HealthChecks;
+global using MVFC.Aspire.Helpers.Redis.HealthChecks;
+global using Microsoft.Extensions.Options;
+global using WebApplication = Microsoft.AspNetCore.Builder.WebApplication;
+global using WebApplicationBuilder = Microsoft.AspNetCore.Builder.WebApplicationBuilder;
+global using Microsoft.Extensions.Configuration;
+global using PlaygroundInstanceHelpers = MVFC.Aspire.Helpers.Playground.Api.Helpers.InstanceHelpers;
+global using RabbitBrokerUnreachableException = RabbitMQ.Client.Exceptions.BrokerUnreachableException;

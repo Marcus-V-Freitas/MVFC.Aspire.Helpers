@@ -14,6 +14,8 @@ Helper para integração com Redis em projetos .NET Aspire, incluindo cache dist
 
 ## Motivação
 
+Habilite a verificação de conectividade TCP com `builder.AddRedis("redis").WithTcpHealthCheck()` e adicione `consumer.WaitFor(redis)` explicitamente. Cada probe tem prazo de três segundos. A verificação cobre apenas o endpoint alocado; não autentica nem executa comandos Redis. O playground também aguarda um PING autenticado dentro do prazo de inicialização do cliente. Sem essa opção, o comportamento de inicialização permanece igual e nenhuma dependência do SDK Redis é adicionada a este pacote.
+
 Quando `WithPassword` é usado, `WithCommander` repassa a mesma senha ao Redis Commander pela variável `REDIS_PASSWORD`.
 
 Para desenvolvimento local, o Redis é muitas vezes iniciado via container ad-hoc:
@@ -69,6 +71,7 @@ using MVFC.Aspire.Helpers.Redis;
 var builder = DistributedApplication.CreateBuilder(args);
 
 var redis = builder.AddRedis("redis")
+    .WithTcpHealthCheck()
     .WithPassword("minha-senha")
     .WithCommander()
     .WithDataVolume("redis-data");
@@ -101,6 +104,7 @@ sequenceDiagram
 | `WithDockerImage(image, tag)` | Substitui a imagem Docker utilizada.           |
 | `WithPassword(password)`      | Define a senha do Redis.                       |
 | `WithCommander(port?)`        | Adiciona o Redis Commander UI.                 |
+| `WithTcpHealthCheck()` | Habilita checks de conectividade TCP com prazo de três segundos por probe; a autenticação é validada pelo consumidor. |
 | `WithDataVolume(volumeName)`  | Habilita persistência com volume Docker (AOF). |
 
 ## Principais parâmetros do `AddRedis`

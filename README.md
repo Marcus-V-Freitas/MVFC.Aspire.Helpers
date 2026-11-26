@@ -98,6 +98,7 @@ var cloudStorage = builder.AddCloudStorage("cloud-storage")
     .WithBucketFolder("./bucket-data");
 
 var mongo = builder.AddMongoReplicaSet("mongo")
+    .WithPrimaryHealthCheck()
     .WithDumps(dumps);
 
 var firestore = builder.AddGcpFirestore("gcp-firestore")
@@ -129,6 +130,7 @@ var rabbitMQ = builder.AddRabbitMQ("rabbitmq")
     .WithDataVolume("rabbit-mq");
 
 var redis = builder.AddRedis("redis")
+    .WithTcpHealthCheck()
     .WithCommander()
     .WithDataVolume("redis-data");
 
@@ -163,7 +165,7 @@ Push subscriptions now require both the HTTP route in `MessageConfig.PushEndpoin
 
 Each subscription can target a different consumer, independently of reference order. To deliver a topic's messages to multiple consumers, configure a separate subscription and endpoint reference for each. Pull subscriptions do not require an endpoint reference.
 
-The allocated consumer port is resolved per subscription within the shared 60-second initialization deadline, including emulator endpoint resolution, client creation and SDK retries. AppHost cancellation interrupts initialization; expiration of the deadline raises `TimeoutException`. `WithWaitTimeout` controls the emulator image's own initialization timeout.
+The allocated consumer port is resolved per subscription within the shared initialization deadline (60 seconds by default), including emulator endpoint resolution, client creation and SDK retries. AppHost cancellation interrupts initialization; expiration of the deadline raises `TimeoutException`. `WithWaitTimeout` controls the emulator image's own initialization timeout.
 
 See the [Pub/Sub configuration and multiple-consumer example](src/MVFC.Aspire.Helpers.GcpPubSub/README.md#push-delivery-to-multiple-consumers) and the [version 12 breaking changes](CHANGELOG.md#1200---2026-11-24).
 
@@ -284,6 +286,8 @@ tests/MVFC.Aspire.Helpers.Tests/
 
 - **Framework:** xUnit v3 + `Microsoft.Testing.Platform`
 - **Coverage:** `dotnet cake` collects coverage with `dotnet-coverage` and generates the HTML report with ReportGenerator in `CoverageReport/index.html`.
+
+The Cake report includes library assemblies and explicitly excludes test and playground assemblies. Namespace filters alone do not exclude generated OpenAPI types from the test assembly. Generated code inside library assemblies remains part of the report; `coverage.runsettings` belongs to the separate XPlat collector configuration and is not consumed by the Cake `dotnet-coverage` command.
 - **Integration tests** boot the `Playground.AppHost` and exercise real containers. The isolated MongoDB/Redis resilience scenarios additionally poll protocol readiness (writable primary / authenticated PING) under their existing startup deadline before testing data operations.
 
 ---
@@ -313,6 +317,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 [Apache-2.0](LICENSE)
 
 ## Resilience and consumer configuration
+
+Startup readiness is explicit: use `mongo.WithPrimaryHealthCheck()` to require a writable primary and `redis.WithTcpHealthCheck()` to check connectivity, followed by `consumer.WaitFor(resource)`. Both checks are opt-in and each probe has a three-second deadline. Redis TCP readiness does not validate authentication; the playground requires an authenticated PING before exposing its client. MongoDB dump completion is separate from primary readiness.
+
+Pub/Sub configuration defaults to a shared 60-second deadline, customizable per emulator with `.WithConfigurationTimeout(120)`. It covers endpoint resolution and subscription configuration; `.WithWaitTimeout(...)` still controls only image initialization.
+
+The playground API waits for infrastructure rather than the Pub/Sub admin UI, exposes `/health/ready` after startup, and pins Pub/Sub emulator/UI images by digest. Redis and RabbitMQ use bounded startup retries instead of fixed sleeps. Set `Infrastructure__StartupTimeoutSeconds` to override their individual 30-second startup budgets. Redis connection attempts have a two-second timeout and no internal connection retries; in-flight SDK connections cannot be canceled and may finish after the budget. Normal Redis command timeouts are preserved. Authentication errors are not retried as transport failures.
+
+Integration test retries apply only to functional HTTP clients, with standard 10-second attempt and 30-second total deadlines. Named Aspire probes keep their own scheduling and timeout. Unsafe methods are not retried, and HTTP 429 remains observable. The fixture waits up to three minutes for the API health check before functional requests.
 
 - [MongoDB](src/MVFC.Aspire.Helpers.Mongo/README.md#repeatable-seeds): optional seeds by stable `_id`; append seeds remain available.
 - [Redis](src/MVFC.Aspire.Helpers.Redis/README.md#consumer-authentication): project references provide host/port and the separate secret `Redis:<resource-name>:Password` setting, preserving passwords with commas.

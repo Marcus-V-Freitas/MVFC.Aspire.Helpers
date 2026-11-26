@@ -24,6 +24,6 @@ internal static class PubSubEmulatorInitializer
             var connectionString = await resource.ConnectionStringExpression.GetValueAsync(token).ConfigureAwait(false) ?? throw new InvalidOperationException("Pub/Sub emulator endpoint was not resolved.");
 
             await PubSubConfigurator.ConfigureSubscriptionsAsync(resource.PubSubConfigs, connectionString, logger, timeProvider, token).ConfigureAwait(false);
-        }, logger, timeProvider, ct);
+        }, logger, timeProvider, ct, resource.ConfigurationTimeoutSeconds);
     }
 }

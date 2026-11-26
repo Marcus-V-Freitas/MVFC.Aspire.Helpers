@@ -14,6 +14,8 @@ Helpers for integrating with MongoDB in .NET Aspire projects, including support 
 
 ## Motivation
 
+Opt into writable-primary readiness with `builder.AddMongoReplicaSet("mongo").WithPrimaryHealthCheck()`, and add `consumer.WaitFor(mongo)` explicitly. Each probe has a three-second deadline and reuses its MongoDB client. This verifies `hello.isWritablePrimary`; it does not wait for dumps, which retain their existing consumer-ready lifecycle. Without this fluent option, startup behavior is unchanged.
+
 Setting up MongoDB locally is easy; setting up a **Replica Set with realistic behavior and seed data** is not.
 
 Typical pain points in local dev:
@@ -102,6 +104,7 @@ IReadOnlyCollection<IMongoClassDump> dumps =
 ];
 
 var mongo = builder.AddMongoReplicaSet("mongo")
+    .WithPrimaryHealthCheck()
     .WithDataVolume("mongo-data");
 
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
@@ -146,6 +149,7 @@ sequenceDiagram
 | ----------------------------- | --------------------------------------------------- |
 | `WithDockerImage(image, tag)` | Overrides the Docker image used.                    |
 | `WithDumps(dumps)`            | Configures data dumps to execute on initialization. |
+| `WithPrimaryHealthCheck()` | Opts into writable-primary checks with a three-second probe deadline; consumers still need `WaitFor(mongo)`. |
 | `WithDataVolume(volumeName)`  | Enables persistence with a Docker volume.           |
 
 ## Populating sample data

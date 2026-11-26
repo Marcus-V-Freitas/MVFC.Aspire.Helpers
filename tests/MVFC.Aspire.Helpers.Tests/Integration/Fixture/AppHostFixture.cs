@@ -16,8 +16,11 @@ public sealed class AppHostFixture : IAsyncLifetime
     public async ValueTask InitializeAsync()
     {
         _appHost = new ProjectAppHost();
+        using var startup = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        startup.CancelAfter(TimeSpan.FromMinutes(3));
 
-        await _appHost.StartAsync().ConfigureAwait(false);
+        await _appHost.StartAsync(startup.Token).ConfigureAwait(false);
+        await _appHost.WaitForHealthyAsync("api-exemplo", startup.Token).ConfigureAwait(false);
 
         _keycloakHttpClient = _appHost.CreateHttpClient("keycloak");
         _appHttpClient = _appHost.CreateHttpClient("api-exemplo");
