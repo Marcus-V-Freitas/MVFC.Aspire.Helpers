@@ -286,7 +286,7 @@ tests/MVFC.Aspire.Helpers.Tests/
 
 - **Framework:** xUnit v3 + `Microsoft.Testing.Platform`
 - **Cobertura:** `dotnet cake` coleta a cobertura com `dotnet-coverage` e gera o relatório HTML com ReportGenerator em `CoverageReport/index.html`.
-- **Testes de integração** sobem o `Playground.AppHost` e exercem containers reais.
+- **Testes de integração** sobem o `Playground.AppHost` e exercem containers reais. Os cenários isolados de resiliência de MongoDB/Redis também verificam prontidão pelo protocolo (primary gravável / PING autenticado), dentro do prazo existente de inicialização, antes de testar operações de dados.
 
 ---
 

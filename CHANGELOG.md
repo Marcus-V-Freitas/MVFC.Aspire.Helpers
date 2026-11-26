@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Infrastructure resilience integration tests now wait for a writable MongoDB primary and an authenticated Redis PING before exercising data operations, under the existing startup deadline. This addresses connection races observed on cold CI runners without changing production connection settings or global fixtures.
 - MongoDB client caching now distinguishes case-sensitive connection strings, including passwords and database names.
 - WireMock publishes its state before readiness and does not signal readiness for stopped servers.
 - Spanner forwards cancellation to operation polling, observes final operation failures and distinguishes provisioning deadline expiration from AppHost cancellation.

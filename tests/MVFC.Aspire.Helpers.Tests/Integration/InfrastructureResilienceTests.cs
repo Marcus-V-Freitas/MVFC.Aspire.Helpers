@@ -16,6 +16,7 @@ public sealed class InfrastructureResilienceTests
         await using var app = builder.Build();
         await app.StartAsync(cts.Token);
         var connection = await app.GetConnectionStringAsync("seed-mongo", cts.Token);
+        await WaitForMongoPrimaryAsync(connection!, cts.Token);
         var client = new MongoClient(connection);
         var databaseName = $"seed_{Guid.NewGuid():N}";
         var collection = client.GetDatabase(databaseName).GetCollection<BsonDocument>("items");
@@ -50,7 +51,9 @@ public sealed class InfrastructureResilienceTests
         builder.AddMongoReplicaSet("partial-mongo", port: 0);
         await using var app = builder.Build();
         await app.StartAsync(cts.Token);
-        var client = new MongoClient(await app.GetConnectionStringAsync("partial-mongo", cts.Token));
+        var connection = await app.GetConnectionStringAsync("partial-mongo", cts.Token);
+        await WaitForMongoPrimaryAsync(connection!, cts.Token);
+        var client = new MongoClient(connection);
         var databaseName = $"seed_{Guid.NewGuid():N}";
 
         try
@@ -131,6 +134,7 @@ public sealed class InfrastructureResilienceTests
         var options = RedisConfigurationOptions.Parse(endpoint!);
         options.Password = secret;
         options.AbortOnConnectFail = true;
+        await WaitForRedisAsync(options, cts.Token);
 
         // Act
         using var connection = await StackExchange.Redis.ConnectionMultiplexer.ConnectAsync(options);
@@ -143,6 +147,76 @@ public sealed class InfrastructureResilienceTests
         // Assert
         result.ToString().Should().Be("connected");
         connection.IsConnected.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Waits for the replica set to elect a writable primary before testing writes.
+    /// Each probe is bounded and shares the test startup cancellation budget.
+    /// </summary>
+    private static async Task WaitForMongoPrimaryAsync(string connectionString, CancellationToken cancellationToken)
+    {
+        var settings = MongoClientSettings.FromConnectionString(connectionString);
+        settings.ConnectTimeout = TimeSpan.FromSeconds(2);
+        settings.ServerSelectionTimeout = TimeSpan.FromSeconds(2);
+        var probe = new MongoClient(settings);
+        using var polling = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
+
+        do
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                var hello = await probe.GetDatabase("admin").RunCommandAsync<BsonDocument>(
+                    new BsonDocument("hello", 1), cancellationToken: cancellationToken);
+
+                if (hello.TryGetValue("isWritablePrimary", out var primary) && primary.IsBoolean && primary.AsBoolean)
+                    return;
+            }
+            catch (MongoConnectionException)
+            {
+                // The container can be running before the MongoDB listener is ready.
+            }
+            catch (TimeoutException)
+            {
+                // Server selection can time out during initialization or election.
+            }
+        }
+        while (await polling.WaitForNextTickAsync(cancellationToken));
+    }
+
+    /// <summary>
+    /// Waits for an authenticated PING without relaxing the connection under test.
+    /// Authentication failures are propagated rather than retried as startup failures.
+    /// </summary>
+    private static async Task WaitForRedisAsync(RedisConfigurationOptions options, CancellationToken cancellationToken)
+    {
+        var settings = options.Clone();
+        settings.ConnectTimeout = 1000;
+        settings.ConnectRetry = 0;
+        settings.AsyncTimeout = 1000;
+        using var polling = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
+
+        do
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                using var probe = await RedisConnectionMultiplexer.ConnectAsync(settings);
+                await probe.GetDatabase().PingAsync();
+                return;
+            }
+            catch (RedisConnectionException exception) when (exception.FailureType != RedisConnectionFailureType.AuthenticationFailure)
+            {
+                // The allocated proxy endpoint does not guarantee a ready Redis listener.
+            }
+            catch (RedisTimeoutException)
+            {
+                // A starting Redis process may not answer PING within one probe timeout.
+            }
+        }
+        while (await polling.WaitForNextTickAsync(cancellationToken));
     }
     /// <summary>
     /// Reuses build metadata for DCP without executing the playground entry point.

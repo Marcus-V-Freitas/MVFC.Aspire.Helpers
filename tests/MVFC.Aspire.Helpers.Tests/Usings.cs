@@ -92,3 +92,7 @@ global using MongoDB.Bson.Serialization;
 global using RedisConfigurationOptions = StackExchange.Redis.ConfigurationOptions;
 global using RabbitConnectionFactory = RabbitMQ.Client.ConnectionFactory;
 global using MVFC.Aspire.Helpers.WireMock.Resources;
+global using RedisConnectionMultiplexer = StackExchange.Redis.ConnectionMultiplexer;
+global using RedisConnectionException = StackExchange.Redis.RedisConnectionException;
+global using RedisConnectionFailureType = StackExchange.Redis.ConnectionFailureType;
+global using RedisTimeoutException = StackExchange.Redis.RedisTimeoutException;
