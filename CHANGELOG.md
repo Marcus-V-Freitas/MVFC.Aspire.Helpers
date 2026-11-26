@@ -620,6 +620,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[12.1.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v12.0.0...v12.1.0
 [12.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v11.0.2...v12.0.0
 [11.0.2]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v11.0.1...v11.0.2
 [11.0.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v11.0.0...v11.0.1
