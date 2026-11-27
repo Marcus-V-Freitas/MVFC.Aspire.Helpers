@@ -26,6 +26,11 @@ internal static class FirestoreDefaults
     internal const string EMULATOR_IMAGE_TAG = "latest";
 
     /// <summary>
+    /// Digest of the default image validated by the integration suite.
+    /// </summary>
+    internal const string EMULATOR_IMAGE_SHA256 = "74dc4be151bd8849117f00dfc0ff329be1919527261916893ef199a04a044137";
+
+    /// <summary>
     /// Environment variable name for the Firestore emulator host.
     /// </summary>
     public const string EMULATOR_HOST_ENV_VAR = "FIRESTORE_EMULATOR_HOST";

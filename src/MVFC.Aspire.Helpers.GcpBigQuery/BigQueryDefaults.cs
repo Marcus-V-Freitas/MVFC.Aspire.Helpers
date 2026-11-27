@@ -36,6 +36,11 @@ internal static class BigQueryDefaults
     internal const string EMULATOR_IMAGE_TAG = "latest";
 
     /// <summary>
+    /// Digest of the default image validated by the integration suite.
+    /// </summary>
+    internal const string EMULATOR_IMAGE_SHA256 = "f4e428d265a93dc5ce36c294e1c584c7c9b384117d47ab8ddbb63d8d50b7f393";
+
+    /// <summary>
     /// Environment variable name for the BigQuery emulator host.
     /// </summary>
     public const string EMULATOR_HOST_ENV_VAR = "BIGQUERY_EMULATOR_HOST";

@@ -30,6 +30,7 @@ public static class BigQueryEmulatorExtensions
                       .WithDockerImage(
                           image: BigQueryDefaults.EMULATOR_IMAGE,
                           tag: BigQueryDefaults.EMULATOR_IMAGE_TAG)
+                      .WithImageSHA256(BigQueryDefaults.EMULATOR_IMAGE_SHA256)
                       .WithBigQueryEndpoints(restPort, grpcPort);
     }
 

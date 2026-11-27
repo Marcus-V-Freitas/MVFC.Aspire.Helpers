@@ -11,6 +11,11 @@ public static class MailpitDefaults
     /// <summary>Default Mailpit Docker image tag.</summary>
     public const string DEFAULT_IMAGE_TAG = "latest";
 
+    /// <summary>
+    /// Digest of the default image validated by the integration suite.
+    /// </summary>
+    internal const string DEFAULT_IMAGE_SHA256 = "c96991d9bef73594c246d89ca81411d4e916f03e76a7d2d72fa2ab5dd3c9ce24";
+
     /// <summary>Default Mailpit web interface HTTP port.</summary>
     public const int DEFAULT_HTTP_PORT = 8025;
 

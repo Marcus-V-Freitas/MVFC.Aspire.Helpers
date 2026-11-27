@@ -6,6 +6,8 @@ Coleção para [httpyac](https://httpyac.github.io/guide/), com scripts JavaScri
 
 ## Preparação
 
+A API do playground agora aguarda um primary MongoDB gravável e a conclusão dos dumps por `WaitForDumps(mongo)` antes de iniciar. Essa garantia pertence à configuração do AppHost; os scripts HTTP não populam o MongoDB. As imagens padrão dos emuladores usam digests testados. Consulte os [contratos de execução](../../docs/runtime-contracts.pt-BR.md) para os níveis de prontidão e limites dos emuladores; sucesso local não comprova equivalência com a nuvem.
+
 1. Inicie o playground na raiz do repositório:
 
    ```powershell

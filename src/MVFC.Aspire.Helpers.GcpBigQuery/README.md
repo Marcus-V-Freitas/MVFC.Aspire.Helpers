@@ -129,6 +129,10 @@ sequenceDiagram
 - `WithDockerImage` – allows overriding the default emulator image.
 - `WithReference` – wires projects to the emulator and sets the `BIGQUERY_EMULATOR_HOST` and `BIGQUERY_EMULATOR_GRPC_HOST` environment variables automatically.
 
+## Default image
+
+The default image is pinned to a tested SHA256 digest. Select another image/tag with `WithDockerImage(image, tag)` or Aspire image methods; the override clears the previous digest. See [runtime contracts](../../docs/runtime-contracts.md) for image maintenance, readiness and emulator limitations.
+
 ## Requirements
 
 - .NET 9, 10 or 11

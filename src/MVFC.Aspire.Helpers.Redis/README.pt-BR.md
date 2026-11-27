@@ -131,6 +131,10 @@ sequenceDiagram
 - **Porta Redis**: definida via parâmetro `port` (padrão: `6379`).
 - **Porta Redis Commander**: aleatória por padrão; pode ser definida via parâmetro `commanderPort` em `WithCommander`.
 
+## Imagem padrão
+
+A imagem padrão é fixada por digest SHA256 testado. Para selecionar outra imagem/tag, use `WithDockerImage(image, tag)` ou os métodos de imagem do Aspire; a sobrescrita remove o digest anterior. Consulte os [contratos de execução](../../docs/runtime-contracts.pt-BR.md) para política de atualização, prontidão e limites dos emuladores.
+
 ## Requisitos
 
 - .NET 9, 10 or 11

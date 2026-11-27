@@ -18,6 +18,7 @@ global using MVFC.Aspire.Helpers.Tests.Integration.HttpClients;
 global using MVFC.Aspire.Helpers.Tests.Integration.Fixture;
 global using MongoDB.Driver;
 global using MVFC.Aspire.Helpers.Mongo;
+global using MVFC.Aspire.Helpers.CloudStorage;
 global using MVFC.Aspire.Helpers.Mongo.Models;
 global using MVFC.Aspire.Helpers.Tests.Unit.Mongo.Helpers;
 global using MVFC.Aspire.Helpers.Mongo.Helpers;

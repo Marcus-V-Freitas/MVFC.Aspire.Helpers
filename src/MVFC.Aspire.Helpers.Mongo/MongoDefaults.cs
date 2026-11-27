@@ -17,6 +17,11 @@ internal static class MongoDefaults
     /// <summary>Default MongoDB Docker image tag.</summary>
     public const string DEFAULT_IMAGE_TAG = "latest";
 
+    /// <summary>
+    /// Digest of the default image validated by the integration suite.
+    /// </summary>
+    internal const string DEFAULT_IMAGE_SHA256 = "e0ce8c35124d4a9f9785532d1f268f39e9728ffa1cb38f46fa482436424c4bd3";
+
     /// <summary>Default MongoDB connection string section in application configuration.</summary>
     public const string DEFAULT_CONNECTION_STRING_SECTION = "ConnectionStrings:mongo";
 

@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [12.3.0] - 2026-11-27
+
+### Added
+
+- Added opt-in `consumer.WaitForDumps(mongo)` to require a writable primary and successful dump completion before consumer startup. Concurrent consumers share one execution; canceling one wait does not cancel shared work started by that wait. Failures/cancellation are retained without automatically replaying partial writes.
+- Added regression tests for seed ordering, shared execution, failure/cancellation and image overrides. Documented readiness levels, emulator fidelity and the Aspire 17/native MongoDB migration assessment in English and Portuguese.
+
+### Changed
+
+- Pinned the default Cloud Storage, BigQuery, Firestore, Pub/Sub/UI, Spanner, Mailpit, MongoDB, Redis and Redis Commander images to the digests used by the passing integration baseline. Existing image/tag/digest override methods remain available; custom Commander arguments are preserved.
+- The playground now waits for MongoDB dumps before starting the API and uses package-provided Pub/Sub image digests.
+
+### Upgrading from 12.2.1
+
+- Public signatures and supported frameworks remain available. `WithReference(mongo)` keeps its consumer-ready lifecycle; add `.WaitForDumps(mongo)` when startup requires populated data. The new wait includes primary readiness and does not require a separate `.WaitFor(mongo)`.
+- Default image annotations now select SHA256 instead of a floating tag. Use `WithDockerImage(image, tag)` or Aspire image overrides to select another version. Validate persisted data before changing server versions; reverting the library does not revert data formats.
+- Aspire remains at 13.6.5 to preserve `net9.0` support. Aspire 17 requires a separately validated platform migration; the optional package compatibility check remains outside CI/CD.
+
 ## [12.2.1] - 2026-11-26
 
 ### Added

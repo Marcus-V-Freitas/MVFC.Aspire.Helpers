@@ -146,6 +146,10 @@ sequenceDiagram
 - `WithWaitTimeout` – define timeout do delay de inicialização do emulador.
 - `WithReference` – liga projetos ao emulador e configura a variável de ambiente `SPANNER_EMULATOR_HOST` automaticamente.
 
+## Imagem padrão
+
+A imagem padrão é fixada por digest SHA256 testado. Para selecionar outra imagem/tag, use `WithDockerImage(image, tag)` ou os métodos de imagem do Aspire; a sobrescrita remove o digest anterior. Consulte os [contratos de execução](../../docs/runtime-contracts.pt-BR.md) para política de atualização, prontidão e limites dos emuladores.
+
 ## Requisitos
 
 - .NET 9, 10 or 11

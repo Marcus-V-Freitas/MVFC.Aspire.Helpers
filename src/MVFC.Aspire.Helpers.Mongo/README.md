@@ -109,14 +109,16 @@ var mongo = builder.AddMongoReplicaSet("mongo")
 
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
        .WithReference(mongo)
-       .WaitFor(mongo);
+       .WaitForDumps(mongo);
 
 mongo.WithDumps(dumps);
 
 await builder.Build().RunAsync();
 ```
 
-You can call `mongo.WithDumps(dumps)` before or after `project.WithReference(mongo)` while configuring the AppHost. When multiple projects reference the same MongoDB resource, the configured dumps run once, when the project from the first `WithReference` call becomes ready.
+You can configure dumps, references and `WaitForDumps` in any order during AppHost configuration. `WaitForDumps(mongo)` adds primary readiness and waits for shared dump completion before starting the consumer. Concurrent consumers share the result; a failed or canceled execution is not automatically replayed. Canceling a waiting consumer does not cancel shared work started by the wait; AppHost shutdown does.
+
+Without `WaitForDumps`, `WithReference(mongo)` retains the existing behavior: dumps run when the project from the first reference becomes ready. The sequence diagram below describes that legacy flow. Use the explicit wait when seeds are required during startup. See [runtime contracts](../../docs/runtime-contracts.md) for partial writes and persistence constraints.
 
 What this setup gives you:
 
@@ -192,6 +194,10 @@ Each `:` indicates a level/section within the `appsettings.json` file:
   Connect via a MongoDB client (MongoDB Compass, Robo 3T, `mongosh`, etc.) using:
 
   `mongodb://localhost:27017/`
+
+## Default image
+
+The default image is pinned to a tested SHA256 digest. Select another image/tag with `WithDockerImage(image, tag)` or Aspire image methods; the override clears the previous digest. See [runtime contracts](../../docs/runtime-contracts.md) for image maintenance, readiness and emulator limitations.
 
 ## Requirements
 

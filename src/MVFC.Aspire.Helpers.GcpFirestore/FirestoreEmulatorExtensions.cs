@@ -28,6 +28,7 @@ public static class FirestoreEmulatorExtensions
                       .WithDockerImage(
                           image: FirestoreDefaults.EMULATOR_IMAGE,
                           tag: FirestoreDefaults.EMULATOR_IMAGE_TAG)
+                      .WithImageSHA256(FirestoreDefaults.EMULATOR_IMAGE_SHA256)
                       .WithFirestoreEndpoint(port);
     }
 

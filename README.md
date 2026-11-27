@@ -157,7 +157,9 @@ var apigee = builder.AddApigeeEmulator("apigee-emulator")
 await builder.Build().RunAsync().ConfigureAwait(false);
 ```
 
-You can configure MongoDB dumps with `WithDumps` before or after `WithReference`. The dumps run once when the project from the first `WithReference` call becomes ready. See the [MongoDB helper documentation](src/MVFC.Aspire.Helpers.Mongo/README.md#quick-aspire-usage-apphost).
+You can configure MongoDB dumps with `WithDumps` before or after `WithReference`. By default, dumps run once when the project from the first `WithReference` call becomes ready. If startup requires populated data, use `api.WithReference(mongo).WaitForDumps(mongo)`: this waits for a writable primary and shared dump completion before starting the consumer. The playground uses this option. See the [MongoDB helper documentation](src/MVFC.Aspire.Helpers.Mongo/README.md#quick-aspire-usage-apphost).
+
+Floating default container images are pinned to tested SHA256 digests, with existing image overrides preserved. Read [runtime contracts and platform evolution](docs/runtime-contracts.md) for the readiness guarantees, emulator limitations and the Aspire 17/native MongoDB migration assessment. Current .NET 9/10/11 targets and optional local compatibility validation remain unchanged.
 
 ### Pub/Sub: migration to version 12
 

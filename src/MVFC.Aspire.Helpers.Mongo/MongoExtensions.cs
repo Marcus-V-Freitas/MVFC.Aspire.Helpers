@@ -44,6 +44,7 @@ public static class MongoExtensions
                       .WithDockerImage(
                            image: MongoDefaults.DEFAULT_MONGO_IMAGE,
                            tag: MongoDefaults.DEFAULT_IMAGE_TAG)
+                      .WithImageSHA256(MongoDefaults.DEFAULT_IMAGE_SHA256)
                       .WithReplicaSetArgs()
                       .WithMongoEndpoint(port)
                       .WithReplicaSetInitScript();
@@ -112,27 +113,55 @@ public static class MongoExtensions
     }
 
     /// <summary>
+    /// Waits for a writable primary and successful dump completion before starting this consumer.
+    /// Adds a startup dependency; use WithReference separately to inject the connection string.
+    /// Shared dumps run once per AppHost lifetime, even with multiple consumers.
+    /// </summary>
+    /// <param name="project">The consumer whose startup requires the configured data.</param>
+    /// <param name="mongo">The MongoDB resource containing the dumps.</param>
+    /// <returns>The consumer builder for chaining.</returns>
+    public static IResourceBuilder<ProjectResource> WaitForDumps(
+        this IResourceBuilder<ProjectResource> project,
+        IResourceBuilder<MongoReplicaSetResource> mongo)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+        ArgumentNullException.ThrowIfNull(mongo);
+
+        if (project.Resource.Annotations.OfType<MongoDumpsWaitAnnotation>().Any(annotation => ReferenceEquals(annotation.Resource, mongo.Resource)))
+            return project;
+
+        project.WithAnnotation(new MongoDumpsWaitAnnotation(mongo.Resource));
+        project.WaitFor(mongo.WithPrimaryHealthCheck());
+        var execution = RegisterDumpsExecutor(project, mongo);
+
+        return project.OnBeforeResourceStarted(async (_, startEvent, ct) =>
+        {
+            var notifications = startEvent.Services.GetRequiredService<ResourceNotificationService>();
+            var lifetime = startEvent.Services.GetRequiredService<IHostApplicationLifetime>();
+            await execution.WaitAsync(mongo.Resource,
+                notifications.WaitForResourceHealthyAsync(mongo.Resource.Name, ct),
+                lifetime.ApplicationStopping, ct).ConfigureAwait(false);
+        });
+    }
+
+    /// <summary>
     /// Registers the OnResourceReady callback responsible for executing MongoDB dumps after
     /// resource initialization, ensuring single execution via annotation.
     /// </summary>
-    private static void RegisterDumpsExecutor(
+    private static MongoDumpsExecutedAnnotation RegisterDumpsExecutor(
         IResourceBuilder<ProjectResource> project,
         IResourceBuilder<MongoReplicaSetResource> mongo)
     {
-        if (mongo.Resource.TryGetAnnotationsOfType<MongoDumpsExecutedAnnotation>(out _))
-            return;
+        var existing = mongo.Resource.Annotations.OfType<MongoDumpsExecutedAnnotation>().SingleOrDefault();
+        if (existing is not null)
+            return existing;
 
-        mongo.WithAnnotation(new MongoDumpsExecutedAnnotation());
+        var execution = new MongoDumpsExecutedAnnotation();
+        mongo.WithAnnotation(execution);
 
-        project.OnResourceReady(async (_, _, ct) =>
-        {
-            var dumps = mongo.Resource.Dumps;
-            if (dumps?.Count is not > 0)
-                return;
+        project.OnResourceReady((_, _, ct) => execution.ExecuteAsync(mongo.Resource, ct));
 
-            var connectionString = await mongo.Resource.ConnectionStringExpression.GetValueAsync(ct).ConfigureAwait(false);
-            await MongoClientFactory.ExecuteDumpsAsync(connectionString!, dumps, ct).ConfigureAwait(false);
-        });
+        return execution;
     }
 
     /// <summary>

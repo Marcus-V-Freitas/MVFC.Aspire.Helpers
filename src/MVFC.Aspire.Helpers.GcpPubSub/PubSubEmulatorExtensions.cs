@@ -40,6 +40,7 @@ public static class PubSubEmulatorExtensions
             .WithDockerImage(
                 image: PubSubDefaults.EMULATOR_IMAGE,
                 tag: PubSubDefaults.EMULATOR_IMAGE_TAG)
+            .WithImageSHA256(PubSubDefaults.EMULATOR_IMAGE_SHA256)
             .WithEnvironment(ctx => ApplyEmulatorEnvironment(ctx, resource))
             .WithPubSubEndpoint(port);
     }

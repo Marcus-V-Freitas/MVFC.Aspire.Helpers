@@ -108,14 +108,16 @@ var mongo = builder.AddMongoReplicaSet("mongo")
 
 builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
        .WithReference(mongo)
-       .WaitFor(mongo);
+       .WaitForDumps(mongo);
 
 mongo.WithDumps(dumps);
 
 await builder.Build().RunAsync();
 ```
 
-Durante a configuração do AppHost, você pode chamar `mongo.WithDumps(dumps)` antes ou depois de `project.WithReference(mongo)`. Quando vários projetos referenciam o mesmo recurso MongoDB, os dumps configurados são executados uma vez, quando o projeto da primeira chamada a `WithReference` fica pronto.
+Configure dumps, referências e `WaitForDumps` em qualquer ordem durante a configuração do AppHost. `WaitForDumps(mongo)` adiciona a prontidão do primary e aguarda a conclusão compartilhada dos dumps antes de iniciar o consumidor. Consumidores simultâneos compartilham o resultado; falha ou cancelamento da execução não gera repetição automática. Cancelar um consumidor aguardando não cancela o trabalho compartilhado iniciado pela espera; encerrar o AppHost cancela esse trabalho.
+
+Sem `WaitForDumps`, `WithReference(mongo)` mantém o comportamento existente: os dumps são executados quando o projeto da primeira referência fica pronto. O diagrama de sequência abaixo descreve esse fluxo anterior. Use a espera explícita quando os seeds forem necessários no startup. Consulte os [contratos de execução](../../docs/runtime-contracts.pt-BR.md) para restrições de persistência e escritas parciais.
 
 O que essa configuração entrega:
 
@@ -187,6 +189,10 @@ O `MongoClassDump<T>` é uma classe utilizada para facilitar a inserção autom�
   Conecte-se via cliente MongoDB (MongoDB Compass, Robo 3T, `mongosh`) usando:
 
   `mongodb://localhost:27017/`
+
+## Imagem padrão
+
+A imagem padrão é fixada por digest SHA256 testado. Para selecionar outra imagem/tag, use `WithDockerImage(image, tag)` ou os métodos de imagem do Aspire; a sobrescrita remove o digest anterior. Consulte os [contratos de execução](../../docs/runtime-contracts.pt-BR.md) para política de atualização, prontidão e limites dos emuladores.
 
 ## Requisitos
 

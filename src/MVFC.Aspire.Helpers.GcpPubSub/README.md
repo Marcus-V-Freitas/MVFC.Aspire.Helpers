@@ -232,6 +232,10 @@ sequenceDiagram
 - `WithConfigurationTimeout` – sets the shared endpoint resolution and subscription configuration deadline per emulator, in seconds (default: 60); it does not change image initialization.
 - `WithReference` – wires projects to emulator/UI and sets env vars.
 
+## Default image
+
+The default image is pinned to a tested SHA256 digest. Select another image/tag with `WithDockerImage(image, tag)` or Aspire image methods; the override clears the previous digest. See [runtime contracts](../../docs/runtime-contracts.md) for image maintenance, readiness and emulator limitations.
+
 ## Requirements
 
 - .NET 9, 10 or 11

@@ -49,6 +49,7 @@ public static class RedisExtensions
             .WithDockerImage(
                 image: RedisDefaults.DEFAULT_REDIS_IMAGE,
                 tag: RedisDefaults.DEFAULT_REDIS_TAG)
+            .WithImageSHA256(RedisDefaults.DEFAULT_REDIS_SHA256)
             .WithRedisEndpoint(port);
     }
 
@@ -123,7 +124,7 @@ public static class RedisExtensions
         ArgumentNullException.ThrowIfNull(builder);
 
         var commanderName = $"{builder.Resource.Name}-commander";
-        builder.ApplicationBuilder.AddContainer(commanderName, image, tag)
+        var commander = builder.ApplicationBuilder.AddContainer(commanderName, image, tag)
             .WithHttpEndpoint(
                 port: port,
                 targetPort: RedisDefaults.DEFAULT_COMMANDER_PORT,
@@ -132,6 +133,9 @@ public static class RedisExtensions
             .WithEnvironment(RedisDefaults.PORT_ENV_VAR, RedisDefaults.DEFAULT_REDIS_PORT.ToString(CultureInfo.InvariantCulture))
             .WithEnvironment(RedisDefaults.PASSWORD_ENV_VAR, () => builder.Resource.Password ?? string.Empty)
             .WithReference(builder);
+
+        if (image == RedisDefaults.DEFAULT_COMMANDER_IMAGE && tag == RedisDefaults.DEFAULT_COMMANDER_TAG)
+            commander.WithImageSHA256(RedisDefaults.DEFAULT_COMMANDER_SHA256);
 
         return builder;
     }

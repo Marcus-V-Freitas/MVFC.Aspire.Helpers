@@ -11,11 +11,21 @@ public static class RedisDefaults
     /// <summary>Default Redis Docker image tag.</summary>
     public const string DEFAULT_REDIS_TAG = "latest";
 
+    /// <summary>
+    /// Digest of the default image validated by the integration suite.
+    /// </summary>
+    internal const string DEFAULT_REDIS_SHA256 = "298e5b3bc566bade82f46ad5511777a4a07a294097ce16ada2f6a42be5239df5";
+
     /// <summary>Default Redis Commander Docker image.</summary>
     public const string DEFAULT_COMMANDER_IMAGE = "ghcr.io/joeferner/redis-commander";
 
     /// <summary>Default Redis Commander Docker image tag.</summary>
     public const string DEFAULT_COMMANDER_TAG = "latest";
+
+    /// <summary>
+    /// Digest of the default Redis Commander image validated by the integration suite.
+    /// </summary>
+    internal const string DEFAULT_COMMANDER_SHA256 = "1ad484c1fc0a3b4072dfa2bb10d44f0eba8ecb342c8c0f9e17cb21a6557e4b7e";
 
     /// <summary>Default Redis port.</summary>
     public const int DEFAULT_REDIS_PORT = 6379;

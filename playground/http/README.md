@@ -6,6 +6,8 @@ Collection for [httpyac](https://httpyac.github.io/guide/), with JavaScript scri
 
 ## Setup
 
+The playground API now waits for a writable MongoDB primary and completed dumps through `WaitForDumps(mongo)` before starting. This guarantee belongs to the AppHost configuration; the HTTP scripts do not populate MongoDB themselves. Default emulator images use tested digests. See [runtime contracts](../../docs/runtime-contracts.md) for readiness levels and emulator limitations; local success does not establish cloud-service equivalence.
+
 1. Start the playground from the repository root:
 
    ```powershell

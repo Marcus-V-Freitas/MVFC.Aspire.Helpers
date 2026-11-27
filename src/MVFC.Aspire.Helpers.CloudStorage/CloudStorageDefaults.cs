@@ -14,6 +14,11 @@ internal static class CloudStorageDefaults
     /// <summary>Default Docker image tag for the GCS emulator.</summary>
     public const string DEFAULT_IMAGE_TAG = "latest";
 
+    /// <summary>
+    /// Digest of the default image validated by the integration suite.
+    /// </summary>
+    internal const string DEFAULT_IMAGE_SHA256 = "797ce226d62f947c009dc40246b30cfb456b8473d8241407f9d6f2c04e4d69ef";
+
     /// <summary>Environment variable name used to configure the GCS emulator host.</summary>
     public const string STORAGE_EMULATOR_VARIABLE_NAME = "STORAGE_EMULATOR_HOST";
 }

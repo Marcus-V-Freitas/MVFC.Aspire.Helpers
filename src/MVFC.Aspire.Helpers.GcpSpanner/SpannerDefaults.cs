@@ -12,6 +12,11 @@ internal static class SpannerDefaults
     internal const string EMULATOR_IMAGE = "gcr.io/cloud-spanner-emulator/emulator";
     internal const string EMULATOR_IMAGE_TAG = "latest";
 
+    /// <summary>
+    /// Digest of the default image validated by the integration suite.
+    /// </summary>
+    internal const string EMULATOR_IMAGE_SHA256 = "18a56fd557011e50e1733a9232e8d17ec9bdd7e51f6cf7660f14c234479f4f36";
+
     // Env var que o SDK do Spanner respeita para apontar ao emulador (formato host:port gRPC)
     internal const string EMULATOR_HOST_ENV_VAR = "SPANNER_EMULATOR_HOST";
 

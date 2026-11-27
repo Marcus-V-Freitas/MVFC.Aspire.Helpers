@@ -80,12 +80,10 @@ var mongo = builder.AddMongoReplicaSet("mongo")
 
 // --- GCP Pub/Sub ---
 var pubSub = builder.AddGcpPubSub("gcp-pubsub")
-                    .WithImageSHA256("142fff1a0fa63e23559e86de8f39774e342c1654b533fd15532a495adabe9626")
                     .WithWaitTimeout(15)
                     .WithPubSubConfigs(pubSubConfig1, pubSubConfig2);
 
 var pubSubUI = builder.AddGcpPubSubUI("gcp-pubsub-ui")
-                      .WithImageSHA256("df024580ba3b3f091584e785c7ad71816a77d5730b0e514e4ba7598ddb10aa2c")
                       .WithReference(pubSub);
 
 // --- Mailpit ---
@@ -122,7 +120,7 @@ var gotenberg = builder.AddGotenberg("gotenberg", port: 3000);
 api.WithReference(cloudStorage)
                  .WaitFor(cloudStorage)
                  .WithReference(mongo)
-                 .WaitFor(mongo)
+                 .WaitForDumps(mongo)
                  .WithReference(pubSub)
                  .WaitFor(pubSub)
                  .WithReference(mailpit)

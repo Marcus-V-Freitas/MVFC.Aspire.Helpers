@@ -116,6 +116,10 @@ sequenceDiagram
 - **Web port**: `httpPort` (default `8025`).  
 - Web UI: `http://localhost:<httpPort>/`.
 
+## Default image
+
+The default image is pinned to a tested SHA256 digest. Select another image/tag with `WithDockerImage(image, tag)` or Aspire image methods; the override clears the previous digest. See [runtime contracts](../../docs/runtime-contracts.md) for image maintenance, readiness and emulator limitations.
+
 ## Requirements
 
 - .NET 9, 10 or 11

@@ -28,6 +28,11 @@ internal static class PubSubDefaults
     internal const string EMULATOR_IMAGE_TAG = "latest";
 
     /// <summary>
+    /// Digest of the default image validated by the integration suite.
+    /// </summary>
+    internal const string EMULATOR_IMAGE_SHA256 = "142fff1a0fa63e23559e86de8f39774e342c1654b533fd15532a495adabe9626";
+
+    /// <summary>
     /// Default Pub/Sub administration UI container image.
     /// </summary>
     internal const string UI_IMAGE = "echocode/gcp-pubsub-emulator-ui";
@@ -36,6 +41,11 @@ internal static class PubSubDefaults
     /// Default Pub/Sub administration UI container image tag.
     /// </summary>
     internal const string UI_IMAGE_TAG = "latest";
+
+    /// <summary>
+    /// Digest of the default image validated by the integration suite.
+    /// </summary>
+    internal const string UI_IMAGE_SHA256 = "df024580ba3b3f091584e785c7ad71816a77d5730b0e514e4ba7598ddb10aa2c";
 
     // Environment variable names
     /// <summary>

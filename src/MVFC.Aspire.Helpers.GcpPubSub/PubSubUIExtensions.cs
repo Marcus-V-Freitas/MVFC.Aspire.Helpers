@@ -24,6 +24,7 @@ public static class PubSubUIExtensions
             .WithDockerImage(
                 image: PubSubDefaults.UI_IMAGE,
                 tag: PubSubDefaults.UI_IMAGE_TAG)
+            .WithImageSHA256(PubSubDefaults.UI_IMAGE_SHA256)
             .WithPubSubUiEndpoint(port);
     }
 

@@ -23,6 +23,7 @@ public static class SpannerEmulatorExtensions
                       .WithDockerImage(
                           image: SpannerDefaults.EMULATOR_IMAGE,
                           tag: SpannerDefaults.EMULATOR_IMAGE_TAG)
+                      .WithImageSHA256(SpannerDefaults.EMULATOR_IMAGE_SHA256)
                       .WithSpannerEndpoint(builder, port, name);
     }
 

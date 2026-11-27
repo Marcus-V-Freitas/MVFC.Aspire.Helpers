@@ -24,6 +24,7 @@ public static class CloudStorageExtensions
             .WithDockerImage(
                 image: CloudStorageDefaults.DEFAULT_IMAGE,
                 tag: CloudStorageDefaults.DEFAULT_IMAGE_TAG)
+            .WithImageSHA256(CloudStorageDefaults.DEFAULT_IMAGE_SHA256)
             .WithCloudStorageEndpoint(port)
             .WithArgs("--scheme", CloudStorageResource.HTTP_ENDPOINT_NAME);
     }

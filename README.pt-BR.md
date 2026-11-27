@@ -159,7 +159,9 @@ var apigee = builder.AddApigeeEmulator("apigee-emulator")
 await builder.Build().RunAsync().ConfigureAwait(false);
 ```
 
-Você pode configurar os dumps do MongoDB com `WithDumps` antes ou depois de `WithReference`. Os dumps são executados uma vez quando o projeto da primeira chamada a `WithReference` fica pronto. Consulte a [documentação do helper MongoDB](src/MVFC.Aspire.Helpers.Mongo/README.pt-BR.md#uso-rápido-no-aspire-apphost).
+Você pode configurar os dumps do MongoDB com `WithDumps` antes ou depois de `WithReference`. Por padrão, os dumps são executados uma vez quando o projeto da primeira chamada a `WithReference` fica pronto. Se o startup precisar dos dados populados, use `api.WithReference(mongo).WaitForDumps(mongo)`: a opção aguarda um primary gravável e a conclusão compartilhada dos dumps antes de iniciar o consumidor. O playground usa essa opção. Consulte a [documentação do helper MongoDB](src/MVFC.Aspire.Helpers.Mongo/README.pt-BR.md#uso-rápido-no-aspire-apphost).
+
+As imagens padrão flutuantes agora são fixadas por digests SHA256 testados, preservando as sobrescritas existentes. Consulte os [contratos de execução e evolução da plataforma](docs/runtime-contracts.pt-BR.md) para as garantias de prontidão, limites dos emuladores e avaliação da migração para Aspire 17/MongoDB nativo. Os alvos .NET 9/10/11 e a validação local opcional de compatibilidade permanecem iguais.
 
 ### Pub/Sub: migração para a versão 12
 

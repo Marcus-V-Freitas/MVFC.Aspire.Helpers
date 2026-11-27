@@ -137,6 +137,10 @@ The `WithReference` method automatically injects:
 
 - `STORAGE_EMULATOR_HOST` – emulator address for your application.
 
+## Default image
+
+The default image is pinned to a tested SHA256 digest. Select another image/tag with `WithDockerImage(image, tag)` or Aspire image methods; the override clears the previous digest. See [runtime contracts](../../docs/runtime-contracts.md) for image maintenance, readiness and emulator limitations.
+
 ## Requirements
 
 - .NET 9, 10 or 11
