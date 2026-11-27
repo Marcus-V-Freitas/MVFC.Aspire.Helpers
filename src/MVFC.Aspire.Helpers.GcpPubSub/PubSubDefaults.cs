@@ -63,7 +63,15 @@ internal static class PubSubDefaults
     /// Docker host address used by containers to reach a consumer on the host operating system.
     /// </summary>
     internal static string DockerInternalHost =>
-        OperatingSystem.IsLinux() ? "172.17.0.1" : "host.docker.internal";
+        GetDockerInternalHost(OperatingSystem.IsLinux());
+
+    /// <summary>
+    /// Selects the existing Docker host address for an explicit platform decision.
+    /// </summary>
+    /// <param name="isLinux">Whether the host uses the Linux Docker bridge address.</param>
+    /// <returns>The host address used for container-to-host communication.</returns>
+    internal static string GetDockerInternalHost(bool isLinux) =>
+        isLinux ? "172.17.0.1" : "host.docker.internal";
 
     // Timeouts and limits
     /// <summary>
@@ -72,9 +80,29 @@ internal static class PubSubDefaults
     internal const int ACK_DEADLINE_SECONDS_DEFAULT = 300;
 
     /// <summary>
+    /// Minimum explicit acknowledgment deadline supported by Pub/Sub, in seconds.
+    /// </summary>
+    internal const int ACK_DEADLINE_SECONDS_MIN = 10;
+
+    /// <summary>
+    /// Maximum acknowledgment deadline supported by Pub/Sub, in seconds.
+    /// </summary>
+    internal const int ACK_DEADLINE_SECONDS_MAX = 600;
+
+    /// <summary>
     /// Default maximum delivery attempts before sending a message to its dead letter topic.
     /// </summary>
     internal const int MAX_DELIVERY_ATTEMPTS_DEFAULT = 5;
+
+    /// <summary>
+    /// Minimum explicit dead letter delivery attempt count supported by Pub/Sub.
+    /// </summary>
+    internal const int MAX_DELIVERY_ATTEMPTS_MIN = 5;
+
+    /// <summary>
+    /// Maximum dead letter delivery attempt count supported by Pub/Sub.
+    /// </summary>
+    internal const int MAX_DELIVERY_ATTEMPTS_MAX = 100;
 
     /// <summary>
     /// Default initialization timeout passed to the emulator image, in seconds.

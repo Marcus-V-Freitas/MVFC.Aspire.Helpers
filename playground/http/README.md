@@ -2,7 +2,7 @@
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
-Collection for [httpyac](https://httpyac.github.io/guide/), with JavaScript scripts, assertions and request dependencies. Start the AppHost and wait for its resources to be ready before running it. These files do not change AppHost configuration, TTL settings, fixtures or CI/CD. Apigee remains outside this scope.
+Collection for [httpyac](https://httpyac.github.io/guide/), with JavaScript scripts, assertions and request dependencies. Start the AppHost and wait for its resources to be ready before running it. These files do not change AppHost configuration, TTL settings, fixtures or CI/CD.
 
 ## Setup
 
@@ -13,8 +13,8 @@ Collection for [httpyac](https://httpyac.github.io/guide/), with JavaScript scri
    ```
 
 2. Copy the HTTP URL of `api-exemplo` from the Aspire dashboard. Its proxy port may differ from the internal port 5050.
-3. Update the URLs in [variables.http](variables.http), automatically imported by all scenarios. Defaults are `5050` (API), `7070` (WireMock), `8081` (Keycloak) and `15672` (RabbitMQ Management). Check the endpoints published by the dashboard.
-4. Authentication values are public development seed data, named `brokerLocalAccount`, `brokerLocalValue`, `identityLocalClient`, `identityClientValue`, `identityLocalAccount` and `identityLocalValue`. Do not put real credentials in this file. Neutral variable names do not change the parameters required by the protocols.
+3. Update the URLs in [variables.http](variables.http), automatically imported by all scenarios. Defaults are `5050` (API), `7070` (WireMock), `8081` (Keycloak), `15672` (RabbitMQ Management), `8998` (Apigee traffic, `apigeeUrl`) and `4443` (Cloud Storage, `storageUrl`). Check the endpoints published by the dashboard. Apigee requests use `/demo` on the traffic endpoint, rather than the control API on port `7071`.
+4. Authentication values are public development seed data, named `brokerLocalAccount`, `brokerLocalValue`, `identityLocalClient`, `identityClientValue`, `identityLocalAccount`, `identityLocalValue`, `gatewayLocalAccount` and `gatewayLocalValue`. Do not put real credentials in this file. Neutral variable names do not change the parameters required by the protocols.
 
 ## VS Code
 
@@ -64,6 +64,32 @@ The extension works without installing the CLI. Avoid running chained requests i
 | [10-mailpit.http](10-mailpit.http) | Sending through local SMTP | Adds an email captured by Mailpit; find its `httpyac-<uuid>` subject in the UI |
 | [11-wiremock.http](11-wiremock.http) | Mock GET/POST/PUT/PATCH/DELETE, JSON, headers and authentication; API callback | Calls mocks and simulates a callback |
 | [12-storage-opcional.http](12-storage-opcional.http) | Bucket download/delete route | **Deletes objects from the selected bucket; disabled by default** |
+| [13-apigee.http](13-apigee.http) | Proxy routing, headers, Basic Auth, JSON transformation, XML conversion, CORS, blocked methods, cache observations, aggregated health and shared flow | Calls the proxy and populates a unique cache key |
+| [14-storage.http](14-storage.http) | Bucket creation, upload, metadata, prefix listing, download, overwrite, metadata update, copy, direct deletion and API download/deletion | Creates and removes only its own `httpyac-<uuid>` bucket and objects |
+| [15-apigee-quota-opcional.http](15-apigee-quota-opcional.http) | Loop: five accepted requests followed by HTTP 429 | Updates the quota counter for a unique identifier; disabled by default |
+
+### Apigee
+
+Wait until `GET <apigeeUrl>/demo/health` returns 200: API readiness alone does not guarantee that the proxy has been deployed. Run the normal and optional quota scenarios separately:
+
+```powershell
+httpyac send playground/http/13-apigee.http --all --bail --output short --output-failed short
+httpyac send playground/http/15-apigee-quota-opcional.http --all --bail --var allowApigeeQuota=true --output short --output-failed short
+```
+
+The normal scenario checks invalid and valid Basic Auth using public demonstration values, without printing authorization headers. Its repeated cache request accepts `HIT` or `MISS` and compares the cached body when `HIT` is reported. The current local emulator returned `MISS` on both calls during validation, so the collection does not claim to prove cache reuse. This scenario does not run a SpikeArrest burst or call the external `/demo/status` target.
+
+The quota scenario uses one unique `X-Forwarded-For` identifier across six sequential requests within the configured one-minute window. Do not pause the loop, run it in parallel or treat this demonstration header as a production authorization mechanism. Use **httpyac: Reset** before repeating the scenario in the extension.
+
+### Cloud Storage CRUD
+
+```powershell
+httpyac send playground/http/14-storage.http --all --bail --output short --output-failed short
+```
+
+This scenario calls the emulator JSON API directly through `storageUrl`, then exercises the real playground download/delete route through `apiUrl`. It generates its own bucket name and URL-encodes object names containing folders and spaces. It does not use the configurable `storageBucket` or the seeded `bucket-teste`.
+
+The final requests delete the temporary copy, let the playground API consume and delete the remaining object, verify the bucket is empty, delete the bucket and confirm HTTP 404. Deletion accepts HTTP 200 (observed in the local emulator) or 204, with follow-up reads proving removal. If `--bail` or an interruption stops the scenario, cleanup may not run: inspect the generated bucket name in the request URL and remove only that bucket using the emulator JSON API. No automatic expiration is configured.
 
 ### RabbitMQ
 

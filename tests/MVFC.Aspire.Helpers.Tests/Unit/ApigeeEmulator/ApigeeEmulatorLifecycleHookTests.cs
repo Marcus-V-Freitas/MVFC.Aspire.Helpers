@@ -15,6 +15,68 @@ public sealed class ApigeeEmulatorLifecycleHookTests : IDisposable
     public void Dispose() =>
         _notifications.Dispose();
 
+    [Theory]
+    [InlineData(false, "*HTTP Status Code: 503 (ServiceUnavailable)*")]
+    [InlineData(true, "*Exception: Connection lost.*")]
+    public async Task PollUntilReadyAsync_WhenAttemptsAreExhausted_ShouldReportLastFailure(bool connectionFails, string expectedMessage)
+    {
+        // Arrange
+        var attempts = 0;
+        using var handler = new TestHttpMessageHandler(_ =>
+        {
+            attempts++;
+            return connectionFails
+                ? Task.FromException<HttpResponseMessage>(new HttpRequestException("Connection lost."))
+                : Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+        });
+        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
+
+        // Act
+        var act = () => ApigeeEmulatorLifecycleHook.PollUntilReadyAsync(client, "/ready", maxRetries: 2, delaySeconds: 0,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        await act.Should().ThrowAsync<TimeoutException>().WithMessage(expectedMessage);
+        attempts.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task DeployAsync_WhenReadinessFailsAndCallerCancels_ShouldStopBeforeDeployingBundle()
+    {
+        // Arrange
+        var resource = new ApigeeEmulatorResource("apigee-retry")
+        {
+            WorkspacePath = "mock/workspace",
+            HealthCheckPath = "/ready",
+        };
+        resource.Annotations.Add(new EndpointAnnotation(ProtocolType.Tcp, name: ApigeeEmulatorResource.CONTROL_PORT_NAME, port: 7071));
+        await _notifications.PublishUpdateAsync(resource, snapshot => snapshot with { State = KnownResourceStates.Running });
+
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        cancellation.CancelAfter(TimeSpan.FromSeconds(10));
+        var attempts = 0;
+        using var handler = new TestHttpMessageHandler(_ =>
+        {
+            attempts++;
+
+            if (attempts == 1)
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+
+            cancellation.Cancel();
+            return Task.FromException<HttpResponseMessage>(new HttpRequestException("Readiness connection lost."));
+        });
+        _sut.HttpClientFactory = _ => new HttpClient(handler, disposeHandler: false) { BaseAddress = new Uri("http://localhost:7071") };
+
+        // Act
+        var act = () => _sut.DeployAsync(resource, cancellation.Token);
+
+        // Assert
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        attempts.Should().Be(2);
+        await _fileSystem.DidNotReceive().ZipCreateFromDirectoryAsync(Arg.Any<string>(), Arg.Any<string>());
+        _fileSystem.DidNotReceive().FileOpenRead(Arg.Any<string>());
+    }
+
     [Fact]
     public async Task SubscribeAsync_ThrowsIfNullEventing()
     {

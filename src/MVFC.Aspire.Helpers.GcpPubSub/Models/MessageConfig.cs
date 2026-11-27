@@ -52,7 +52,8 @@ public sealed record class MessageConfig(
 
     /// <summary>
     /// (Optional) Maximum number of delivery attempts before forwarding the message to the dead letter topic.
-    /// Only valid when <see cref="DeadLetterTopic"/> is defined. Default is 5.
+    /// Applied only when <see cref="DeadLetterTopic"/> is defined. Accepts 5 through 100;
+    /// null and zero use the default of 5.
     /// </summary>
     public int? MaxDeliveryAttempts
     {
@@ -61,7 +62,8 @@ public sealed record class MessageConfig(
 
     /// <summary>
     /// (Optional) Acknowledgment deadline in seconds.
-    /// If not provided, the default is 5 minutes.
+    /// Accepts 10 through 600 seconds. Null uses the library default of 5 minutes;
+    /// zero requests the service default of 10 seconds.
     /// </summary>
     public int? AckDeadlineSeconds
     {

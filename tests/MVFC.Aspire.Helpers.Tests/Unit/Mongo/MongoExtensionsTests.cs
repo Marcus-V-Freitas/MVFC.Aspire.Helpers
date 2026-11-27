@@ -2,6 +2,30 @@
 
 public sealed class MongoExtensionsTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task WithReference_WhenNoDumpsAreConfigured_ShouldCompleteReadinessWithoutResolvingEndpoint(bool emptyDumps)
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+        var project = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var mongo = builder.AddMongoReplicaSet("mongo");
+
+        if (emptyDumps)
+            mongo.WithDumps([]);
+
+        project.WithReference(mongo);
+        using var services = new ServiceCollection().BuildServiceProvider();
+
+        // Act
+        var act = () => builder.Eventing.PublishAsync(new ResourceReadyEvent(project.Resource, services), TestContext.Current.CancellationToken);
+
+        // Assert
+        await act.Should().NotThrowAsync();
+        mongo.Resource.MongoEndpoint.IsAllocated.Should().BeFalse();
+    }
+
     [Fact]
     public void AddMongoReplicaSet_ShouldThrow_WhenBuilderIsNull()
     {

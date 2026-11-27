@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [12.2.1] - 2026-11-26
+
+### Added
+
+- Added httpyac scenarios for Apigee proxy routing, Basic Auth, JSON/XML transformations, CORS, method rejection, cache observations, aggregated health and shared flows, plus an opt-in six-request quota loop verifying HTTP 429.
+- Added an isolated Cloud Storage CRUD scenario covering bucket creation, encoded object names, upload, metadata, prefix listing, download, overwrite, metadata updates, copy, direct deletion, the playground download/delete route and bucket cleanup. Expanded shared HTTP variables and English/Portuguese guides; the original destructive Storage scenario remains disabled by default.
+
+### Upgrading from 12.2.0
+
+- Public API signatures and playground routes are preserved. Invalid Pub/Sub identifiers, push requirements and subscription policy ranges now fail before endpoint resolution or subscription RPCs. Conflicting declarations for the same project/subscription are rejected; equivalent declarations are configured once.
+
+### Fixed
+
+- Prevented functional HTTP clients from retrying legacy GET routes that publish, consume, write or delete data after transient failures or lost responses. Read-only requests retain transient retries and named Aspire probes remain isolated.
+- Validated all Pub/Sub declarations before subscription updates, including acknowledgment deadlines and DLQ delivery attempt ranges, preserving explicit zero service defaults. Coalesced equivalent subscription declarations and rejected conflicting topics, policies or push destinations before RPCs.
+- Aligned whitespace-only push routes with pull behavior when building subscription update masks. Added regression coverage and updated English/Portuguese documentation.
+- Expanded regression coverage for Spanner endpoint readiness, MongoDB readiness without dumps, replacement of Keycloak seeds with an empty collection, and WireMock form decoding and default DELETE response types.
+- Separated platform detection from Apigee runtime argument configuration and Pub/Sub Docker host selection through internal methods, preserving public signatures and existing platform behavior. Tests now exercise Linux and non-Linux decisions on every host, alongside real-platform entry-point tests.
+- Added regressions for Apigee readiness failures, cancellation before deployment and exhausted retries with the last failure in timeout diagnostics. The existing polling routine is internally accessible for deterministic retry-budget tests.
+- Added Pub/Sub SDK tests for emulator environment selection, RPC cancellation and persisted subscription updates against a real emulator. Environment-changing tests run in an isolated nonparallel collection and restore the previous value.
+
 ## [12.2.0] - 2026-11-25
 
 ### Upgrading from 12.1.0
@@ -646,6 +667,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[12.2.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v12.2.0...v12.2.1
 [12.2.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v12.1.0...v12.2.0
 [12.1.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v12.0.0...v12.1.0
 [12.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v11.0.2...v12.0.0

@@ -104,3 +104,4 @@ global using WebApplicationBuilder = Microsoft.AspNetCore.Builder.WebApplication
 global using Microsoft.Extensions.Configuration;
 global using PlaygroundInstanceHelpers = MVFC.Aspire.Helpers.Playground.Api.Helpers.InstanceHelpers;
 global using RabbitBrokerUnreachableException = RabbitMQ.Client.Exceptions.BrokerUnreachableException;
+global using HttpResilienceContextExtensions = Polly.HttpResilienceContextExtensions;

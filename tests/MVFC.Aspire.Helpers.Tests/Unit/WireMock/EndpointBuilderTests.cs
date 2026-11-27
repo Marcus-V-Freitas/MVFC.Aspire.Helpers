@@ -7,6 +7,57 @@ public sealed class EndpointBuilderTests : IDisposable
     public void Dispose() => _server.Stop();
 
     [Fact]
+    public async Task OnDelete_WhenResponseTypeIsOmitted_ShouldUseConfiguredDefault()
+    {
+        // Arrange
+        new EndpointBuilder(_server, "/api/delete-default")
+            .WithResponseBodyType(BodyType.String)
+            .OnDelete(() => ("removed", HttpStatusCode.OK, (BodyType?)null));
+
+        using var client = new HttpClient { BaseAddress = new Uri(_server.Url!) };
+
+        // Act
+        using var response = await client.DeleteAsync("/api/delete-default", TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("text/plain");
+        (await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).Should().Be("removed");
+    }
+
+    [Fact]
+    public async Task OnPost_WhenFormContainsFlagAndEscapedValues_ShouldPreserveDecodedFields()
+    {
+        // Arrange
+        Dictionary<string, string>? received = null;
+        new EndpointBuilder(_server, "/api/form-flags")
+            .WithDefaultBodyType(BodyType.FormUrlEncoded)
+            .OnPost<Dictionary<string, string>, Dictionary<string, string>>(request =>
+            {
+                received = request;
+                return (request, HttpStatusCode.OK, null);
+            });
+
+        using var client = new HttpClient { BaseAddress = new Uri(_server.Url!) };
+        using var content = new StringContent("flag&escaped%20key=value%3Dvalue&empty=", Encoding.UTF8, "application/x-www-form-urlencoded");
+
+        // Act
+        using var response = await client.PostAsync("/api/form-flags", content, TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        received.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            ["flag"] = "",
+            ["escaped key"] = "value=value",
+            ["empty"] = "",
+        });
+        response.Content.Headers.ContentType!.MediaType.Should().Be("application/x-www-form-urlencoded");
+        (await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken))
+            .Should().Be("flag=&escaped%20key=value%3Dvalue&empty=");
+    }
+
+    [Fact]
     public async Task OnGet_WithJsonHandler_ShouldReturnJsonResponse()
     {
         // Arrange

@@ -3,6 +3,86 @@ namespace MVFC.Aspire.Helpers.Tests.Unit.Extensions;
 public sealed class FunctionalHttpResilienceTests
 {
     [Theory]
+    [InlineData("/api/pub-sub-enter")]
+    [InlineData("/api/pub-sub-enter/")]
+    [InlineData("/API/PUB-SUB-ENTER?source=test")]
+    [InlineData("/api/%70ub-sub-enter")]
+    [InlineData("/api/rabbitmq/consume/test-queue")]
+    [InlineData("/api/redis/set/key/value")]
+    [InlineData("/api/bucket/test-bucket")]
+    public async Task FunctionalClient_WhenGetHasEffects_ShouldNotRepeatAfterServerFailure(string path)
+    {
+        // Arrange
+        var effects = 0;
+        var services = new ServiceCollection();
+        FunctionalHttpResilience.AddClient(services).ConfigurePrimaryHttpMessageHandler(() =>
+            new TestHttpMessageHandler(_ =>
+            {
+                effects++;
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError));
+            }));
+        using var provider = services.BuildServiceProvider();
+        using var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient();
+
+        // Act
+        using var response = await client.GetAsync($"http://localhost{path}", TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+        effects.Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData("/api/pub-sub-enter")]
+    [InlineData("/api/rabbitmq/consume/test-queue")]
+    [InlineData("/api/redis/set/key/value")]
+    [InlineData("/api/bucket/test-bucket")]
+    public async Task FunctionalClient_WhenResponseIsLostAfterEffect_ShouldPreserveFailureWithoutRepeating(string path)
+    {
+        // Arrange
+        var effects = 0;
+        var failure = new HttpRequestException("Response lost after applying the operation.");
+        var services = new ServiceCollection();
+        FunctionalHttpResilience.AddClient(services).ConfigurePrimaryHttpMessageHandler(() =>
+            new TestHttpMessageHandler(_ =>
+            {
+                effects++;
+                return Task.FromException<HttpResponseMessage>(failure);
+            }));
+        using var provider = services.BuildServiceProvider();
+        using var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient();
+
+        // Act
+        var act = () => client.GetAsync($"http://localhost{path}", TestContext.Current.CancellationToken);
+
+        // Assert
+        (await act.Should().ThrowAsync<HttpRequestException>()).Which.Should().BeSameAs(failure);
+        effects.Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData("/api/redis/get/key")]
+    [InlineData("/api/pub-sub-enter-info")]
+    public async Task FunctionalClient_WhenGetIsReadOnly_ShouldRetainTransientRetry(string path)
+    {
+        // Arrange
+        var calls = 0;
+        var services = new ServiceCollection();
+        FunctionalHttpResilience.AddClient(services).ConfigurePrimaryHttpMessageHandler(() =>
+            new TestHttpMessageHandler(_ => Task.FromResult(new HttpResponseMessage(
+                ++calls == 1 ? HttpStatusCode.ServiceUnavailable : HttpStatusCode.OK))));
+        using var provider = services.BuildServiceProvider();
+        using var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient();
+
+        // Act
+        using var response = await client.GetAsync($"http://localhost{path}", TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        calls.Should().Be(2);
+    }
+
+    [Theory]
     [InlineData("GET", 500, 2)]
     [InlineData("GET", 408, 2)]
     [InlineData("POST", 500, 1)]

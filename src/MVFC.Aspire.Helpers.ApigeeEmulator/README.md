@@ -167,6 +167,7 @@ sequenceDiagram
 ### `host.docker.internal` issues on Linux
 
 - On Linux, the helper adds `--add-host host.docker.internal:host-gateway` automatically.
+- Platform regression tests exercise Linux and non-Linux decisions explicitly on any operating system. A separate test verifies the public registration against the real host OS; the existing Ubuntu CI also exercises registration on Linux.
 - If Docker still cannot resolve it, verify that your Docker Engine supports `host-gateway`.
 
 ### Port already in use

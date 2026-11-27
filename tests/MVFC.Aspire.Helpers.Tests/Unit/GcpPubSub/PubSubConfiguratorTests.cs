@@ -53,14 +53,17 @@ public sealed class PubSubConfiguratorTests
         result.Paths.Should().Contain("dead_letter_policy");
     }
 
-    [Fact]
-    public void BuildFieldMaskUpdate_WhenOptionalFieldsMissing_ShouldOnlyIncludeBase()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void BuildFieldMaskUpdate_WhenOptionalFieldsMissing_ShouldOnlyIncludeBase(string? optionalValue)
     {
         // Arrange
         var messageConfig = new MessageConfig("topic", "sub")
         {
-            PushEndpoint = null,
-            DeadLetterTopic = null
+            PushEndpoint = optionalValue,
+            DeadLetterTopic = optionalValue
         };
 
         // Act

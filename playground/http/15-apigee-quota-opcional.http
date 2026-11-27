@@ -1,0 +1,22 @@
+# @import ./variables.http
+
+# Opcional: altera o contador da quota para um identificador exclusivo.
+# Execute httpyac: Reset antes de repetir o cenario na extensao.
+{{
+  exports.apigeeQuotaIdentifier = typeof apigeeQuotaIdentifier !== "undefined"
+    ? apigeeQuotaIdentifier
+    : "httpyac-" + require("crypto").randomUUID();
+}}
+
+### Cinco chamadas permitidas por minuto e uma sexta chamada rejeitada
+# @name apigeeQuota
+# @disabled allowApigeeQuota !== true && allowApigeeQuota !== "true"
+# @loop for 6
+GET {{apigeeUrl}}/demo/quota-test
+X-Forwarded-For: {{apigeeQuotaIdentifier}}
+
+{{
+  test("Quota permite cinco chamadas e rejeita a sexta", () => {
+    require("assert").strictEqual(response.statusCode, $index < 5 ? 200 : 429);
+  });
+}}

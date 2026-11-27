@@ -169,6 +169,8 @@ Cada assinatura pode apontar para um consumidor diferente, independentemente da 
 
 A porta alocada do consumidor é resolvida por assinatura dentro do prazo compartilhado da inicialização (60 segundos por padrão), incluindo a resolução do endpoint do emulador, a criação do cliente e os retries do SDK. O cancelamento do AppHost interrompe a inicialização; o esgotamento do prazo gera `TimeoutException`. `WithWaitTimeout` controla o timeout de inicialização da própria imagem do emulador.
 
+Todas as declarações estáticas do Pub/Sub são validadas antes da resolução dos endpoints e dos RPCs de assinaturas. Declarações conflitantes para o mesmo projeto/assinatura falham imediatamente; declarações equivalentes são configuradas uma única vez. Os limites das políticas e o comportamento de zero/default estão documentados no [README do pacote Pub/Sub](src/MVFC.Aspire.Helpers.GcpPubSub/README.pt-BR.md#motivação).
+
 Consulte a [configuração do Pub/Sub e o exemplo com múltiplos consumidores](src/MVFC.Aspire.Helpers.GcpPubSub/README.pt-BR.md#entrega-push-para-múltiplos-consumidores) e as [mudanças incompatíveis da versão 12](CHANGELOG.md#1200---2026-11-24).
 
 > Veja o exemplo completo em [playground/](playground/).
@@ -326,7 +328,7 @@ A configuração Pub/Sub tem prazo compartilhado padrão de 60 segundos, persona
 
 A API do playground aguarda a infraestrutura, sem depender da UI administrativa do Pub/Sub, expõe `/health/ready` após a inicialização e fixa as imagens Pub/Sub/UI por digest. As conexões Redis e RabbitMQ usam retentativas limitadas na inicialização. Configure `Infrastructure__StartupTimeoutSeconds` para alterar o prazo individual padrão de 30 segundos. Tentativas de conexão Redis têm timeout de dois segundos e nenhum retry interno de conexão; conexões em andamento no SDK não podem ser canceladas e podem terminar após o prazo. Os timeouts normais de comandos Redis são preservados. Erros de autenticação não são repetidos como falhas de transporte.
 
-Os retries HTTP dos testes de integração são aplicados apenas aos clientes funcionais, com prazos padrão de dez segundos por tentativa e 30 segundos no total. Os probes nomeados do Aspire mantêm seu próprio agendamento e timeout. Métodos com efeitos não são repetidos e HTTP 429 permanece observável. A fixture aguarda até três minutos pelo health check da API antes das requisições funcionais.
+Os retries HTTP dos testes de integração são aplicados apenas aos clientes funcionais, com prazos padrão de dez segundos por tentativa e 30 segundos no total. Os probes nomeados do Aspire mantêm seu próprio agendamento e timeout. Métodos com efeitos e rotas GET legadas que publicam no Pub/Sub, consomem mensagens RabbitMQ, gravam no Redis ou excluem buckets Storage não são repetidos; HTTP 429 permanece observável. GETs de leitura mantêm os retries transitórios. A fixture aguarda até três minutos pelo health check da API antes das requisições funcionais.
 
 - [MongoDB](src/MVFC.Aspire.Helpers.Mongo/README.pt-BR.md#seeds-repetíveis): seed opcional por `_id` estável, preservando o dump por inserção.
 - [Redis](src/MVFC.Aspire.Helpers.Redis/README.pt-BR.md#autenticação-do-consumidor): referências de projeto fornecem host/porta e a senha secreta em `Redis:<nome-do-recurso>:Password`, preservando senhas com vírgulas.
@@ -337,10 +339,10 @@ Para uma verificação local opcional após o build regular pelo Cake, execute `
 
 ## Cenários HTTP do playground
 
-A [coleção httpyac](playground/http/README.pt-BR.md) possui 12 cenários e 40 chamadas para conectividade, persistência, autenticação, mensageria, geração de PDF e captura local de email. Com o playground Aspire em execução, configure as URLs do dashboard em [variables.http](playground/http/variables.http) e abra um cenário na extensão httpyac do VS Code ou execute diretamente:
+A [coleção httpyac](playground/http/README.pt-BR.md) possui 15 cenários para conectividade, persistência, autenticação, mensageria, geração de PDF, captura local de email, policies do proxy Apigee e CRUD de Cloud Storage. Com o playground Aspire em execução, configure as URLs do dashboard em [variables.http](playground/http/variables.http) e abra um cenário na extensão httpyac do VS Code ou execute diretamente:
 
 ```sh
 httpyac send playground/http/01-smoke.http --all --bail --output short
 ```
 
-As variáveis compartilhadas são importadas pelos cenários, sem arquivos de ambiente ou executor PowerShell. RabbitMQ usa uma fila temporária isolada. O cenário de Storage apaga objetos do bucket e fica desabilitado por padrão; consulte o guia da coleção antes de habilitá-lo. Apigee está fora do escopo desta coleção.
+As variáveis compartilhadas são importadas pelos cenários, sem arquivos de ambiente ou executor PowerShell. RabbitMQ usa uma fila temporária isolada, e o CRUD de Storage cria e limpa seu próprio bucket. O cenário original de exclusão de Storage e o loop de quota Apigee continuam desabilitados por padrão; consulte o guia da coleção antes de habilitá-los.

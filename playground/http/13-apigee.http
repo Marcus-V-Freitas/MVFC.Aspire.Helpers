@@ -1,0 +1,191 @@
+# @import ./variables.http
+
+{{
+  exports.gatewayAuth = "Basic " + Buffer.from(gatewayLocalAccount + ":" + gatewayLocalValue).toString("base64");
+  exports.gatewayInvalidAuth = "Basic " + Buffer.from("httpyac-invalid:httpyac-invalid").toString("base64");
+}}
+
+### Proxy implantado: backend e headers aplicados pelo PostFlow
+# @name apigeeRoot
+GET {{apigeeUrl}}/demo/
+
+?? status == 200
+?? body includes Hello from BackendApi
+?? header X-Proxy-Name == demo-api
+?? header Access-Control-Allow-Origin == *
+
+### Readiness do proxy (a API pronta sozinha nao garante o deploy)
+# @name apigeeHealth
+GET {{apigeeUrl}}/demo/health
+
+?? status == 200
+?? body includes healthy
+
+### Metadados da requisicao encaminhada ao backend
+# @name apigeeEcho
+GET {{apigeeUrl}}/demo/echo?source=httpyac
+X-Httpyac-Scenario: apigee-echo
+
+?? status == 200
+{{
+  test("Proxy encaminha metodo, caminho e header", () => {
+    const assert = require("assert");
+    assert.strictEqual(response.parsedBody.method, "GET");
+    assert.strictEqual(response.parsedBody.path, "/echo");
+    const header = Object.entries(response.parsedBody.headers).find(([name]) => name.toLowerCase() === "x-httpyac-scenario");
+    assert.ok(header);
+    assert.strictEqual(header[1], "apigee-echo");
+  });
+}}
+
+### Envelope JSON aplicado pela policy JavaScript
+# @name apigeeTransform
+GET {{apigeeUrl}}/demo/transform
+
+?? status == 200
+{{
+  test("Transformacao preserva produtos e acrescenta metadados", () => {
+    const assert = require("assert");
+    const body = response.parsedBody;
+    assert.strictEqual(body.status, "ok");
+    assert.strictEqual(body.code, 200);
+    assert.strictEqual(body.data.total, 3);
+    assert.strictEqual(body.data.products.length, 3);
+    assert.strictEqual(body.metadata.transformedBy, "JS-TransformResponse");
+  });
+}}
+
+### Informacoes do backend pelo gateway
+# @name apigeeInfo
+GET {{apigeeUrl}}/demo/info
+
+?? status == 200
+?? body includes BackendApi
+?? body includes ASP.NET Minimal API
+
+### Basic Auth com valores invalidos do cenario local
+# @name apigeeUnauthorized
+GET {{apigeeUrl}}/demo/secure
+Authorization: {{gatewayInvalidAuth}}
+
+?? status == 401
+
+### Basic Auth com os dados publicos de demonstracao
+# @name apigeeAuthorized
+GET {{apigeeUrl}}/demo/secure
+Authorization: {{gatewayAuth}}
+
+?? status == 200
+{{
+  test("Policy autoriza o acesso ao recurso protegido", () => {
+    const assert = require("assert");
+    assert.ok(response.parsedBody.authenticatedUser);
+    assert.strictEqual(response.parsedBody.secretData.environment, "development");
+    assert.deepStrictEqual(response.parsedBody.secretData.permissions, ["read", "write", "admin"]);
+  });
+}}
+
+### Conversao XML para JSON
+# @name apigeeXml
+GET {{apigeeUrl}}/demo/xml
+
+?? status == 200
+{{
+  test("XML convertido preserva o catalogo", () => {
+    const assert = require("assert");
+    assert.ok(response.parsedBody.catalog);
+    assert.strictEqual(response.parsedBody.catalog.book.length, 3);
+  });
+}}
+
+### Falha de rota configurada no proxy
+# @name apigeeNotFound
+GET {{apigeeUrl}}/demo/notfound
+
+?? status == 404
+
+### DELETE bloqueado pela policy (nao exclui dados)
+# @name apigeeDeleteBlocked
+DELETE {{apigeeUrl}}/demo/
+
+?? status == 405
+
+### PUT bloqueado pela policy
+# @name apigeePutBlocked
+PUT {{apigeeUrl}}/demo/
+Content-Type: text/plain
+
+httpyac
+
+?? status == 405
+
+### PATCH bloqueado pela policy
+# @name apigeePatchBlocked
+PATCH {{apigeeUrl}}/demo/
+Content-Type: text/plain
+
+httpyac
+
+?? status == 405
+
+### Preflight CORS respondido pelo proxy
+# @name apigeePreflight
+OPTIONS {{apigeeUrl}}/demo/
+Origin: http://localhost:5050
+Access-Control-Request-Method: GET
+
+?? status == 200
+?? header Access-Control-Allow-Origin == *
+
+### Cache com chave exclusiva: primeira leitura
+# @name apigeeCacheInitial
+{{
+  exports.apigeeCacheRun = require("crypto").randomUUID();
+}}
+GET {{apigeeUrl}}/demo/cached?httpyac={{apigeeCacheRun}}
+
+?? status == 200
+?? header X-Cache == MISS
+
+### Mesma chave: observar o cache (TTL configurado de 30 segundos; o emulador pode repetir MISS)
+# @name apigeeCacheHit
+# @ref apigeeCacheInitial
+GET {{apigeeUrl}}/demo/cached?httpyac={{apigeeCacheRun}}
+
+?? status == 200
+{{
+  test("Resposta informa o estado do cache e preserva o contrato", () => {
+    const assert = require("assert");
+    const header = Object.entries(response.headers).find(([name]) => name.toLowerCase() === "x-cache");
+    assert.ok(header);
+    const state = String(header[1]);
+    assert.ok(["HIT", "MISS"].includes(state));
+    assert.strictEqual(response.parsedBody.data.metrics.cpu, 42.5);
+    assert.ok(Number.isFinite(Date.parse(response.parsedBody.generatedAt)));
+    if (state === "HIT") {
+      assert.deepStrictEqual(response.parsedBody, apigeeCacheInitial);
+    }
+  });
+}}
+
+### Health check agregado pelo fluxo do proxy
+# @name apigeeHealthCheck
+GET {{apigeeUrl}}/demo/health-check
+
+?? status == 200
+{{
+  test("Backend informa estado saudavel", () => {
+    require("assert").strictEqual(response.parsedBody.status, "healthy");
+  });
+}}
+
+### Shared flow de logging chamado pelo proxy
+# @name apigeeSharedFlow
+GET {{apigeeUrl}}/demo/sharedflow-check
+
+?? status == 200
+{{
+  test("Backend detecta os headers do shared flow", () => {
+    require("assert").strictEqual(response.parsedBody.sharedFlowDetectado, true);
+  });
+}}

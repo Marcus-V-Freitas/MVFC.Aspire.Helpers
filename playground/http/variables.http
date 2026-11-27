@@ -5,6 +5,11 @@
   exports.wireMockUrl = typeof wireMockUrl !== "undefined" ? wireMockUrl : "http://localhost:7070";
   exports.keycloakUrl = typeof keycloakUrl !== "undefined" ? keycloakUrl : "http://localhost:8081";
   exports.rabbitManagementUrl = typeof rabbitManagementUrl !== "undefined" ? rabbitManagementUrl : "http://localhost:15672";
+  exports.apigeeUrl = typeof apigeeUrl !== "undefined" ? apigeeUrl : "http://localhost:8998";
+  exports.storageUrl = typeof storageUrl !== "undefined" ? storageUrl : "http://localhost:4443";
+  exports.gatewayLocalAccount = typeof gatewayLocalAccount !== "undefined" ? gatewayLocalAccount : "admin";
+  exports.gatewayLocalValue = typeof gatewayLocalValue !== "undefined" ? gatewayLocalValue : "secret123";
+  exports.allowApigeeQuota = typeof allowApigeeQuota !== "undefined" ? allowApigeeQuota : false;
   exports.brokerLocalAccount = typeof brokerLocalAccount !== "undefined" ? brokerLocalAccount : "teste";
   exports.brokerLocalValue = typeof brokerLocalValue !== "undefined" ? brokerLocalValue : "teste";
   exports.keycloakRealm = typeof keycloakRealm !== "undefined" ? keycloakRealm : "my-app";

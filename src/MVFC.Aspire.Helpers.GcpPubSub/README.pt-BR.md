@@ -19,6 +19,8 @@ A configuração das subscriptions tem um prazo total padrão de 60 segundos, in
 
 As configurações podem ser adicionadas antes ou depois das referências. O provisionamento lê a configuração vigente quando o emulador fica pronto. Cada assinatura push deve selecionar seu consumidor por `MessageConfig.PushEndpointReference`. Não há destino implícito derivado de `WithReference(pubSub)`.
 
+Antes de resolver endpoints ou executar RPCs de assinaturas, o helper valida todos os identificadores de projeto/tópico, requisitos de push e limites das políticas. `AckDeadlineSeconds` aceita 10–600 segundos; null mantém o padrão da biblioteca de 300, enquanto zero explícito solicita o padrão do serviço de 10. Com DLQ configurada, `MaxDeliveryAttempts` aceita 5–100; null e zero usam 5. Declarações apenas de tópico não aplicam políticas de assinatura. Declarações para o mesmo projeto e assinatura devem ter tópico, políticas e destino push equivalentes; conflitos geram `InvalidOperationException`, enquanto declarações equivalentes produzem uma única atualização. Consumidores diferentes precisam de nomes de assinatura diferentes. Essa validação evita atualizações parciais por erros estáticos de configuração; falhas de RPC em execução ainda podem deixar algumas assinaturas configuradas.
+
 Para assinaturas push, a rota de `PushEndpoint` é combinada com a porta alocada de `PushEndpointReference`, acessível pelo container via host Docker. A porta é resolvida por assinatura dentro do prazo compartilhado. O destino explícito é obrigatório quando houver uma rota push; a ausência dele gera `InvalidOperationException`. Para entregar as mensagens de um tópico a vários consumidores, use uma assinatura diferente por destino. No playground, `GET /api/pub-sub-enter` publica a mensagem e `POST /api/pub-sub-exit` recebe o push. A resposta de publicação no Scalar não contém a resposta desse callback assíncrono.
 
 Trabalhar com Google Pub/Sub localmente normalmente significa:
@@ -207,7 +209,9 @@ sequenceDiagram
     Aspire->>Container: Iniciar com declarações PUBSUBn_PROJECT
     Note over Container: A imagem provisiona os tópicos e as assinaturas declarados
     Container-->>Aspire: Health check HTTP aprovado
-    Aspire->>Configurator: OnResourceReady (prazo compartilhado de 60 segundos)
+    Aspire->>Configurator: OnResourceReady
+    Configurator->>Configurator: Validar declarações e reunir assinaturas equivalentes
+    Note over Configurator: Prazo compartilhado de 60 segundos para endpoints e RPCs
     Configurator->>Aspire: Resolver endpoint do emulador
     loop Cada assinatura configurada
         opt Rota push configurada

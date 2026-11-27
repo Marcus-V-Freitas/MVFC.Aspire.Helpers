@@ -14,6 +14,8 @@ internal static class PubSubEmulatorInitializer
         CancellationToken ct,
         TimeProvider? timeProvider = null)
     {
+        _ = PubSubConfigurationValidator.GetSubscriptions(resource.PubSubConfigs);
+
         if (!PubSubConfigurator.HasSubscriptions(resource.PubSubConfigs))
             return Task.CompletedTask;
 

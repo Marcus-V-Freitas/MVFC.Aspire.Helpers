@@ -167,6 +167,8 @@ Each subscription can target a different consumer, independently of reference or
 
 The allocated consumer port is resolved per subscription within the shared initialization deadline (60 seconds by default), including emulator endpoint resolution, client creation and SDK retries. AppHost cancellation interrupts initialization; expiration of the deadline raises `TimeoutException`. `WithWaitTimeout` controls the emulator image's own initialization timeout.
 
+All static Pub/Sub declarations are validated before endpoint resolution and subscription RPCs. Conflicting declarations for the same project/subscription fail immediately; equivalent declarations are configured once. Policy ranges and zero/default semantics are documented in the [Pub/Sub package README](src/MVFC.Aspire.Helpers.GcpPubSub/README.md#motivation).
+
 See the [Pub/Sub configuration and multiple-consumer example](src/MVFC.Aspire.Helpers.GcpPubSub/README.md#push-delivery-to-multiple-consumers) and the [version 12 breaking changes](CHANGELOG.md#1200---2026-11-24).
 
 > See [playground/](playground/) for the full working example.
@@ -324,7 +326,7 @@ Pub/Sub configuration defaults to a shared 60-second deadline, customizable per 
 
 The playground API waits for infrastructure rather than the Pub/Sub admin UI, exposes `/health/ready` after startup, and pins Pub/Sub emulator/UI images by digest. Redis and RabbitMQ use bounded startup retries instead of fixed sleeps. Set `Infrastructure__StartupTimeoutSeconds` to override their individual 30-second startup budgets. Redis connection attempts have a two-second timeout and no internal connection retries; in-flight SDK connections cannot be canceled and may finish after the budget. Normal Redis command timeouts are preserved. Authentication errors are not retried as transport failures.
 
-Integration test retries apply only to functional HTTP clients, with standard 10-second attempt and 30-second total deadlines. Named Aspire probes keep their own scheduling and timeout. Unsafe methods are not retried, and HTTP 429 remains observable. The fixture waits up to three minutes for the API health check before functional requests.
+Integration test retries apply only to functional HTTP clients, with standard 10-second attempt and 30-second total deadlines. Named Aspire probes keep their own scheduling and timeout. Unsafe methods and legacy GET routes that publish Pub/Sub messages, consume RabbitMQ messages, write Redis values or delete Storage buckets are not retried; HTTP 429 remains observable. Read-only GETs retain transient retries. The fixture waits up to three minutes for the API health check before functional requests.
 
 - [MongoDB](src/MVFC.Aspire.Helpers.Mongo/README.md#repeatable-seeds): optional seeds by stable `_id`; append seeds remain available.
 - [Redis](src/MVFC.Aspire.Helpers.Redis/README.md#consumer-authentication): project references provide host/port and the separate secret `Redis:<resource-name>:Password` setting, preserving passwords with commas.
@@ -335,10 +337,10 @@ For optional local verification after the regular Cake build, run `pwsh -File en
 
 ## Playground HTTP scenarios
 
-The [httpyac collection](playground/http/README.md) includes 12 scenarios and 40 requests covering connectivity, persistence, authentication, messaging, PDF generation and local email capture. With the Aspire playground running, set the dashboard URLs in [variables.http](playground/http/variables.http), then open a scenario in the httpyac VS Code extension or run it directly:
+The [httpyac collection](playground/http/README.md) includes 15 scenarios covering connectivity, persistence, authentication, messaging, PDF generation, local email capture, Apigee proxy policies and Cloud Storage CRUD. With the Aspire playground running, set the dashboard URLs in [variables.http](playground/http/variables.http), then open a scenario in the httpyac VS Code extension or run it directly:
 
 ```sh
 httpyac send playground/http/01-smoke.http --all --bail --output short
 ```
 
-Shared variables are imported by every scenario; no environment files or PowerShell runner are required. RabbitMQ uses a temporary isolated queue. The Storage scenario deletes bucket objects and is disabled by default; see the collection guide before enabling it. Apigee is outside this collection's scope.
+Shared variables are imported by every scenario; no environment files or PowerShell runner are required. RabbitMQ uses a temporary isolated queue, and the Storage CRUD scenario creates and cleans up its own bucket. The original Storage deletion scenario and the Apigee quota loop remain disabled by default; see the collection guide before enabling them.

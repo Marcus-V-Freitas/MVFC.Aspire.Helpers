@@ -21,10 +21,29 @@ internal static class FunctionalHttpResilience
     internal static void Configure(HttpStandardResilienceOptions options)
     {
         options.Retry.ShouldHandle = args => ValueTask.FromResult(
-            !args.Context.CancellationToken.IsCancellationRequested && IsTransient(args.Outcome));
+            !args.Context.CancellationToken.IsCancellationRequested &&
+            CanRetry(HttpResilienceContextExtensions.GetRequestMessage(args.Context)) &&
+            IsTransient(args.Outcome));
         options.Retry.DisableForUnsafeHttpMethods();
         options.CircuitBreaker.ShouldHandle = args => ValueTask.FromResult(
             !args.Context.CancellationToken.IsCancellationRequested && IsTransient(args.Outcome));
+    }
+
+    /// <summary>
+    /// Excludes legacy playground GET routes that publish, consume, write or delete data.
+    /// The HTTP contracts remain unchanged; a lost response must not repeat their effects.
+    /// </summary>
+    private static bool CanRetry(HttpRequestMessage? request)
+    {
+        if (request?.RequestUri is not { IsAbsoluteUri: true } uri)
+            return false;
+
+        var path = Uri.UnescapeDataString(uri.AbsolutePath).TrimEnd('/');
+
+        return !path.Equals("/api/pub-sub-enter", StringComparison.OrdinalIgnoreCase) &&
+               !path.StartsWith("/api/rabbitmq/consume/", StringComparison.OrdinalIgnoreCase) &&
+               !path.StartsWith("/api/redis/set/", StringComparison.OrdinalIgnoreCase) &&
+               !path.StartsWith("/api/bucket/", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

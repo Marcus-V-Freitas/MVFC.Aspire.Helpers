@@ -1,0 +1,203 @@
+# @import ./variables.http
+
+### Criar um bucket exclusivo desta execucao (nao usa storageBucket nem bucket-teste)
+# @name storageCrudCreateBucket
+{{
+  const id = require("crypto").randomUUID();
+  const objectName = "examples/arquivo com espaco.json";
+  const copyName = "copies/arquivo copiado.json";
+  exports.storageCrudBucket = "httpyac-" + id;
+  exports.storageCrudObject = objectName;
+  exports.storageCrudCopy = copyName;
+  exports.storageCrudObjectPath = encodeURIComponent(objectName);
+  exports.storageCrudCopyPath = encodeURIComponent(copyName);
+  exports.storageCrudPrefix = encodeURIComponent("examples/");
+  exports.storageCrudPayload = JSON.stringify({ id, source: "httpyac", version: 1 });
+  exports.storageCrudUpdatedPayload = JSON.stringify({ id, source: "httpyac", version: 2 });
+}}
+POST {{storageUrl}}/storage/v1/b?project=httpyac-playground
+Content-Type: application/json
+
+{ "name": "{{storageCrudBucket}}" }
+
+?? status == 200
+{{
+  test("Bucket temporario criado com o nome esperado", () => {
+    require("assert").strictEqual(response.parsedBody.name, storageCrudBucket);
+  });
+}}
+
+### Upload simples pela JSON API do emulador, com nome contendo pasta e espacos
+# @name storageCrudUpload
+# @ref storageCrudCreateBucket
+POST {{storageUrl}}/upload/storage/v1/b/{{storageCrudBucket}}/o?uploadType=media&name={{storageCrudObjectPath}}
+Content-Type: application/json
+
+{{storageCrudPayload}}
+
+?? status == 200
+{{
+  test("Upload preserva bucket, nome e Content-Type", () => {
+    const assert = require("assert");
+    assert.strictEqual(response.parsedBody.bucket, storageCrudBucket);
+    assert.strictEqual(response.parsedBody.name, storageCrudObject);
+    assert.strictEqual(response.parsedBody.contentType, "application/json");
+  });
+}}
+
+### Consultar metadados sem baixar o conteudo
+# @name storageCrudMetadata
+# @ref storageCrudUpload
+GET {{storageUrl}}/storage/v1/b/{{storageCrudBucket}}/o/{{storageCrudObjectPath}}
+
+?? status == 200
+{{
+  test("Metadados correspondem ao arquivo enviado", () => {
+    const assert = require("assert");
+    assert.strictEqual(response.parsedBody.name, storageCrudObject);
+    assert.ok(Number(response.parsedBody.size) > 0);
+  });
+}}
+
+### Listar por prefixo (a pasta faz parte do nome do objeto)
+# @name storageCrudList
+# @ref storageCrudUpload
+GET {{storageUrl}}/storage/v1/b/{{storageCrudBucket}}/o?prefix={{storageCrudPrefix}}
+
+?? status == 200
+{{
+  test("Prefixo retorna somente o objeto criado", () => {
+    require("assert").deepStrictEqual(response.parsedBody.items.map(item => item.name), [storageCrudObject]);
+  });
+}}
+
+### Download do conteudo original
+# @name storageCrudDownload
+# @ref storageCrudUpload
+GET {{storageUrl}}/storage/v1/b/{{storageCrudBucket}}/o/{{storageCrudObjectPath}}?alt=media
+
+?? status == 200
+{{
+  test("Download devolve o JSON original", () => {
+    require("assert").deepStrictEqual(response.parsedBody, JSON.parse(storageCrudPayload));
+  });
+}}
+
+### Substituir o conteudo do mesmo objeto
+# @name storageCrudOverwrite
+# @ref storageCrudUpload
+POST {{storageUrl}}/upload/storage/v1/b/{{storageCrudBucket}}/o?uploadType=media&name={{storageCrudObjectPath}}
+Content-Type: application/json
+
+{{storageCrudUpdatedPayload}}
+
+?? status == 200
+
+### Conferir o conteudo atualizado
+# @name storageCrudUpdatedDownload
+# @ref storageCrudOverwrite
+GET {{storageUrl}}/storage/v1/b/{{storageCrudBucket}}/o/{{storageCrudObjectPath}}?alt=media
+
+?? status == 200
+{{
+  test("Sobrescrita substitui o conteudo anterior", () => {
+    require("assert").deepStrictEqual(response.parsedBody, JSON.parse(storageCrudUpdatedPayload));
+  });
+}}
+
+### Acrescentar metadados customizados
+# @name storageCrudPatchMetadata
+# @ref storageCrudOverwrite
+PATCH {{storageUrl}}/storage/v1/b/{{storageCrudBucket}}/o/{{storageCrudObjectPath}}
+Content-Type: application/json
+
+{ "metadata": { "scenario": "httpyac", "revision": "2" } }
+
+?? status == 200
+{{
+  test("Metadados customizados foram aplicados", () => {
+    require("assert").deepStrictEqual(response.parsedBody.metadata, { scenario: "httpyac", revision: "2" });
+  });
+}}
+
+### Copiar o arquivo atualizado para outro nome no mesmo bucket
+# @name storageCrudCopyObject
+# @ref storageCrudPatchMetadata
+POST {{storageUrl}}/storage/v1/b/{{storageCrudBucket}}/o/{{storageCrudObjectPath}}/copyTo/b/{{storageCrudBucket}}/o/{{storageCrudCopyPath}}
+Content-Type: application/json
+
+{}
+
+?? status == 200
+{{
+  test("Copia usa o nome de destino", () => {
+    require("assert").strictEqual(response.parsedBody.name, storageCrudCopy);
+  });
+}}
+
+### Baixar e comparar a copia
+# @name storageCrudDownloadCopy
+# @ref storageCrudCopyObject
+GET {{storageUrl}}/storage/v1/b/{{storageCrudBucket}}/o/{{storageCrudCopyPath}}?alt=media
+
+?? status == 200
+{{
+  test("Copia preserva o conteudo atualizado", () => {
+    require("assert").deepStrictEqual(response.parsedBody, JSON.parse(storageCrudUpdatedPayload));
+  });
+}}
+
+### Exclusao direta pela JSON API, somente da copia temporaria
+# @name storageCrudDeleteCopy
+# @ref storageCrudDownloadCopy
+DELETE {{storageUrl}}/storage/v1/b/{{storageCrudBucket}}/o/{{storageCrudCopyPath}}
+
+{{
+  test("Exclusao aceita pelo emulador", () => {
+    require("assert").ok([200, 204].includes(response.statusCode));
+  });
+}}
+
+### Objeto excluido: resposta 404 esperada
+# @name storageCrudCopyMissing
+# @ref storageCrudDeleteCopy
+GET {{storageUrl}}/storage/v1/b/{{storageCrudBucket}}/o/{{storageCrudCopyPath}}
+
+?? status == 404
+
+### Rota real do playground: lista, baixa e apaga o objeto restante do bucket temporario
+# @name storageCrudApiDownloadAndDelete
+# @ref storageCrudCopyMissing
+GET {{apiUrl}}/api/bucket/{{storageCrudBucket}}
+
+?? status == 200
+
+### Conferir que a API deixou o bucket vazio
+# @name storageCrudEmpty
+# @ref storageCrudApiDownloadAndDelete
+GET {{storageUrl}}/storage/v1/b/{{storageCrudBucket}}/o
+
+?? status == 200
+{{
+  test("A API removeu todos os objetos temporarios restantes", () => {
+    require("assert").deepStrictEqual(response.parsedBody.items || [], []);
+  });
+}}
+
+### Limpar apenas o bucket exclusivo desta execucao
+# @name storageCrudDeleteBucket
+# @ref storageCrudEmpty
+DELETE {{storageUrl}}/storage/v1/b/{{storageCrudBucket}}
+
+{{
+  test("Bucket temporario removido", () => {
+    require("assert").ok([200, 204].includes(response.statusCode));
+  });
+}}
+
+### Bucket removido: resposta 404 esperada
+# @name storageCrudBucketMissing
+# @ref storageCrudDeleteBucket
+GET {{storageUrl}}/storage/v1/b/{{storageCrudBucket}}
+
+?? status == 404

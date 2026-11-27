@@ -19,6 +19,8 @@ Subscription configuration has a shared deadline of 60 seconds by default, inclu
 
 Project configurations may be added before or after references. Provisioning reads the current configuration when the emulator is ready. Each push subscription must select its consumer through `MessageConfig.PushEndpointReference`. There is no implicit destination derived from `WithReference(pubSub)`.
 
+Before resolving endpoints or issuing subscription RPCs, the helper validates all project/topic identifiers, push requirements and subscription policy ranges. `AckDeadlineSeconds` accepts 10–600 seconds; null keeps the library default of 300, while explicit zero requests the service default of 10. When a DLQ is configured, `MaxDeliveryAttempts` accepts 5–100; null and zero use 5. Topic-only declarations do not apply subscription policies. Declarations for the same project and subscription must have equivalent topic, policies and push destination; conflicting declarations raise `InvalidOperationException`, while equivalent declarations produce one subscription update. Different consumers need different subscription names. This validation prevents static configuration errors from causing partial updates; runtime RPC failures can still leave some subscriptions configured.
+
 Push subscriptions combine the `PushEndpoint` route with the allocated port of `PushEndpointReference`, reached from the container through the Docker host. The port is resolved per subscription under the shared deadline. An explicit destination is required whenever a push route is configured; a missing destination raises `InvalidOperationException`. Reusing a topic across consumers requires a separate subscription for each destination. In the playground, `GET /api/pub-sub-enter` publishes a message and `POST /api/pub-sub-exit` receives the push. The publication response in Scalar does not include the response from this asynchronous callback.
 
 Working with Google Pub/Sub locally usually means:
@@ -207,7 +209,9 @@ sequenceDiagram
     Aspire->>Container: Start with PUBSUBn_PROJECT declarations
     Note over Container: The image provisions declared topics and subscriptions
     Container-->>Aspire: HTTP health check passes
-    Aspire->>Configurator: OnResourceReady (shared 60-second deadline)
+    Aspire->>Configurator: OnResourceReady
+    Configurator->>Configurator: Validate all declarations and coalesce equivalent subscriptions
+    Note over Configurator: Shared 60-second deadline for endpoint resolution and RPCs
     Configurator->>Aspire: Resolve emulator endpoint
     loop Each configured subscription
         opt Push route configured

@@ -2,6 +2,25 @@ namespace MVFC.Aspire.Helpers.Tests.Unit.GcpPubSub;
 
 public sealed class PubSubEmulatorInitializerTests
 {
+    [Fact]
+    public async Task InitializeAsync_WhenConfigIsInvalid_ShouldFailBeforeWaitingForEmulatorEndpoint()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+        var pubSub = builder.AddGcpPubSub("pubsub")
+            .WithPubSubConfigs(new PubSubConfig("project", new MessageConfig("topic", "sub", "/callback")));
+        var time = Substitute.For<TimeProvider>();
+
+        // Act
+        var act = () => PubSubEmulatorInitializer.InitializeAsync(pubSub.Resource, NullLogger.Instance,
+            TestContext.Current.CancellationToken, time);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*sub*PushEndpointReference*");
+        time.DidNotReceive().CreateTimer(Arg.Any<TimerCallback>(), Arg.Any<object?>(), Arg.Any<TimeSpan>(), Arg.Any<TimeSpan>());
+        pubSub.Resource.HttpEndpoint.IsAllocated.Should().BeFalse();
+    }
+
     [Theory]
     [InlineData(false, 60)]
     [InlineData(true, 60)]

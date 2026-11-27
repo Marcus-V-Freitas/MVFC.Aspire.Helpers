@@ -30,14 +30,17 @@ internal static class PubSubConfigurator
         ILogger? logger = null,
         TimeProvider? timeProvider = null)
     {
-        if (!HasSubscriptions(pubSubConfigs))
+        ct.ThrowIfCancellationRequested();
+        var subscriptions = PubSubConfigurationValidator.GetSubscriptions(pubSubConfigs);
+
+        if (subscriptions.Count == 0)
             return;
 
         logger ??= NullLogger.Instance;
         timeProvider ??= TimeProvider.System;
 
         await PubSubConfigurationTimeout.RunAsync(
-            token => ConfigureSubscriptionsAsync(pubSubConfigs, clientBuilder, logger, timeProvider, token),
+            token => ConfigureSubscriptionsAsync(subscriptions, clientBuilder, logger, timeProvider, token),
             logger, timeProvider, ct).ConfigureAwait(false);
     }
 
@@ -56,7 +59,7 @@ internal static class PubSubConfigurator
         ILogger logger,
         TimeProvider timeProvider,
         CancellationToken ct) =>
-        ConfigureSubscriptionsAsync(pubSubConfigs, new SubscriberServiceApiClientBuilder
+        ConfigureSubscriptionsAsync(PubSubConfigurationValidator.GetSubscriptions(pubSubConfigs), new SubscriberServiceApiClientBuilder
         {
             ChannelCredentials = ChannelCredentials.Insecure,
             Endpoint = endpoint,
@@ -67,18 +70,12 @@ internal static class PubSubConfigurator
     /// Configures all declared subscriptions concurrently and logs the completion duration.
     /// </summary>
     private static async Task ConfigureSubscriptionsAsync(
-        IReadOnlyList<PubSubConfig> pubSubConfigs,
+        List<(string ProjectId, MessageConfig MessageConfig)> subscriptions,
         SubscriberServiceApiClientBuilder clientBuilder,
         ILogger logger,
         TimeProvider timeProvider,
         CancellationToken ct)
     {
-        var subscriptions = pubSubConfigs
-            .SelectMany(c => c.MessageConfigs
-                .Where(m => !string.IsNullOrWhiteSpace(m.SubscriptionName))
-                .Select(m => (c.ProjectId, MessageConfig: m)))
-            .ToList();
-
         var started = timeProvider.GetTimestamp();
         logger.LogConfigurationStarting(subscriptions.Count);
         ct.ThrowIfCancellationRequested();
@@ -189,7 +186,7 @@ internal static class PubSubConfigurator
     internal static FieldMask BuildFieldMaskUpdate(MessageConfig messageConfig)
     {
         var paths = new List<string> { "ack_deadline_seconds" };
-        if (!string.IsNullOrEmpty(messageConfig.PushEndpoint))
+        if (!string.IsNullOrWhiteSpace(messageConfig.PushEndpoint))
             paths.Add("push_config");
         if (!string.IsNullOrWhiteSpace(messageConfig.DeadLetterTopic))
             paths.Add("dead_letter_policy");

@@ -3,6 +3,32 @@
 public sealed class KeycloakExtensionsTests
 {
     [Fact]
+    public async Task WithSeeds_WhenReplacedWithEmptyCollection_ShouldNotImportPreviousRealms()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+        var keycloak = builder.AddKeycloak("keycloak")
+            .WithSeeds([new StubRealmSeed("previous")]);
+
+        using var app = builder.Build();
+        var eventing = app.Services.GetRequiredService<IDistributedApplicationEventing>();
+        var callbackModel = new DistributedApplicationModel([]);
+        var args = new List<object>();
+
+        // Act
+        keycloak.WithSeeds([]);
+        await eventing.PublishAsync(new BeforeStartEvent(app.Services, callbackModel), TestContext.Current.CancellationToken);
+
+        foreach (var callback in keycloak.Resource.Annotations.OfType<CommandLineArgsCallbackAnnotation>())
+            await callback.Callback(new CommandLineArgsCallbackContext(args, keycloak.Resource, TestContext.Current.CancellationToken));
+
+        // Assert
+        keycloak.Resource.Seeds.Should().BeEmpty();
+        keycloak.Resource.Annotations.OfType<KeycloakSeedsCallbackAnnotation>().Should().ContainSingle();
+        args.OfType<string>().Should().NotContain("--import-realm");
+    }
+
+    [Fact]
     public void AddKeycloak_ShouldThrow_WhenBuilderIsNull()
     {
         // Arrange

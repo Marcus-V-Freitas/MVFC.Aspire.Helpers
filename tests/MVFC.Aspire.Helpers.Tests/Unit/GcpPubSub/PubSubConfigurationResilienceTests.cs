@@ -6,6 +6,90 @@ public sealed class PubSubConfigurationResilienceTests
         [new("project", new MessageConfig("topic", "sub", "/callback") { DeadLetterTopic = "dlq", PushEndpointReference = CreatePushEndpoint() })];
 
     [Fact]
+    public async Task ConfigureAsync_WhenLaterConfigIsInvalid_ShouldNotReadOrUpdateAnySubscription()
+    {
+        // Arrange
+        var reads = 0;
+        var updates = 0;
+        PubSubConfig[] configs =
+        [
+            new("project", new MessageConfig("topic", "valid")),
+            new("project", new MessageConfig("topic", "invalid", "/callback")),
+        ];
+        var builder = CreateClientBuilder((request, _) =>
+        {
+            reads++;
+            return Task.FromResult(new Subscription { Name = request.Subscription });
+        }, (request, _) =>
+        {
+            updates++;
+            return Task.FromResult(request.Subscription);
+        });
+
+        // Act
+        var act = () => PubSubConfigurator.ConfigureAsync(configs, builder, TestContext.Current.CancellationToken);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*invalid*PushEndpointReference*");
+        reads.Should().Be(0);
+        updates.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ConfigureAsync_WhenDuplicateConflicts_ShouldNotReadOrUpdateAnySubscription()
+    {
+        // Arrange
+        var reads = 0;
+        PubSubConfig[] configs =
+        [
+            new("project", new MessageConfig("topic", "sub") { AckDeadlineSeconds = 10 }),
+            new("project", new MessageConfig("topic", "sub") { AckDeadlineSeconds = 20 }),
+        ];
+        var builder = CreateClientBuilder((_, _) =>
+        {
+            reads++;
+            return Task.FromResult(new Subscription());
+        });
+
+        // Act
+        var act = () => PubSubConfigurator.ConfigureAsync(configs, builder, TestContext.Current.CancellationToken);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*sub*project*conflicting*");
+        reads.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ConfigureAsync_WhenEffectiveDeclarationsMatch_ShouldConfigureOnce()
+    {
+        // Arrange
+        var reads = 0;
+        var updates = 0;
+        var message = new MessageConfig("topic", "sub") { DeadLetterTopic = "dlq" };
+        PubSubConfig[] configs =
+        [
+            new("project", message),
+            new("project", message with { AckDeadlineSeconds = 300, MaxDeliveryAttempts = 0 }),
+        ];
+        var builder = CreateClientBuilder((request, _) =>
+        {
+            reads++;
+            return Task.FromResult(new Subscription { Name = request.Subscription });
+        }, (request, _) =>
+        {
+            updates++;
+            return Task.FromResult(request.Subscription);
+        });
+
+        // Act
+        await PubSubConfigurator.ConfigureAsync(configs, builder, TestContext.Current.CancellationToken);
+
+        // Assert
+        reads.Should().Be(1);
+        updates.Should().Be(1);
+    }
+
+    [Fact]
     public async Task ConfigureAsync_WhenPushDestinationIsMissing_ShouldFailBeforeRpcEvenWithReference()
     {
         // Arrange

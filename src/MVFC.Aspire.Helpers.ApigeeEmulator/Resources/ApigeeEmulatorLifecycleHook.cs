@@ -281,7 +281,7 @@ public sealed class ApigeeEmulatorLifecycleHook(
     /// <param name="delaySeconds">The delay in seconds between retries.</param>
     /// <param name="ct">A cancellation token.</param>
     /// <exception cref="TimeoutException">Thrown if the endpoint does not become ready in time.</exception>
-    private static async Task PollUntilReadyAsync(
+    internal static async Task PollUntilReadyAsync(
         HttpClient client,
         string path,
         int maxRetries,

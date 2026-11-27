@@ -21,6 +21,23 @@ public static class ApigeeEmulatorExtensions
         string name,
         int controlPort = ApigeeEmulatorDefaults.DEFAULT_CONTROL_PORT,
         int trafficPort = ApigeeEmulatorDefaults.DEFAULT_TRAFFIC_PORT)
+        => AddApigeeEmulator(builder, name, controlPort, trafficPort, OperatingSystem.IsLinux());
+
+    /// <summary>
+    /// Adds the emulator using an explicit platform decision while preserving the public registration defaults.
+    /// </summary>
+    /// <param name="builder">Distributed application builder.</param>
+    /// <param name="name">Logical resource name for the emulator.</param>
+    /// <param name="controlPort">Host-side control API port.</param>
+    /// <param name="trafficPort">Host-side traffic gateway port.</param>
+    /// <param name="isLinux">Whether Linux host-gateway runtime arguments are required.</param>
+    /// <returns>The configured resource builder.</returns>
+    internal static IResourceBuilder<ApigeeEmulatorResource> AddApigeeEmulator(
+        this IDistributedApplicationBuilder builder,
+        string name,
+        int controlPort,
+        int trafficPort,
+        bool isLinux)
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -35,7 +52,7 @@ public static class ApigeeEmulatorExtensions
                 tag: ApigeeEmulatorDefaults.DEFAULT_IMAGE_TAG)
             .WithApigeeEndpoints(controlPort, trafficPort);
 
-        if (OperatingSystem.IsLinux())
+        if (isLinux)
         {
             return resourceBuilder.WithContainerRuntimeArgs("--add-host", "host.docker.internal:host-gateway");
         }
