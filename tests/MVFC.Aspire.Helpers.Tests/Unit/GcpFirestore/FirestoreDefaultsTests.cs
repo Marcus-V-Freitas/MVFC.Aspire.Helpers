@@ -1,10 +1,11 @@
-namespace MVFC.Aspire.Helpers.Tests.Unit.GcpFirestore;
+﻿namespace MVFC.Aspire.Helpers.Tests.Unit.GcpFirestore;
 
 public sealed class FirestoreDefaultsTests
 {
     [Fact]
     public void Constants_ShouldHaveExpectedValues()
     {
+        // Act & Assert
         FirestoreDefaults.EMULATOR_PORT.Should().Be(8080);
         FirestoreDefaults.DEFAULT_EXTERNAL_PORT.Should().Be(8084);
         FirestoreDefaults.EMULATOR_IMAGE.Should().Be("mtlynch/firestore-emulator");

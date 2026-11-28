@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.Keycloak;
+﻿namespace MVFC.Aspire.Helpers.Keycloak;
 
 /// <summary>
 /// Extension methods for configuring and referencing Keycloak resources in Aspire.
@@ -138,6 +138,19 @@ public static class KeycloakExtensions
         string realmName,
         string clientId,
         string? clientSecret = null)
+        => WithReference<ProjectResource>(project, keycloak, realmName, clientId, clientSecret);
+
+    /// <summary>
+    /// Injects the Keycloak base URL, realm and client settings into an environment-capable consumer.
+    /// </summary>
+    /// <typeparam name="TResource">The consumer resource type.</typeparam>
+    public static IResourceBuilder<TResource> WithReference<TResource>(
+        this IResourceBuilder<TResource> project,
+        IResourceBuilder<KeycloakResource> keycloak,
+        string realmName,
+        string clientId,
+        string? clientSecret = null)
+        where TResource : IResourceWithEnvironment
     {
         ArgumentNullException.ThrowIfNull(project);
         ArgumentNullException.ThrowIfNull(keycloak);

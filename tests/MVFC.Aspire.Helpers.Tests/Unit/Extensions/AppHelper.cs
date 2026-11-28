@@ -1,7 +1,17 @@
-namespace MVFC.Aspire.Helpers.Tests.Unit.Extensions;
+﻿namespace MVFC.Aspire.Helpers.Tests.Unit.Extensions;
 
 internal static class AppHelper
 {
+    /// <summary>
+    /// Creates an unstarted project model to exercise the helpers' preserved public contracts.
+    /// </summary>
+    internal static IResourceBuilder<ProjectResource> AddTestProject(this IDistributedApplicationBuilder builder, string name)
+    {
+        return builder.AddResource(new ProjectResource(name))
+            .WithAnnotation(new TestProjectMetadata())
+            .WithHttpEndpoint(name: "http");
+    }
+
     internal static async Task<Dictionary<string, object>> GetConfiguredEnvironmentAsync(
         this IDistributedApplicationBuilder builder, IResource resource, CancellationToken ct)
     {

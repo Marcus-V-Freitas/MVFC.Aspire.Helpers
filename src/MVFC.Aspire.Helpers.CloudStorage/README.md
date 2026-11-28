@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.CloudStorage
+﻿# MVFC.Aspire.Helpers.CloudStorage
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
@@ -16,7 +16,7 @@ Helpers for integrating with Google Cloud Storage (GCS emulator) in .NET Aspire 
 
 When you need object storage locally, you usually:
 
-- Spin up a GCS/S3‑compatible emulator by hand.
+- Spin up a GCS-compatible emulator by hand.
 - Mount folders manually as bucket data.
 - Hard‑code emulator URLs and ports in your services.
 
@@ -58,7 +58,10 @@ This project facilitates the configuration and integration of the Google Cloud S
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.CloudStorage
+dotnet add package Aspire.Hosting.Dotnet --version 17.0.0
 ```
+
+Commands and examples using `AddDotnetProject` target a .NET 10/11 AppHost on Aspire 17. For .NET 9 AppHosts, keep Aspire 13.6.5, omit `Aspire.Hosting.Dotnet` 17 and use `AddProject<Projects.MyApi>("api")`. Adjust the project path to your AppHost.
 
 ## Quick Aspire usage (AppHost)
 
@@ -71,7 +74,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 var cloudStorage = builder.AddCloudStorage("cloud-storage")
     .WithBucketFolder("./bucket-data");
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
+builder.AddDotnetProject("api-example", "../MVFC.Aspire.Helpers.Playground.Api/MVFC.Aspire.Helpers.Playground.Api.csproj")
        .WithReference(cloudStorage)
        .WaitFor(cloudStorage);
 
@@ -84,14 +87,12 @@ await builder.Build().RunAsync();
 sequenceDiagram
     participant Aspire as .NET Aspire
     participant Container as GCP Storage Emulator
-    participant Configurator as Cloud Storage Processor
-    
-    Aspire->>Container: Start container (fsouza/fake-gcs-server)
-    Container-->>Aspire: Ready (port 4443 available)
-    Aspire->>Configurator: Trigger OnResourceReady
-    Configurator->>Container: Create Buckets
-    Configurator-->>Aspire: Provisioning Completed
-    Aspire->>App: Start App with STORAGE_EMULATOR_HOST
+    participant App as Consumer
+
+    Aspire->>Container: Start fake-gcs-server with optional /data bind mount
+    Container->>Container: Load bucket data from mounted folder
+    Container-->>Aspire: Resource running
+    Aspire->>App: Start consumer with STORAGE_EMULATOR_HOST (WaitFor)
 ```
 
 ## Fluent methods
@@ -144,7 +145,7 @@ The default image is pinned to a tested SHA256 digest. Select another image/tag 
 ## Requirements
 
 - .NET 9, 10 or 11
-- Aspire.Hosting >= 13.6.5
+- Aspire.Hosting 13.6.5 on .NET 9; Aspire.Hosting 17.0.0 on .NET 10/11. AppHost examples use `Aspire.Hosting.Dotnet` 17 and `AddDotnetProject`; .NET 9 AppHosts retain the `ProjectResource` model.
 - Docker running locally
 
 ## License

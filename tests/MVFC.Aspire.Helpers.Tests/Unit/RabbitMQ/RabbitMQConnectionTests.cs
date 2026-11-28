@@ -10,7 +10,7 @@ public sealed class RabbitMQConnectionTests
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
         var rabbit = builder.AddRabbitMQ("rabbit").WithCredentials("old-user", "old-secret");
-        var consumer = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("consumer").WithReference(rabbit);
+        var consumer = builder.AddTestProject("consumer").WithReference(rabbit);
         var endpoint = rabbit.Resource.Annotations.OfType<EndpointAnnotation>().Single(e => e.Name == "amqp");
         endpoint.AllocatedEndpoint = new AllocatedEndpoint(endpoint, "localhost", 5672);
         rabbit.WithCredentials(username, password);

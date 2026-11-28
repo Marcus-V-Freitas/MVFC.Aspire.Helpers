@@ -43,7 +43,11 @@ public static class RedisExtensions
         ArgumentNullException.ThrowIfNull(builder);
 
         var resource = new RedisResource(name);
+#if NET10_0_OR_GREATER
+        builder.AddResource(resource.PasswordParameter).AsOptional();
+#else
         builder.AddResource(resource.PasswordParameter);
+#endif
 
         return builder.AddResource(resource)
             .WithDockerImage(
@@ -100,6 +104,16 @@ public static class RedisExtensions
     public static IResourceBuilder<ProjectResource> WithReference(
         this IResourceBuilder<ProjectResource> project,
         IResourceBuilder<RedisResource> redis)
+        => WithReference<ProjectResource>(project, redis);
+
+    /// <summary>
+    /// Injects the Redis endpoint and deferred secret password into an environment-capable consumer.
+    /// </summary>
+    /// <typeparam name="TResource">The consumer resource type.</typeparam>
+    public static IResourceBuilder<TResource> WithReference<TResource>(
+        this IResourceBuilder<TResource> project,
+        IResourceBuilder<RedisResource> redis)
+        where TResource : IResourceWithEnvironment
     {
         ArgumentNullException.ThrowIfNull(project);
         ArgumentNullException.ThrowIfNull(redis);
@@ -107,7 +121,7 @@ public static class RedisExtensions
         var key = string.Format(CultureInfo.InvariantCulture, _passwordConfigurationKeyFormat, redis.Resource.Name);
 
         return project.WithReference(source: redis)
-                      .WithEnvironment(key.Replace(":", "__", StringComparison.Ordinal), redis.Resource.PasswordParameter);
+                      .WithEnvironment(key.Replace(":", "__", StringComparison.Ordinal), ReferenceExpression.Create($"{redis.Resource.PasswordParameter}"));
     }
 
     /// <summary>

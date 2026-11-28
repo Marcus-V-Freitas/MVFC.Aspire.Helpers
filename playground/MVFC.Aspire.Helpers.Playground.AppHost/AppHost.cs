@@ -1,5 +1,5 @@
-var builder = DistributedApplication.CreateBuilder(args);
-var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+﻿var builder = DistributedApplication.CreateBuilder(args);
+var api = builder.AddDotnetProject("api-exemplo", "../MVFC.Aspire.Helpers.Playground.Api/MVFC.Aspire.Helpers.Playground.Api.csproj")
                  .WithHttpHealthCheck("/health/ready");
 
 // --- GCP Spanner Configs ---

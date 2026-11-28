@@ -1,40 +1,42 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-    <AspireVersion>13.6.5</AspireVersion>
+    <AspireVersion>17.0.0</AspireVersion>
+    <AspireVersion Condition="'$(TargetFramework)' == 'net9.0'">[13.6.5]</AspireVersion>
     <Net11Version>11.0.0</Net11Version>
-    <Net10Version>10.0.14</Net10Version>
+    <Net10Version>10.0.15</Net10Version>
     <Net9Version>9.0.3</Net9Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="MessagePack" Version="3.1.12" />
     <PackageVersion Include="Microsoft.Testing.Platform" Version="2.5.3" />
-    <PackageVersion Include="MVFC.Pack.Analyzers" Version="4.0.2" />
+    <PackageVersion Include="MVFC.Pack.Analyzers" Version="5.0.0" />
     <PackageVersion Include="Aspire.Hosting" Version="$(AspireVersion)" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="$(AspireVersion)" />
+    <PackageVersion Include="Aspire.Hosting.Dotnet" Version="$(AspireVersion)" />
     <PackageVersion Include="Aspire.Hosting.Testing" Version="$(AspireVersion)" />
     <PackageVersion Include="Bogus" Version="35.6.5" />
-    <PackageVersion Include="coverlet.collector" Version="10.1.0" />
+    <PackageVersion Include="coverlet.collector" Version="10.1.1" />
     <PackageVersion Include="FluentAssertions" Version="[7.0.0]" />
-    <PackageVersion Include="Google.Cloud.PubSub.V1" Version="3.39.0" />
+    <PackageVersion Include="Google.Cloud.PubSub.V1" Version="3.40.0" />
     <PackageVersion Include="Google.Cloud.Storage.V1" Version="5.0.0" />
     <PackageVersion Include="Google.Cloud.Spanner.Admin.Instance.V1" Version="5.12.0" />
     <PackageVersion Include="Google.Cloud.Spanner.Admin.Database.V1" Version="5.12.0" />
     <PackageVersion Include="Google.Cloud.Spanner.Data" Version="5.12.0" />
-    <PackageVersion Include="Google.Cloud.Firestore" Version="4.6.0" />
+    <PackageVersion Include="Google.Cloud.Firestore" Version="4.7.0" />
     <PackageVersion Include="Google.Cloud.BigQuery.V2" Version="3.12.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.12.0" />
-    <PackageVersion Include="MongoDB.Driver" Version="3.14.0" />
+    <PackageVersion Include="MongoDB.Driver" Version="3.14.1" />
     <PackageVersion Include="NSubstitute" Version="6.2.0" />
-    <PackageVersion Include="RabbitMQ.Client" Version="7.2.2" />
+    <PackageVersion Include="RabbitMQ.Client" Version="7.3.0" />
     <PackageVersion Include="Refit" Version="[10.2.0]" />
     <PackageVersion Include="Moq" Version="4.21.0" />
     <PackageVersion Include="Refit.HttpClientFactory" Version="[10.2.0]" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.21.0" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="3.3.0" />
     <PackageVersion Include="StackExchange.Redis" Version="3.4.35" />
     <PackageVersion Include="Humanizer" Version="3.0.10" />
-    <PackageVersion Include="WireMock.Net.minimal" Version="2.31.0" />
+    <PackageVersion Include="WireMock.Net.minimal" Version="2.35.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
     <PackageVersion Include="xunit.v3" Version="4.0.3" />
     <PackageVersion Include="MinVer" Version="8.0.0" />
@@ -44,7 +46,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(Net11Version)" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="$(Net11Version)" />
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(Net11Version)" />
-    <PackageVersion Include="Microsoft.OpenApi" Version="3.11.0" />
+    <PackageVersion Include="Microsoft.OpenApi" Version="3.11.1" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.15" />

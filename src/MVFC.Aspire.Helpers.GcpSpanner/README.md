@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.GcpSpanner
+﻿# MVFC.Aspire.Helpers.GcpSpanner
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
@@ -62,14 +62,17 @@ This project facilitates the configuration and integration of Google Cloud Spann
 - Adds the Google Cloud Spanner emulator.
 - Creates instances and databases according to configuration.
 - Executes custom DDL statements upon provisioning.
-- Native gRPC port health checks ensure the emulator is fully ready before projects start consuming it.
+- A TCP probe checks connectivity to the gRPC port. Provisioning is separate; an open port does not prove instance, database or DDL completion.
 - Extension methods to facilitate AppHost configuration.
 
 ## Installation
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.GcpSpanner
+dotnet add package Aspire.Hosting.Dotnet --version 17.0.0
 ```
+
+Commands and examples using `AddDotnetProject` target a .NET 10/11 AppHost on Aspire 17. For .NET 9 AppHosts, keep Aspire 13.6.5, omit `Aspire.Hosting.Dotnet` 17 and use `AddProject<Projects.MyApi>("api")`. Adjust the project path to your AppHost.
 
 ## Quick Aspire usage (AppHost)
 
@@ -99,7 +102,7 @@ var spanner = builder.AddGcpSpanner("gcp-spanner")
                      .WithSpannerConfigs(spannerConfig)
                      .WithWaitTimeout(30);
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
+builder.AddDotnetProject("api-example", "../MVFC.Aspire.Helpers.Playground.Api/MVFC.Aspire.Helpers.Playground.Api.csproj")
        .WithReference(spanner)
        .WaitFor(spanner);
 
@@ -136,14 +139,14 @@ sequenceDiagram
     Configurator->>Container: Check/Create Database
     Configurator->>Container: Execute DDLs
     Configurator-->>Aspire: Provisioning Completed
-    Aspire->>App: Start App with SPANNER_EMULATOR_HOST
+    Note over Aspire,Configurator: WaitFor observes resource health; provisioning is a separate callback
 ```
 
 ## Public methods
 
 - `AddGcpSpanner` – adds the emulator container.
 - `WithSpannerConfigs` – configures instances, databases, and DDL scripts.
-- `WithWaitTimeout` – sets emulator startup delay timeout.
+- `WithWaitTimeout` – sets the shared endpoint resolution and provisioning deadline.
 - `WithReference` – wires projects to the emulator and sets the `SPANNER_EMULATOR_HOST` environment variable automatically.
 
 ## Default image
@@ -153,7 +156,7 @@ The default image is pinned to a tested SHA256 digest. Select another image/tag 
 ## Requirements
 
 - .NET 9, 10 or 11
-- Aspire.Hosting >= 13.6.5
+- Aspire.Hosting 13.6.5 on .NET 9; Aspire.Hosting 17.0.0 on .NET 10/11. AppHost examples use `Aspire.Hosting.Dotnet` 17 and `AddDotnetProject`; .NET 9 AppHosts retain the `ProjectResource` model.
 - Docker running locally
 - Google.Cloud.Spanner.Data >= 5.12.0 (or Google.Cloud.Spanner.Admin.Instance.V1)
 

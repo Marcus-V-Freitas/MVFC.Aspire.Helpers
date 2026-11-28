@@ -326,7 +326,7 @@ public sealed class KeycloakExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         IResourceBuilder<KeycloakResource>? kcBuilder = null;
 
         // Act
@@ -347,7 +347,7 @@ public sealed class KeycloakExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         var kcBuilder = appBuilder.AddKeycloak("keycloak");
 
         // Act
@@ -362,7 +362,7 @@ public sealed class KeycloakExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         var kcBuilder = appBuilder.AddKeycloak("keycloak");
 
         // Act
@@ -377,7 +377,7 @@ public sealed class KeycloakExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         var kcBuilder = appBuilder.AddKeycloak("keycloak");
 
         // Act

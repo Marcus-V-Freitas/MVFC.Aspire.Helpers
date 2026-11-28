@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.GcpFirestore;
+﻿namespace MVFC.Aspire.Helpers.GcpFirestore;
 
 /// <summary>
 /// Extension methods to register the Google Cloud Firestore emulator in Aspire.
@@ -79,6 +79,16 @@ public static class FirestoreEmulatorExtensions
     public static IResourceBuilder<ProjectResource> WithReference(
         this IResourceBuilder<ProjectResource> project,
         IResourceBuilder<FirestoreEmulatorResource> firestore)
+        => WithReference<ProjectResource>(project, firestore);
+
+    /// <summary>
+    /// Injects the Firestore emulator host and configured project IDs into an environment-capable consumer.
+    /// </summary>
+    /// <typeparam name="TResource">The consumer resource type.</typeparam>
+    public static IResourceBuilder<TResource> WithReference<TResource>(
+        this IResourceBuilder<TResource> project,
+        IResourceBuilder<FirestoreEmulatorResource> firestore)
+        where TResource : IResourceWithEnvironment
     {
         ArgumentNullException.ThrowIfNull(project);
         ArgumentNullException.ThrowIfNull(firestore);

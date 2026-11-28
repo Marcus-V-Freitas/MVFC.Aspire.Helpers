@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.Mailpit
+﻿# MVFC.Aspire.Helpers.Mailpit
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -55,7 +55,10 @@ Este projeto permite adicionar e integrar o MailPit como recurso gerenciado em a
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.Mailpit
+dotnet add package Aspire.Hosting.Dotnet --version 17.0.0
 ```
+
+Os comandos e exemplos com `AddDotnetProject` usam um AppHost .NET 10/11 com Aspire 17. Em AppHosts .NET 9, mantenha Aspire 13.6.5, omita `Aspire.Hosting.Dotnet` 17 e use `AddProject<Projects.MyApi>("api")`. Ajuste o caminho do projeto ao seu AppHost.
 
 ## Uso rápido no Aspire (AppHost)
 
@@ -67,10 +70,10 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var mailpit = builder.AddMailpit("mailpit")
     .WithMaxMessages(1000)
-    .WithDataFilePath("/data/mailpit.db")
+    .WithDataFile("./mailpit-data")
     .WithWebAuth(username: "admin", password: "secret");
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+builder.AddDotnetProject("api-exemplo", "../MVFC.Aspire.Helpers.Playground.Api/MVFC.Aspire.Helpers.Playground.Api.csproj")
        .WithReference(mailpit)
        .WaitFor(mailpit);
 
@@ -98,7 +101,7 @@ sequenceDiagram
 | `WithMaxMessageSize(sizeInMb)`    | Define o tamanho máximo de cada mensagem em MB.          |
 | `WithSmtpAuth()`                  | Habilita autenticação SMTP (accept any + insecure).      |
 | `WithSmtpHostname(hostname)`      | Define o hostname do servidor SMTP.                      |
-| `WithDataFilePath(path)`          | Define o caminho do arquivo de persistência dos e-mails. |
+| `WithDataFile(localFolder)`          | Monta uma pasta local para persistência dos e-mails. |
 | `WithWebAuth(username, password)` | Habilita autenticação na interface web.                  |
 | `WithVerboseLogging()`            | Habilita logs detalhados do MailPit.                     |
 
@@ -122,8 +125,8 @@ A imagem padrão é fixada por digest SHA256 testado. Para selecionar outra imag
 
 ## Requisitos
 
-- .NET 9, 10 or 11
-- Aspire.Hosting >= 13.6.5
+- .NET 9, 10 ou 11
+- Aspire.Hosting 13.6.5 no .NET 9; Aspire.Hosting 17.0.0 no .NET 10/11. Exemplos de AppHost usam `Aspire.Hosting.Dotnet` 17 e `AddDotnetProject`; AppHosts .NET 9 mantêm o modelo `ProjectResource`.
 - Docker em execução
 
 ## Licença

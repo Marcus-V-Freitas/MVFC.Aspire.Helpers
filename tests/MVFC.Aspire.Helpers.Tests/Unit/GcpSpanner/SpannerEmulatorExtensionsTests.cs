@@ -185,7 +185,7 @@ public sealed class SpannerEmulatorExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         IResourceBuilder<SpannerEmulatorResource>? spanner = null;
 
         // Act
@@ -200,7 +200,7 @@ public sealed class SpannerEmulatorExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         var spanner = appBuilder.AddGcpSpanner("spanner");
 
         // Act
@@ -215,7 +215,7 @@ public sealed class SpannerEmulatorExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         var spanner = appBuilder.AddGcpSpanner("spanner")
             .WithSpannerConfigs(new SpannerConfig("proj", "inst", "db"));
 
@@ -231,8 +231,8 @@ public sealed class SpannerEmulatorExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project1 = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api1");
-        var project2 = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api2");
+        var project1 = appBuilder.AddTestProject("api1");
+        var project2 = appBuilder.AddTestProject("api2");
         var spanner = appBuilder.AddGcpSpanner("spanner")
             .WithSpannerConfigs(new SpannerConfig("proj", "inst", "db"));
 
@@ -278,7 +278,7 @@ public sealed class SpannerEmulatorExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         var spanner = appBuilder.AddGcpSpanner("spanner");
 
         // Act

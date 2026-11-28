@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.GcpPubSub
+﻿# MVFC.Aspire.Helpers.GcpPubSub
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
@@ -60,8 +60,8 @@ This project facilitates the configuration and integration of Google Pub/Sub in 
 ### Push delivery to multiple consumers
 
 ```csharp
-var first = builder.AddProject<Projects.FirstApi>("first");
-var second = builder.AddProject<Projects.SecondApi>("second");
+var first = builder.AddDotnetProject("first", "../FirstApi/FirstApi.csproj");
+var second = builder.AddDotnetProject("second", "../SecondApi/SecondApi.csproj");
 
 var pubSub = builder.AddGcpPubSub("pubsub")
     .WithPubSubConfigs(new PubSubConfig("project", messageConfigs:
@@ -107,7 +107,10 @@ Explicit destinations are independent of reference order. Configurations without
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.GcpPubSub
+dotnet add package Aspire.Hosting.Dotnet --version 17.0.0
 ```
+
+Commands and examples using `AddDotnetProject` target a .NET 10/11 AppHost on Aspire 17. For .NET 9 AppHosts, keep Aspire 13.6.5, omit `Aspire.Hosting.Dotnet` 17 and use `AddProject<Projects.MyApi>("api")`. Adjust the project path to your AppHost.
 
 ## Quick Aspire usage (AppHost)
 
@@ -117,7 +120,7 @@ using MVFC.Aspire.Helpers.GcpPubSub;
 using MVFC.Aspire.Helpers.GcpPubSub.Models;
 
 var builder = DistributedApplication.CreateBuilder(args);
-var api = builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api");
+var api = builder.AddDotnetProject("api", "../MVFC.Aspire.Helpers.Playground.Api/MVFC.Aspire.Helpers.Playground.Api.csproj");
 
 var messageConfig = new MessageConfig(
     TopicName: "test-topic",
@@ -239,9 +242,9 @@ The default image is pinned to a tested SHA256 digest. Select another image/tag 
 ## Requirements
 
 - .NET 9, 10 or 11
-- Aspire.Hosting >= 13.6.5
+- Aspire.Hosting 13.6.5 on .NET 9; Aspire.Hosting 17.0.0 on .NET 10/11. AppHost examples use `Aspire.Hosting.Dotnet` 17 and `AddDotnetProject`; .NET 9 AppHosts retain the `ProjectResource` model.
 - Docker running locally
-- Google.Cloud.PubSub.V1 >= 3.39.0
+- Google.Cloud.PubSub.V1 >= 3.40.0
 
 ## License
 

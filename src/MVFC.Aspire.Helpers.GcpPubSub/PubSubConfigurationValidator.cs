@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.GcpPubSub;
+﻿namespace MVFC.Aspire.Helpers.GcpPubSub;
 
 /// <summary>
 /// Validates static configuration before endpoint resolution or emulator RPCs.
@@ -17,24 +17,11 @@ internal static class PubSubConfigurationValidator
 
         foreach (var config in configs)
         {
-            if (config is null)
-                throw new ArgumentException("Project configuration must not be null.", nameof(configs));
-
-            if (string.IsNullOrWhiteSpace(config.ProjectId))
-                throw new ArgumentException("ProjectId must not be blank.", nameof(configs));
-
-            if (config.MessageConfigs is null)
-                throw new ArgumentException("MessageConfigs must not be null.", nameof(configs));
+            ValidateProject(config, nameof(configs));
 
             foreach (var message in config.MessageConfigs)
             {
-                if (message is null)
-                    throw new ArgumentException("Message configuration must not be null.", nameof(configs));
-
-                if (string.IsNullOrWhiteSpace(message.TopicName))
-                    throw new ArgumentException("TopicName must not be blank.", nameof(configs));
-
-                ValidateSubscription(message);
+                ValidateMessage(message, nameof(configs));
 
                 if (string.IsNullOrWhiteSpace(message.SubscriptionName))
                     continue;
@@ -49,6 +36,35 @@ internal static class PubSubConfigurationValidator
         }
 
         return subscriptions.Select(pair => (pair.Key.ProjectId, pair.Value)).ToList();
+    }
+
+    /// <summary>
+    /// Validates a project declaration while preserving the caller's exception parameter name.
+    /// </summary>
+    private static void ValidateProject(PubSubConfig config, string parameterName)
+    {
+        if (config is null)
+            throw new ArgumentException("Project configuration must not be null.", parameterName);
+
+        if (string.IsNullOrWhiteSpace(config.ProjectId))
+            throw new ArgumentException("ProjectId must not be blank.", parameterName);
+
+        if (config.MessageConfigs is null)
+            throw new ArgumentException("MessageConfigs must not be null.", parameterName);
+    }
+
+    /// <summary>
+    /// Validates message identity before applying subscription policy validation.
+    /// </summary>
+    private static void ValidateMessage(MessageConfig message, string parameterName)
+    {
+        if (message is null)
+            throw new ArgumentException("Message configuration must not be null.", parameterName);
+
+        if (string.IsNullOrWhiteSpace(message.TopicName))
+            throw new ArgumentException("TopicName must not be blank.", parameterName);
+
+        ValidateSubscription(message);
     }
 
     /// <summary>

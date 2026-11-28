@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.RabbitMQ
+﻿# MVFC.Aspire.Helpers.RabbitMQ
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -59,13 +59,17 @@ O MVFC.Aspire.Helpers.RabbitMQ é uma biblioteca de extensão para o .NET Aspire
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.RabbitMQ
+dotnet add package Aspire.Hosting.Dotnet --version 17.0.0
 ```
+
+Os comandos e exemplos com `AddDotnetProject` usam um AppHost .NET 10/11 com Aspire 17. Em AppHosts .NET 9, mantenha Aspire 13.6.5, omita `Aspire.Hosting.Dotnet` 17 e use `AddProject<Projects.MyApi>("api")`. Ajuste o caminho do projeto ao seu AppHost.
 
 ## Uso rápido no Aspire (AppHost)
 
 ```csharp
 using Aspire.Hosting;
 using MVFC.Aspire.Helpers.RabbitMQ;
+using MVFC.Aspire.Helpers.RabbitMQ.Models;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -82,7 +86,7 @@ var rabbitMQ = builder.AddRabbitMQ("rabbitmq")
     ])
     .WithDataVolume("rabbit-mq");
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+builder.AddDotnetProject("api-exemplo", "../MVFC.Aspire.Helpers.Playground.Api/MVFC.Aspire.Helpers.Playground.Api.csproj")
        .WithReference(rabbitMQ)
        .WaitFor(rabbitMQ);
 
@@ -95,16 +99,13 @@ await builder.Build().RunAsync();
 sequenceDiagram
     participant Aspire as .NET Aspire
     participant Container as RabbitMQ Container
-    participant Configurator as RabbitMQ Processor
-    
+    participant App as Consumer
+
+    Aspire->>Aspire: BeforeStartEvent generates and mounts definitions.json
     Aspire->>Container: Start container (rabbitmq:management)
-    Container-->>Aspire: Ready (AMQP port 5672 available)
-    Aspire->>Configurator: Trigger OnResourceReady
-    Configurator->>Container: Create Exchanges
-    Configurator->>Container: Create Queues
-    Configurator->>Container: Bind Queues to Exchanges
-    Configurator-->>Aspire: Provisioning Completed
-    Aspire->>App: Start App with AMQP ConnectionString
+    Container->>Container: Import exchanges, queues and bindings from definitions.json
+    Container-->>Aspire: Resource running
+    Aspire->>App: Start consumer with AMQP connection string (WaitFor)
 ```
 
 ## Principais parâmetros do `AddRabbitMQ`
@@ -148,9 +149,7 @@ sequenceDiagram
 
 ## Parâmetros opcionais
 
-- **`connectionStringSection`** (opcional):  
-  Caminho da configuração que contém a connection string do RabbitMQ.  
-  Padrão: `"ConnectionStrings:rabbitmq"`.
+`WithReference` injeta `ConnectionStrings:<nome-do-recurso>`; a seção é determinada pelo nome do recurso e não há parâmetro `connectionStringSection`.
 
 ```json
 {
@@ -162,8 +161,8 @@ sequenceDiagram
 
 ## Requisitos
 
-- .NET 9, 10 or 11
-- Aspire.Hosting >= 13.6.5
+- .NET 9, 10 ou 11
+- Aspire.Hosting 13.6.5 no .NET 9; Aspire.Hosting 17.0.0 no .NET 10/11. Exemplos de AppHost usam `Aspire.Hosting.Dotnet` 17 e `AddDotnetProject`; AppHosts .NET 9 mantêm o modelo `ProjectResource`.
 - Docker em execução
 
 ## Licença

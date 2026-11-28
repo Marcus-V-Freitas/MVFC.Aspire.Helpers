@@ -1,4 +1,4 @@
-# Cenários HTTP do Aspire playground
+﻿# Cenários HTTP do Aspire playground
 
 > 🇺🇸 [Read in English](README.md)
 

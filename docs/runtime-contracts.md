@@ -1,4 +1,4 @@
-# Runtime contracts and platform evolution
+﻿# Runtime contracts and platform evolution
 
 > [Leia em Português](runtime-contracts.pt-BR.md)
 
@@ -33,11 +33,13 @@ The initial digests were taken from the images used by the successful local inte
 
 Do not use a Mongo image upgrade to migrate an existing volume implicitly. Verify the server's supported upgrade path and back up data first; reverting a package does not revert stored data formats.
 
-## Aspire upgrade assessment — 2026-11-27
+## Aspire compatibility matrix — 2026-11-27
 
-The repository currently uses Aspire 13.6.5 and publishes `net9.0`, `net10.0` and `net11.0` assets. The official Aspire.Hosting 17.0.0 NuGet manifest contains only a `net10.0` dependency group. A uniform upgrade therefore conflicts with the current `net9.0` target. This iteration preserves those targets and dependencies instead of silently removing a supported framework or introducing two permanent implementations.
+The repository publishes `net9.0`, `net10.0` and `net11.0` assets from shared source files. Central dependency selection uses Aspire 13.6.5 for `net9.0` and Aspire 17.0.0 for `net10.0`/`net11.0`. The official Aspire.Hosting 17.0.0 NuGet manifest contains only a `net10.0` dependency group, so the .NET 9 asset cannot reference it directly.
 
-Aspire 13.6 support ended on 2026-11-18. Keeping it is a known maintenance constraint, not a long-term upgrade strategy. The next platform release must choose between dropping `net9.0` in a major library version or explicitly testing conditional dependency groups. Validate both binary and behavioral compatibility for the selected option.
+The playground uses `Microsoft.NET.Sdk` with `Aspire.Hosting.AppHost` and `Aspire.Hosting.Dotnet` 17.0.0 and path-based `AddDotnetProject`. Generic `WithReference<TResource>` and `WaitForDumps<TResource>` overloads support that model. The original `ProjectResource` signatures remain forwarding entry points so already-compiled callers can still bind; there are no obsolete API calls or diagnostic suppressions in the migrated startup code. Existing unit tests also exercise those original signatures using unstarted project resources, while functional tests exercise the new model.
+
+Version 13.0.0 is a major library release because adopting its .NET 10/11 assets requires upgrading Aspire dependencies in the consuming AppHost to 17. A .NET 10/11 AppHost can still orchestrate .NET 9 workloads: the workload target and the hosting package target are separate. Aspire 13.6 support ended on 2026-11-18; retaining it for .NET 9 is an explicit maintenance constraint, not an assertion of upstream support.
 
 An isolated model probe against Aspire.Hosting.MongoDB 13.6.5 confirmed that native experimental `WithReplicaSet()` is already available. It creates `MongoDBServerResource` with endpoint `tcp`; this helper exposes `MongoReplicaSetResource` with endpoint `mongodb`. Replacing the implementation is not a transparent substitution for callers that use resource types or endpoints. Native lifecycle/authentication/volume behavior must also be tested before migration; the model probe does not establish runtime equivalence. Preserve dump/upsert capabilities where they still add value.
 
@@ -45,7 +47,9 @@ References: [Aspire 17 release](https://aspire.dev/whats-new/aspire-17/), [suppo
 
 ## Emulator fidelity and verification
 
-Local Cake verification on 2026-11-27: the baseline passed 724 tests with 100% line coverage (2433/2433) and 96% branch coverage (625/651). After these changes, Cake passed 757 tests with 100% line coverage (2471/2471) and 96% branch coverage (633/659), with no skipped tests, build warnings or errors. The build covered the existing .NET 9/10/11 library targets; the test project runs on .NET 11. This records local execution, not a new remote CI result.
+Local Cake verification on 2026-11-27: before the platform migration, 757 tests passed with 100% line coverage (2471/2471) and 96% branch coverage (633/659). After the Aspire 17 migration, 761 tests passed with 100% line coverage (2601/2601) and 96.1% branch coverage (641/667), with no skipped tests, build warnings or errors. The build covered the .NET 9/10/11 library targets with their selected Aspire versions; tests run on .NET 11. This records local execution, not a new remote CI result. The passwordless Redis integration scenario also caught the stricter required-parameter behavior in Aspire 17: on .NET 10/11 its deferred secret parameter is optional, and the reference expression preserves empty-string environment resolution.
+
+The optional package/API check also passed for Cloud Storage, MongoDB, Redis, RabbitMQ, Spanner and WireMock against published 12.0.0. The locally packed consumer ran successfully on .NET 9.0.23 with Aspire 13.6.5, .NET 10.0.15 with Aspire 17.0.0 and .NET 11.0.0 with Aspire 17.0.0.
 
 Local tests establish the behavior of these helpers against the selected images. They do not establish equivalence with managed cloud services. In particular, successful local messaging does not prove production IAM or dead-letter policy behavior. The Apigee HTTP collection records observed cache behavior rather than promising a cache HIT.
 

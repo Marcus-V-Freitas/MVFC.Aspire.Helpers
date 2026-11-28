@@ -70,7 +70,10 @@ Este projeto facilita a configuração e a integração do Apigee Emulator em ap
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.ApigeeEmulator
+dotnet add package Aspire.Hosting.Dotnet --version 17.0.0
 ```
+
+Os comandos e exemplos com `AddDotnetProject` usam um AppHost .NET 10/11 com Aspire 17. Em AppHosts .NET 9, mantenha Aspire 13.6.5, omita `Aspire.Hosting.Dotnet` 17 e use `AddProject<Projects.MyApi>("api")`. Ajuste o caminho do projeto ao seu AppHost.
 
 ## Uso rápido no Aspire (AppHost)
 
@@ -84,7 +87,7 @@ var apigeeWorkspace = Path.Combine(
     Directory.GetCurrentDirectory(),
     "apigee-workspace");
 
-var api = builder.AddProject<Projects.MyApi>("my-api");
+var api = builder.AddDotnetProject("my-api", "../MyApi/MyApi.csproj");
 
 var apigee = builder.AddApigeeEmulator("apigee-emulator")
     .WithWorkspace(
@@ -256,8 +259,8 @@ Independentemente de a resposta vir de sucesso no backend, resposta interceptada
 
 ## Requisitos
 
-- .NET 9, 10 or 11
-- Aspire.Hosting >= 13.6.5
+- .NET 9, 10 ou 11
+- Aspire.Hosting 13.6.5 no .NET 9; Aspire.Hosting 17.0.0 no .NET 10/11. Exemplos de AppHost usam `Aspire.Hosting.Dotnet` 17 e `AddDotnetProject`; AppHosts .NET 9 mantêm o modelo `ProjectResource`.
 - Docker em execução localmente
 
 ## Licença

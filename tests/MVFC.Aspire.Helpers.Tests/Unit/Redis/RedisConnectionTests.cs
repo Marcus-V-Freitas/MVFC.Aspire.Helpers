@@ -11,7 +11,7 @@ public sealed class RedisConnectionTests
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
         var redis = builder.AddRedis("cache");
-        var consumer = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("consumer").WithReference(redis);
+        var consumer = builder.AddTestProject("consumer").WithReference(redis);
         var endpoint = redis.Resource.Annotations.OfType<EndpointAnnotation>().Single();
         endpoint.AllocatedEndpoint = new AllocatedEndpoint(endpoint, "localhost", 6379);
 
@@ -47,7 +47,7 @@ public sealed class RedisConnectionTests
         var builder = DistributedApplication.CreateBuilder([]);
         var first = builder.AddRedis("first").WithPassword("first-secret");
         var second = builder.AddRedis("second").WithPassword("second-secret");
-        var consumer = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("consumer").WithReference(first).WithReference(second);
+        var consumer = builder.AddTestProject("consumer").WithReference(first).WithReference(second);
 
         // Act
         var environment = await builder.GetConfiguredEnvironmentAsync(consumer.Resource, TestContext.Current.CancellationToken);

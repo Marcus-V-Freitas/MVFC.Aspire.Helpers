@@ -121,6 +121,16 @@ public static class RabbitMQExtensions
     public static IResourceBuilder<ProjectResource> WithReference(
         this IResourceBuilder<ProjectResource> project,
         IResourceBuilder<RabbitMQResource> rabbitMQ)
+        => WithReference<ProjectResource>(project, rabbitMQ);
+
+    /// <summary>
+    /// Adds the RabbitMQ connection reference to an environment-capable consumer.
+    /// </summary>
+    /// <typeparam name="TResource">The consumer resource type.</typeparam>
+    public static IResourceBuilder<TResource> WithReference<TResource>(
+        this IResourceBuilder<TResource> project,
+        IResourceBuilder<RabbitMQResource> rabbitMQ)
+        where TResource : IResourceWithEnvironment
     {
         ArgumentNullException.ThrowIfNull(project);
         ArgumentNullException.ThrowIfNull(rabbitMQ);

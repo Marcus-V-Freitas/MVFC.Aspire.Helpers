@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.GcpPubSub;
+﻿namespace MVFC.Aspire.Helpers.GcpPubSub;
 
 /// <summary>
 /// Provides extension methods to configure, initialize, and integrate the Google Pub/Sub emulator
@@ -97,6 +97,16 @@ public static class PubSubEmulatorExtensions
     public static IResourceBuilder<ProjectResource> WithReference(
         this IResourceBuilder<ProjectResource> project,
         IResourceBuilder<PubSubEmulatorResource> pubSub)
+        => WithReference<ProjectResource>(project, pubSub);
+
+    /// <summary>
+    /// Injects the Pub/Sub emulator host and project IDs and registers subscription configuration for the consumer.
+    /// </summary>
+    /// <typeparam name="TResource">The consumer resource type.</typeparam>
+    public static IResourceBuilder<TResource> WithReference<TResource>(
+        this IResourceBuilder<TResource> project,
+        IResourceBuilder<PubSubEmulatorResource> pubSub)
+        where TResource : IResourceWithEnvironment
     {
         ArgumentNullException.ThrowIfNull(project);
         ArgumentNullException.ThrowIfNull(pubSub);

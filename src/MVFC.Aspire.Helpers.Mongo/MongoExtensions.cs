@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.Mongo;
+﻿namespace MVFC.Aspire.Helpers.Mongo;
 
 /// <summary>
 /// Provides extension methods to simplify the configuration and integration of a MongoDB service (with Replica Set)
@@ -100,6 +100,16 @@ public static class MongoExtensions
     public static IResourceBuilder<ProjectResource> WithReference(
         this IResourceBuilder<ProjectResource> project,
         IResourceBuilder<MongoReplicaSetResource> mongo)
+        => WithReference<ProjectResource>(project, mongo);
+
+    /// <summary>
+    /// Injects MongoDB connection settings and registers shared dump execution for an environment-capable consumer.
+    /// </summary>
+    /// <typeparam name="TResource">The consumer resource type.</typeparam>
+    public static IResourceBuilder<TResource> WithReference<TResource>(
+        this IResourceBuilder<TResource> project,
+        IResourceBuilder<MongoReplicaSetResource> mongo)
+        where TResource : IResourceWithEnvironment
     {
         ArgumentNullException.ThrowIfNull(project);
         ArgumentNullException.ThrowIfNull(mongo);
@@ -123,6 +133,16 @@ public static class MongoExtensions
     public static IResourceBuilder<ProjectResource> WaitForDumps(
         this IResourceBuilder<ProjectResource> project,
         IResourceBuilder<MongoReplicaSetResource> mongo)
+        => WaitForDumps<ProjectResource>(project, mongo);
+
+    /// <summary>
+    /// Waits for a writable primary and successful shared dumps before starting an environment-capable consumer.
+    /// </summary>
+    /// <typeparam name="TResource">The consumer resource type.</typeparam>
+    public static IResourceBuilder<TResource> WaitForDumps<TResource>(
+        this IResourceBuilder<TResource> project,
+        IResourceBuilder<MongoReplicaSetResource> mongo)
+        where TResource : IResourceWithEnvironment, IResourceWithWaitSupport
     {
         ArgumentNullException.ThrowIfNull(project);
         ArgumentNullException.ThrowIfNull(mongo);
@@ -148,9 +168,10 @@ public static class MongoExtensions
     /// Registers the OnResourceReady callback responsible for executing MongoDB dumps after
     /// resource initialization, ensuring single execution via annotation.
     /// </summary>
-    private static MongoDumpsExecutedAnnotation RegisterDumpsExecutor(
-        IResourceBuilder<ProjectResource> project,
+    private static MongoDumpsExecutedAnnotation RegisterDumpsExecutor<TResource>(
+        IResourceBuilder<TResource> project,
         IResourceBuilder<MongoReplicaSetResource> mongo)
+        where TResource : IResourceWithEnvironment
     {
         var existing = mongo.Resource.Annotations.OfType<MongoDumpsExecutedAnnotation>().SingleOrDefault();
         if (existing is not null)

@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.Gotenberg
+﻿# MVFC.Aspire.Helpers.Gotenberg
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
@@ -56,7 +56,10 @@ Add the NuGet package to your AppHost project:
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.Gotenberg
+dotnet add package Aspire.Hosting.Dotnet --version 17.0.0
 ```
+
+Commands and examples using `AddDotnetProject` target a .NET 10/11 AppHost on Aspire 17. For .NET 9 AppHosts, keep Aspire 13.6.5, omit `Aspire.Hosting.Dotnet` 17 and use `AddProject<Projects.MyApi>("api")`. Adjust the project path to your AppHost.
 
 ## Quick Aspire usage (AppHost)
 
@@ -69,7 +72,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 // Adds the Gotenberg container on host port 3000
 var gotenberg = builder.AddGotenberg("gotenberg", port: 3000);
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
+builder.AddDotnetProject("api-example", "../MVFC.Aspire.Helpers.Playground.Api/MVFC.Aspire.Helpers.Playground.Api.csproj")
        .WithReference(gotenberg)
        .WaitFor(gotenberg);
 
@@ -117,7 +120,7 @@ sequenceDiagram
 ## Requirements
 
 - .NET 9, 10 or 11
-- Aspire.Hosting >= 13.6.5
+- Aspire.Hosting 13.6.5 on .NET 9; Aspire.Hosting 17.0.0 on .NET 10/11. AppHost examples use `Aspire.Hosting.Dotnet` 17 and `AddDotnetProject`; .NET 9 AppHosts retain the `ProjectResource` model.
 - Docker running locally
 
 ## License

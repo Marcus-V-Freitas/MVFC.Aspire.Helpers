@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.GcpFirestore
+﻿# MVFC.Aspire.Helpers.GcpFirestore
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -60,14 +60,17 @@ Este projeto facilita a configuração e integração do Google Cloud Firestore 
 
 - Adiciona o emulador do Google Cloud Firestore.
 - Configura project IDs conforme configuração.
-- Validações de integridade nativas via TCP na porta garantem que o emulador esteja totalmente pronto antes dos projetos o consumirem.
+- Um health check HTTP consulta a raiz do emulador. Use `WaitFor(firestore)` para aguardar essa verificação; ela não valida autenticação nem operações de dados.
 - Métodos de extensão para facilitar a configuração no AppHost.
 
 ## Instalação
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.GcpFirestore
+dotnet add package Aspire.Hosting.Dotnet --version 17.0.0
 ```
+
+Os comandos e exemplos com `AddDotnetProject` usam um AppHost .NET 10/11 com Aspire 17. Em AppHosts .NET 9, mantenha Aspire 13.6.5, omita `Aspire.Hosting.Dotnet` 17 e use `AddProject<Projects.MyApi>("api")`. Ajuste o caminho do projeto ao seu AppHost.
 
 ## Uso rápido no Aspire (AppHost)
 
@@ -84,7 +87,7 @@ var firestoreConfig = new FirestoreConfig(
 var firestore = builder.AddGcpFirestore("gcp-firestore")
                        .WithFirestoreConfigs(firestoreConfig);
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+builder.AddDotnetProject("api-exemplo", "../MVFC.Aspire.Helpers.Playground.Api/MVFC.Aspire.Helpers.Playground.Api.csproj")
        .WithReference(firestore)
        .WaitFor(firestore);
 
@@ -109,13 +112,12 @@ await builder.Build().RunAsync();
 sequenceDiagram
     participant Aspire as .NET Aspire
     participant Container as Firestore Emulator Container
-    participant Configurator as Config Processor
-    
+    participant App as Consumer
+
     Aspire->>Container: Start container (mtlynch/firestore-emulator)
-    Container-->>Aspire: Ready (HTTP port 8084 available)
-    Aspire->>Configurator: Trigger OnResourceReady
-    Configurator-->>Aspire: Provisioning Completed
-    Aspire->>App: Start App with FIRESTORE_EMULATOR_HOST
+    Aspire->>Container: Probe GET / on allocated HTTP endpoint
+    Container-->>Aspire: HTTP health check passes
+    Aspire->>App: Start consumer with emulator host and configured project IDs (WaitFor)
 ```
 
 ## Métodos Públicos
@@ -131,10 +133,10 @@ A imagem padrão é fixada por digest SHA256 testado. Para selecionar outra imag
 
 ## Requisitos
 
-- .NET 9, 10 or 11
-- Aspire.Hosting >= 13.6.5
+- .NET 9, 10 ou 11
+- Aspire.Hosting 13.6.5 no .NET 9; Aspire.Hosting 17.0.0 no .NET 10/11. Exemplos de AppHost usam `Aspire.Hosting.Dotnet` 17 e `AddDotnetProject`; AppHosts .NET 9 mantêm o modelo `ProjectResource`.
 - Docker em execução
-- Google.Cloud.Firestore >= 4.4.0
+- Google.Cloud.Firestore >= 4.7.0
 
 ## Licença
 

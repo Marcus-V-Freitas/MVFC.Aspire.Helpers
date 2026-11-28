@@ -5,6 +5,7 @@ public sealed class MongoDumpProcessorTests
     [Fact]
     public async Task ProcessDumpsAsync_ShouldExecuteAllDumps()
     {
+        // Arrange
         var clientMock = new Mock<IMongoClient>();
         var dumpMock1 = new Mock<IMongoClassDump>();
         var dumpMock2 = new Mock<IMongoClassDump>();
@@ -12,8 +13,10 @@ public sealed class MongoDumpProcessorTests
         dumpMock1.Setup(d => d.ExecuteDumpAsync(clientMock.Object, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         dumpMock2.Setup(d => d.ExecuteDumpAsync(clientMock.Object, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
+        // Act
         await MongoDumpProcessor.ProcessDumpsAsync(clientMock.Object, [dumpMock1.Object, dumpMock2.Object], CancellationToken.None);
 
+        // Assert
         dumpMock1.Verify(d => d.ExecuteDumpAsync(clientMock.Object, It.IsAny<CancellationToken>()), Times.Once);
         dumpMock2.Verify(d => d.ExecuteDumpAsync(clientMock.Object, It.IsAny<CancellationToken>()), Times.Once);
     }

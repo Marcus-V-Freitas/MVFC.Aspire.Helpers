@@ -1,10 +1,11 @@
-namespace MVFC.Aspire.Helpers.Tests.Unit.GcpBigQuery;
+﻿namespace MVFC.Aspire.Helpers.Tests.Unit.GcpBigQuery;
 
 public sealed class BigQueryDefaultsTests
 {
     [Fact]
     public void Constants_ShouldHaveExpectedValues()
     {
+        // Act & Assert
         BigQueryDefaults.EMULATOR_IMAGE.Should().Be("ghcr.io/goccy/bigquery-emulator");
         BigQueryDefaults.EMULATOR_IMAGE_TAG.Should().Be("latest");
         BigQueryDefaults.EMULATOR_REST_PORT.Should().Be(9050);

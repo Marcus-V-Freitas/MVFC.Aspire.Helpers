@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.CloudStorage;
+﻿namespace MVFC.Aspire.Helpers.CloudStorage;
 
 /// <summary>
 /// Provides extension methods to simplify the configuration and integration of a Cloud Storage resource (GCS emulator)
@@ -64,6 +64,16 @@ public static class CloudStorageExtensions
     public static IResourceBuilder<ProjectResource> WithReference(
         this IResourceBuilder<ProjectResource> project,
         IResourceBuilder<CloudStorageResource> cloudStorage)
+        => WithReference<ProjectResource>(project, cloudStorage);
+
+    /// <summary>
+    /// Injects the Cloud Storage emulator URI and connection reference into an environment-capable consumer.
+    /// </summary>
+    /// <typeparam name="TResource">The consumer resource type.</typeparam>
+    public static IResourceBuilder<TResource> WithReference<TResource>(
+        this IResourceBuilder<TResource> project,
+        IResourceBuilder<CloudStorageResource> cloudStorage)
+        where TResource : IResourceWithEnvironment
     {
         ArgumentNullException.ThrowIfNull(project);
         ArgumentNullException.ThrowIfNull(cloudStorage);

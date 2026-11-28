@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.Tests.Unit.GcpPubSub;
+﻿namespace MVFC.Aspire.Helpers.Tests.Unit.GcpPubSub;
 
 public sealed class PubSubEmulatorExtensionsTests
 {
@@ -7,8 +7,8 @@ public sealed class PubSubEmulatorExtensionsTests
     {
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
-        var first = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("first");
-        var second = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("second");
+        var first = builder.AddTestProject("first");
+        var second = builder.AddTestProject("second");
         var destination = second.GetEndpoint("http");
         var message = new MessageConfig("topic", "sub", "/callback") { PushEndpointReference = destination };
         var pubSub = builder.AddGcpPubSub("pubsub").WithPubSubConfigs(new PubSubConfig("project", message));
@@ -30,7 +30,7 @@ public sealed class PubSubEmulatorExtensionsTests
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
         var pubSub = builder.AddGcpPubSub("pubsub");
-        var consumer = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("consumer");
+        var consumer = builder.AddTestProject("consumer");
         var ui = builder.AddGcpPubSubUI("ui");
 
         if (configureBeforeReference)
@@ -58,7 +58,7 @@ public sealed class PubSubEmulatorExtensionsTests
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
         var pubSub = builder.AddGcpPubSub("pubsub");
-        var consumer = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("consumer");
+        var consumer = builder.AddTestProject("consumer");
         var ui = builder.AddGcpPubSubUI("ui");
 
         consumer.WithReference(pubSub);
@@ -304,7 +304,7 @@ public sealed class PubSubEmulatorExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         IResourceBuilder<PubSubEmulatorResource>? pubSub = null;
 
         // Act
@@ -319,7 +319,7 @@ public sealed class PubSubEmulatorExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         var pubSub = appBuilder.AddGcpPubSub("pubsub")
             .WithPubSubConfigs(new PubSubConfig("project-a", new MessageConfig("topic-a", "sub-a")));
 
@@ -335,7 +335,7 @@ public sealed class PubSubEmulatorExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         var pubSub = appBuilder.AddGcpPubSub("pubsub");
 
         // Act
@@ -350,8 +350,8 @@ public sealed class PubSubEmulatorExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project1 = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api1");
-        var project2 = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api2");
+        var project1 = appBuilder.AddTestProject("api1");
+        var project2 = appBuilder.AddTestProject("api2");
         var pubSub = appBuilder.AddGcpPubSub("pubsub")
             .WithPubSubConfigs(new PubSubConfig("project-a", new MessageConfig("topic-a", "sub-a")));
 
@@ -368,7 +368,7 @@ public sealed class PubSubEmulatorExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         var pubSub = appBuilder.AddGcpPubSub("pubsub");
 
         // Act

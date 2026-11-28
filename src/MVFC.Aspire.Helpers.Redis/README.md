@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.Redis
+﻿# MVFC.Aspire.Helpers.Redis
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
@@ -60,7 +60,10 @@ This project provides extension methods to facilitate integration with Redis in 
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.Redis
+dotnet add package Aspire.Hosting.Dotnet --version 17.0.0
 ```
+
+Commands and examples using `AddDotnetProject` target a .NET 10/11 AppHost on Aspire 17. For .NET 9 AppHosts, keep Aspire 13.6.5, omit `Aspire.Hosting.Dotnet` 17 and use `AddProject<Projects.MyApi>("api")`. Adjust the project path to your AppHost.
 
 ## Quick Aspire usage (AppHost)
 
@@ -76,7 +79,7 @@ var redis = builder.AddRedis("redis")
     .WithCommander()
     .WithDataVolume("redis-data");
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
+builder.AddDotnetProject("api-example", "../MVFC.Aspire.Helpers.Playground.Api/MVFC.Aspire.Helpers.Playground.Api.csproj")
        .WithReference(redis)
        .WaitFor(redis);
 
@@ -114,9 +117,7 @@ sequenceDiagram
 
 ## Other optional parameters
 
-- **`connectionStringSection`** (optional):  
-  Path to the configuration section containing the Redis connection string.  
-  Default: `"ConnectionStrings:redis"`.
+`WithReference` injects `ConnectionStrings:<resource-name>`; the section follows the resource name and there is no `connectionStringSection` parameter.
 
 ```json
 {
@@ -129,7 +130,7 @@ sequenceDiagram
 ## Port details
 
 - **Redis port**: defined via `port` (default `6379`).  
-- **Redis Commander port**: random by default; can be defined via `commanderPort` in `WithCommander`.
+- **Redis Commander port**: random by default; can be defined via `port` in `WithCommander`.
 
 ## Default image
 
@@ -138,7 +139,7 @@ The default image is pinned to a tested SHA256 digest. Select another image/tag 
 ## Requirements
 
 - .NET 9, 10 or 11
-- Aspire.Hosting >= 13.6.5
+- Aspire.Hosting 13.6.5 on .NET 9; Aspire.Hosting 17.0.0 on .NET 10/11. AppHost examples use `Aspire.Hosting.Dotnet` 17 and `AddDotnetProject`; .NET 9 AppHosts retain the `ProjectResource` model.
 - Docker running locally
 
 ## License

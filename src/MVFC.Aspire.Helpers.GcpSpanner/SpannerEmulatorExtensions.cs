@@ -83,6 +83,16 @@ public static class SpannerEmulatorExtensions
     public static IResourceBuilder<ProjectResource> WithReference(
         this IResourceBuilder<ProjectResource> project,
         IResourceBuilder<SpannerEmulatorResource> spanner)
+        => WithReference<ProjectResource>(project, spanner);
+
+    /// <summary>
+    /// Injects the Spanner emulator host and registers resource provisioning for an environment-capable consumer.
+    /// </summary>
+    /// <typeparam name="TResource">The consumer resource type.</typeparam>
+    public static IResourceBuilder<TResource> WithReference<TResource>(
+        this IResourceBuilder<TResource> project,
+        IResourceBuilder<SpannerEmulatorResource> spanner)
+        where TResource : IResourceWithEnvironment
     {
         ArgumentNullException.ThrowIfNull(project);
         ArgumentNullException.ThrowIfNull(spanner);

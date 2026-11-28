@@ -15,7 +15,7 @@ internal static class PubSubProjectBuilder
 
         var sb = new StringBuilder(pubSubConfig.ProjectId);
 
-        return !pubSubConfig.MessageConfigs.Any()
+        return pubSubConfig.MessageConfigs.Count == 0
             ? sb.ToString()
             : sb.Append(PubSubDefaults.CREATION_DELIMITER)
                  .AppendJoin(PubSubDefaults.CREATION_DELIMITER,

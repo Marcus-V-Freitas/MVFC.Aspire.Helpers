@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.WireMock
+﻿# MVFC.Aspire.Helpers.WireMock
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -30,7 +30,7 @@ O `MVFC.Aspire.Helpers.WireMock` resolve isso com:
 
 - `AddWireMock(...)` para rodar o WireMock.Net como servidor embutido no Aspire.
 - Uma API fluente para configurar endpoints, autenticação, headers, tipos de corpo e respostas.
-- `WithReference(...)` para que os projetos esperem pelo mock e consumam sua URL.
+- `WithReference(...)` para injetar a connection string do mock; use `WaitFor(wireMock)` explicitamente para aguardar sua inicialização.
 
 ## Visão Geral
 
@@ -92,15 +92,14 @@ Tipos de corpo suportados: `String`, `Json`, `Bytes`, `FormUrlEncoded`, etc.
 ```mermaid
 sequenceDiagram
     participant Aspire as .NET Aspire
-    participant Container as WireMock Container
-    participant Configurator as WireMock Configurator
-    
-    Aspire->>Container: Start container (wiremock/wiremock)
-    Container-->>Aspire: Ready (HTTP port available)
-    Aspire->>Configurator: Trigger OnResourceReady
-    Configurator->>Container: Setup Stubs/Endpoints
-    Configurator-->>Aspire: Provisioning Completed
-    Aspire->>App: Start App with WireMock Base URL
+    participant Server as Embedded WireMock.Net server
+    participant App as Consumer
+
+    Aspire->>Server: AddWireMock starts the in-process server
+    Aspire->>Server: Apply configure callback
+    Aspire->>Aspire: BeforeStartEvent publishes resource state and ResourceReadyEvent
+    Aspire->>App: Inject HTTP connection string through native WithReference
+    Note over Aspire,App: Add WaitFor(wireMock) explicitly when startup must wait
 ```
 
 ## Detalhes de Porta e Visualização
@@ -119,7 +118,10 @@ var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: ...);
 ## Exemplo completo de Uso no AppHost
 
 ```csharp
+using System.Net;
+using System.Text.Json.Nodes;
 using Aspire.Hosting;
+using WireMock.Types;
 using MVFC.Aspire.Helpers.WireMock;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -186,7 +188,7 @@ var wireMock = builder.AddWireMock("wireMock", port: 8080, configure: (server) =
 
     server.Endpoint("/api/json")
         .WithDefaultBodyType(BodyType.Json)
-        .OnPost<JsonModel, JsonModel>(body => (body, HttpStatusCode.OK, BodyType.Json));
+        .OnPost<JsonObject, JsonObject>(body => (body, HttpStatusCode.OK, BodyType.Json));
 });
 
 await builder.Build().RunAsync();
@@ -194,10 +196,10 @@ await builder.Build().RunAsync();
 
 ## Requisitos
 
-- .NET 9, 10 or 11
-- Aspire.Hosting >= 13.6.5
+- .NET 9, 10 ou 11
+- Aspire.Hosting 13.6.5 no .NET 9; Aspire.Hosting 17.0.0 no .NET 10/11. Exemplos de AppHost usam `Aspire.Hosting.Dotnet` 17 e `AddDotnetProject`; AppHosts .NET 9 mantêm o modelo `ProjectResource`.
 - Docker em execução
-- WireMock.Net.minimal >= 1.14.0
+- WireMock.Net.minimal >= 2.35.0
 
 ## Licença
 

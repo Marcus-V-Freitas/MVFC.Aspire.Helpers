@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.Tests.Integration;
+﻿namespace MVFC.Aspire.Helpers.Tests.Integration;
 
 public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHostFixture>
 {
@@ -194,7 +194,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     [Fact]
     public async Task MailPitOkStatusCode()
     {
-        // Act
+        // Arrange
         var body = new JsonObject
         {
             ["From"] = "noreply@teste.com",
@@ -203,6 +203,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
             ["Body"] = "Mensagem de teste"
         };
 
+        // Act
         using var response = await _fixture.PlaygroundApi.SendEmailAsync(body);
 
         // Assert
@@ -310,10 +311,10 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     {
         // Arrange & Act
         using var response = await _fixture.WireMockApi.GetHeadersAsync();
-        string.Join(',', response.Headers.GetValues("X-Test")).Should().Be("v1,v2");
-        string.Join(',', response.Headers.GetValues("X-Other")).Should().Be("v3");
 
         // Assert
+        string.Join(',', response.Headers.GetValues("X-Test")).Should().Be("v1,v2");
+        string.Join(',', response.Headers.GetValues("X-Other")).Should().Be("v3");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content!.Should().Be("Headers OK");
     }
@@ -486,10 +487,10 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
         // Arrange
         var message = "integration-test-message";
 
-        // Act - Publish
+        // Act
         using var responsePublish = await _fixture.PlaygroundApi.PublishRabbitMqMessageAsync("test-exchange", "test.key", message);
 
-        // Act - Consume
+        // Act
         using var response = await _fixture.PlaygroundApi.ConsumeRabbitMqMessageAsync("test-queue");
 
         // Assert
@@ -672,20 +673,21 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     [Fact]
     public async Task Apigee_Secure_ShouldReturnUnauthorized_WhenNoAuth()
     {
-        // Arrange — errado:errado
+        // Arrange
         var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes("errado:errado"));
         var authHeader = $"Basic {credentials}";
 
+        // Act
         using var response = await _fixture.ApigeeApi.GetSecureWithAuthAsync(authHeader);
 
-        // Assert — RF-Unauthorized raises 401 when no credentials
+        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
     public async Task Apigee_Secure_ShouldReturnOk_WhenValidBasicAuth()
     {
-        // Arrange — admin:secret123
+        // Arrange
         var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes("admin:secret123"));
         var authHeader = $"Basic {credentials}";
 
@@ -700,7 +702,7 @@ public sealed class AppHostTests(AppHostFixture fixture) : IClassFixture<AppHost
     [Fact]
     public async Task Apigee_Secure_ShouldReturnUnauthorized_WhenInvalidBasicAuth()
     {
-        // Arrange — wrong credentials
+        // Arrange
         var credentials = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("wrong:creds"));
         var authHeader = $"Basic {credentials}";
 

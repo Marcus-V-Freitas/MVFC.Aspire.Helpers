@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.Redis
+﻿# MVFC.Aspire.Helpers.Redis
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -60,7 +60,10 @@ Este projeto fornece métodos de extensão para facilitar a integração com Red
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.Redis
+dotnet add package Aspire.Hosting.Dotnet --version 17.0.0
 ```
+
+Os comandos e exemplos com `AddDotnetProject` usam um AppHost .NET 10/11 com Aspire 17. Em AppHosts .NET 9, mantenha Aspire 13.6.5, omita `Aspire.Hosting.Dotnet` 17 e use `AddProject<Projects.MyApi>("api")`. Ajuste o caminho do projeto ao seu AppHost.
 
 ## Uso rápido no Aspire (AppHost)
 
@@ -76,7 +79,7 @@ var redis = builder.AddRedis("redis")
     .WithCommander()
     .WithDataVolume("redis-data");
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+builder.AddDotnetProject("api-exemplo", "../MVFC.Aspire.Helpers.Playground.Api/MVFC.Aspire.Helpers.Playground.Api.csproj")
        .WithReference(redis)
        .WaitFor(redis);
 
@@ -114,9 +117,7 @@ sequenceDiagram
 
 ## Parâmetros opcionais
 
-- **`connectionStringSection`** (opcional):  
-  Caminho da configuração que contém a connection string do Redis.  
-  Padrão: `"ConnectionStrings:redis"`.
+`WithReference` injeta `ConnectionStrings:<nome-do-recurso>`; a seção é determinada pelo nome do recurso e não há parâmetro `connectionStringSection`.
 
 ```json
 {
@@ -129,7 +130,7 @@ sequenceDiagram
 ## Detalhes de Porta
 
 - **Porta Redis**: definida via parâmetro `port` (padrão: `6379`).
-- **Porta Redis Commander**: aleatória por padrão; pode ser definida via parâmetro `commanderPort` em `WithCommander`.
+- **Porta Redis Commander**: aleatória por padrão; pode ser definida via parâmetro `port` em `WithCommander`.
 
 ## Imagem padrão
 
@@ -137,8 +138,8 @@ A imagem padrão é fixada por digest SHA256 testado. Para selecionar outra imag
 
 ## Requisitos
 
-- .NET 9, 10 or 11
-- Aspire.Hosting >= 13.6.5
+- .NET 9, 10 ou 11
+- Aspire.Hosting 13.6.5 no .NET 9; Aspire.Hosting 17.0.0 no .NET 10/11. Exemplos de AppHost usam `Aspire.Hosting.Dotnet` 17 e `AddDotnetProject`; AppHosts .NET 9 mantêm o modelo `ProjectResource`.
 - Docker em execução
 
 ## Licença

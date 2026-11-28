@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.Keycloak
+﻿# MVFC.Aspire.Helpers.Keycloak
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -38,7 +38,7 @@ O `MVFC.Aspire.Helpers.Keycloak` transforma isso em uma API pequena e opinativa:
 
 ## Recursos e Funcionalidades
 
-- **Server Embutido:** Inicia um container Keycloak oficial (atualmente `quay.io/keycloak/keycloak:26.1.1`).
+- **Server Embutido:** Inicia um container Keycloak oficial (atualmente `quay.io/keycloak/keycloak:26.1`).
 - **Autenticação Padrão:** Opcional configuração com um `ClientId` pré-definido e seeds para desenvolvedor.
 - **Porta Personalizável:** Mapeamento de portas fixo ou dinâmico pelo Aspire.
 - **Injeção Transparente:** Adiciona endpoints de autenticação aos projetos `.WithReference()`, configurando URLs, realms e ClientIds como variáveis de ambiente.
@@ -51,7 +51,10 @@ Adicione o pacote ao projeto principal do AppHost do seu .NET Aspire:
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.Keycloak
+dotnet add package Aspire.Hosting.Dotnet --version 17.0.0
 ```
+
+Os comandos e exemplos com `AddDotnetProject` usam um AppHost .NET 10/11 com Aspire 17. Em AppHosts .NET 9, mantenha Aspire 13.6.5, omita `Aspire.Hosting.Dotnet` 17 e use `AddProject<Projects.MyApi>("api")`. Ajuste o caminho do projeto ao seu AppHost.
 
 *(Lembre-se de configurar a dependência para outros serviços, como as APIs que usarão as variáveis provisionadas!)*
 
@@ -60,38 +63,42 @@ dotnet add package MVFC.Aspire.Helpers.Keycloak
 ```csharp
 using Aspire.Hosting;
 using MVFC.Aspire.Helpers.Keycloak;
+using MVFC.Aspire.Helpers.Keycloak.Configs;
+using MVFC.Aspire.Helpers.Keycloak.Seeds;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var keycloak = builder.AddKeycloak("keycloak", port: 9000)
-    .WithSeeds(new()
-    {
-        Realm = "meu-app-realm",
-        Clients = [
-            new() { ClientId = "minha-api", Secret = "api-secret-1234", DisableAuth = true }
-        ],
-        Roles = ["Admin", "User"],
-        Users = [
-            new() { Username = "admin", Password = "123", Roles = ["Admin", "User"] }
-        ]
-    });
+var keycloak = builder.AddKeycloak("keycloak", httpPort: 8081)
+    .WithAdminCredentials("admin", "admin")
+    .WithSeeds(new MyAppRealm());
 
-var api = builder.AddProject<Projects.Minha_Api>("api")
-    .WithReference(keycloak, realmName: "meu-app-realm", clientId: "minha-api", clientSecret: "api-secret-1234")
+var api = builder.AddDotnetProject("api", "../Minha_Api/Minha_Api.csproj")
+    .WithReference(keycloak, realmName: "my-app-realm", clientId: "my-api", clientSecret: "api-secret-1234")
     .WaitFor(keycloak);
 
-builder.Build().Run();
+await builder.Build().RunAsync();
+
+internal sealed class MyAppRealm : IKeycloakRealmSeed
+{
+    public string RealmName => "my-app-realm";
+
+    public IReadOnlyList<KeycloakClientConfig> Clients =>
+    [
+        new(ClientId: "my-api", ClientSecret: "api-secret-1234",
+            DirectAccessGrantsEnabled: true, AddAudienceMapper: true),
+    ];
+}
 ```
 
 ## Usando a configuração injetada na API
 
-Por padrão, ao usar `.WithReference(keycloak)`, o Aspire injeta as seguintes chaves no `IConfiguration`:
+Por padrão, ao usar `.WithReference(keycloak, realmName, clientId, clientSecret)`, o Aspire injeta as seguintes chaves no `IConfiguration`:
 
 | Chave de Configuração   | Descrição                                     | Exemplo                 |
 | ----------------------- | --------------------------------------------- | ----------------------- |
-| `Keycloak:BaseUrl`      | URL completa de acesso ao container Keycloak. | `http://localhost:9000` |
-| `Keycloak:Realm`        | Nome do Realm propagado do AppHost.           | `meu-app-realm`         |
-| `Keycloak:ClientId`     | ID do cliente OAuth/OpenID.                   | `minha-api`             |
+| `Keycloak:BaseUrl`      | URL completa de acesso ao container Keycloak. | `http://localhost:8081` |
+| `Keycloak:Realm`        | Nome do Realm propagado do AppHost.           | `my-app-realm`         |
+| `Keycloak:ClientId`     | ID do cliente OAuth/OpenID.                   | `my-api`             |
 | `Keycloak:ClientSecret` | (Opcional) Secret vinculada ao ClientId.      | `api-secret-1234`       |
 
 Exemplo no `Program.cs` da sua API:
@@ -125,37 +132,35 @@ builder.Services.AddAuthorization();
 sequenceDiagram
     participant Aspire as .NET Aspire
     participant Container as Keycloak Container
-    participant Configurator as Keycloak Seed Processor
-    
-    Aspire->>Container: Start container (keycloak)
-    Container-->>Aspire: Ready (port 8081 available)
-    Aspire->>Configurator: Trigger OnResourceReady
-    Configurator->>Container: Authenticate as Admin
-    Configurator->>Container: Import Realms & Clients
-    Configurator->>Container: Import Users & Roles
-    Configurator-->>Aspire: Provisioning Completed
-    Aspire->>App: Start App
+    participant App as Consumer
+
+    Aspire->>Aspire: BeforeStartEvent generates realm JSON files from IKeycloakRealmSeed
+    Aspire->>Container: Start Keycloak with import files and --import-realm
+    Container->>Container: Import configured realms, clients, users and roles
+    Aspire->>Container: Probe management endpoint /health/ready
+    Container-->>Aspire: HTTP health check passes
+    Aspire->>App: Start consumer with Keycloak settings (WaitFor)
 ```
 
 ## Opções do `AddKeycloak()`
 
-| Parâmetro   | Tipo   | Descrição                                                                | Padrão       |
-| ----------- | ------ | ------------------------------------------------------------------------ | ------------ |
-| `name`      | string | Nome do recurso no framework do Aspire.                                  | `"keycloak"` |
-| `userName`  | string | Usuário administrador Master do Keycloak.                                | `admin`      |
-| `password`  | string | Senha administrativa Master do Keycloak.                                 | `admin`      |
-| `port`      | int?   | Porta fixa exposta para localhost (ex: 9000). Se nulo, o Aspire resolve. | `null`       |
-| `dataBound` | bool   | Se verdadeiro, aplica `.WithDataBindMount()` criando volume de estado.   | `false`      |
+| Parâmetro | Tipo | Descrição | Padrão |
+| --- | --- | --- | --- |
+| `name` | string | Nome obrigatório do recurso no Aspire. | — |
+| `httpPort` | int | Porta HTTP exposta para os consumidores. | `8081` |
+| `managementPort` | int | Porta de gerenciamento usada pelo health check `/health/ready`. | `9000` |
 
 ## Extensões Adicionais
 
-- `.WithSeeds(KeycloakRealmSeed)` – constrói e importa um JSON de realm via `/opt/keycloak/data/import/`.
-- `.WithRealmImport(importPath)` – carrega JSONs de realm estáticos de uma pasta e os importa no container.
+- `.WithAdminCredentials(username, password)` – define as credenciais administrativas (padrão local: `admin`/`admin`).
+- `.WithSeeds(seeds)` – aceita implementações de `IKeycloakRealmSeed`, gera os JSONs antes da inicialização e habilita `--import-realm`.
+- `.WithImportStrategy(strategy)` – seleciona a estratégia de importação dos realms.
+- `.WithDataVolume(volumeName)` – persiste os dados em um volume Docker nomeado.
 
 ## Requisitos
 
-- .NET 9, 10 or 11
-- Aspire.Hosting >= 13.6.5
+- .NET 9, 10 ou 11
+- Aspire.Hosting 13.6.5 no .NET 9; Aspire.Hosting 17.0.0 no .NET 10/11. Exemplos de AppHost usam `Aspire.Hosting.Dotnet` 17 e `AddDotnetProject`; AppHosts .NET 9 mantêm o modelo `ProjectResource`.
 - Docker em execução
 
 ## Licença

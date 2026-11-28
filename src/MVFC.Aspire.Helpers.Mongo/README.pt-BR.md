@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.Mongo
+﻿# MVFC.Aspire.Helpers.Mongo
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -76,7 +76,10 @@ Adicione o pacote NuGet ao seu projeto AppHost:
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.Mongo
+dotnet add package Aspire.Hosting.Dotnet --version 17.0.0
 ```
+
+Os comandos e exemplos com `AddDotnetProject` usam um AppHost .NET 10/11 com Aspire 17. Em AppHosts .NET 9, mantenha Aspire 13.6.5, omita `Aspire.Hosting.Dotnet` 17 e use `AddProject<Projects.MyApi>("api")`. Ajuste o caminho do projeto ao seu AppHost.
 
 ## Uso rápido no Aspire (AppHost)
 
@@ -85,6 +88,7 @@ Exemplo mínimo usando Bogus para popular dados de teste:
 ```csharp
 using Aspire.Hosting;
 using Bogus;
+using MongoDB.Bson;
 using MVFC.Aspire.Helpers.Mongo;
 using MVFC.Aspire.Helpers.Mongo.Models;
 
@@ -92,21 +96,23 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 IReadOnlyCollection<IMongoClassDump> dumps =
 [
-    new MongoClassDump<TestDatabase>(
+    new MongoClassDump<BsonDocument>(
         DatabaseName: "TestDatabase",
         CollectionName: "TestCollection",
         Quantity: 100,
-        Faker: new Faker<TestDatabase>()
-            .CustomInstantiator(f => new TestDatabase(
-                f.Person.FirstName,
-                f.Person.Cpf())))
+        Faker: new Faker<BsonDocument>()
+            .CustomInstantiator(f => new BsonDocument
+            {
+                ["name"] = f.Person.FullName,
+                ["email"] = f.Person.Email,
+            }))
 ];
 
 var mongo = builder.AddMongoReplicaSet("mongo")
     .WithPrimaryHealthCheck()
     .WithDataVolume("mongo-data");
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-exemplo")
+builder.AddDotnetProject("api-exemplo", "../MVFC.Aspire.Helpers.Playground.Api/MVFC.Aspire.Helpers.Playground.Api.csproj")
        .WithReference(mongo)
        .WaitForDumps(mongo);
 
@@ -151,6 +157,7 @@ sequenceDiagram
 | `WithDockerImage(image, tag)` | Substitui a imagem Docker utilizada.                  |
 | `WithDumps(dumps)`            | Configura dumps de dados a executar na inicialização. |
 | `WithPrimaryHealthCheck()` | Habilita checks de primary gravável com prazo de três segundos por probe; consumidores ainda precisam de `WaitFor(mongo)`. |
+| `WaitForDumps(mongo)` | Chamado no consumidor: aguarda primary gravável e conclusão compartilhada dos dumps. |
 | `WithDataVolume(volumeName)`  | Habilita persistência com volume Docker.              |
 
 ## Popular dados de exemplo
@@ -170,9 +177,7 @@ O `MongoClassDump<T>` é uma classe utilizada para facilitar a inserção autom�
   Nome do volume Docker local para persistir dados entre as sessões de depuração.  
   Padrão: `null` (volume descartado entre execuções).
 
-- **`connectionStringSection`** (opcional):  
-  Caminho da configuração que contém a connection string do MongoDB.  
-  Padrão: `"ConnectionStrings:mongo"`.
+`WithReference` injeta `ConnectionStrings:<nome-do-recurso>`; a seção é determinada pelo nome do recurso e não há parâmetro `connectionStringSection`. O helper MongoDB também mantém a chave legada `ConnectionStrings:mongo`.
 
 ```json
 {
@@ -196,11 +201,11 @@ A imagem padrão é fixada por digest SHA256 testado. Para selecionar outra imag
 
 ## Requisitos
 
-- .NET 9, 10 or 11
-- Aspire.Hosting >= 13.6.5
+- .NET 9, 10 ou 11
+- Aspire.Hosting 13.6.5 no .NET 9; Aspire.Hosting 17.0.0 no .NET 10/11. Exemplos de AppHost usam `Aspire.Hosting.Dotnet` 17 e `AddDotnetProject`; AppHosts .NET 9 mantêm o modelo `ProjectResource`.
 - Docker em execução
-- Bogus >= 35.6.0
-- MongoDB.Driver >= 3.11.1
+- Bogus >= 35.6.5
+- MongoDB.Driver >= 3.14.1
 
 ## Licença
 

@@ -9,7 +9,7 @@ public sealed class MongoExtensionsTests
     {
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
-        var project = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = builder.AddTestProject("api");
         var mongo = builder.AddMongoReplicaSet("mongo");
 
         if (emptyDumps)
@@ -188,7 +188,7 @@ public sealed class MongoExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         IResourceBuilder<MongoReplicaSetResource>? mongoBuilder = null;
 
         // Act
@@ -203,7 +203,7 @@ public sealed class MongoExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         var mongoBuilder = appBuilder.AddMongoReplicaSet("mongo");
 
         // Act
@@ -220,8 +220,8 @@ public sealed class MongoExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project1 = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api1");
-        var project2 = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api2");
+        var project1 = appBuilder.AddTestProject("api1");
+        var project2 = appBuilder.AddTestProject("api2");
         var mongoBuilder = appBuilder.AddMongoReplicaSet("mongo");
         var endpoint = mongoBuilder.Resource.Annotations.OfType<EndpointAnnotation>().Single();
         endpoint.AllocatedEndpoint = new AllocatedEndpoint(endpoint, "localhost", 27017);

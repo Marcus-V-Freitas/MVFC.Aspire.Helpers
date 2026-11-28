@@ -123,7 +123,7 @@ public sealed class GotenbergExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         IResourceBuilder<GotenbergResource>? gb = null;
 
         // Act

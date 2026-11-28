@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.Tests.Unit.RabbitMQ;
+﻿namespace MVFC.Aspire.Helpers.Tests.Unit.RabbitMQ;
 
 public sealed class RabbitMQDefinitionsBuilderTests
 {
@@ -42,6 +42,8 @@ public sealed class RabbitMQDefinitionsBuilderTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
+
+        // Act
         var rb = appBuilder.AddRabbitMQ("rabbit");
 
         // Assert

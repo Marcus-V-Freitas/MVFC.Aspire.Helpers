@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.Mailpit;
+﻿namespace MVFC.Aspire.Helpers.Mailpit;
 
 /// <summary>
 /// Provides extension methods to simplify the configuration and integration of the Mailpit resource
@@ -148,6 +148,16 @@ public static class MailpitExtensions
     public static IResourceBuilder<ProjectResource> WithReference(
         this IResourceBuilder<ProjectResource> project,
         IResourceBuilder<MailpitResource> mailpit)
+        => WithReference<ProjectResource>(project, mailpit);
+
+    /// <summary>
+    /// Adds the Mailpit SMTP connection reference to an environment-capable consumer.
+    /// </summary>
+    /// <typeparam name="TResource">The consumer resource type.</typeparam>
+    public static IResourceBuilder<TResource> WithReference<TResource>(
+        this IResourceBuilder<TResource> project,
+        IResourceBuilder<MailpitResource> mailpit)
+        where TResource : IResourceWithEnvironment
     {
         ArgumentNullException.ThrowIfNull(project);
         ArgumentNullException.ThrowIfNull(mailpit);

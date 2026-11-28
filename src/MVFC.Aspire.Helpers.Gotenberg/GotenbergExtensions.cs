@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.Gotenberg;
+﻿namespace MVFC.Aspire.Helpers.Gotenberg;
 
 /// <summary>
 /// Métodos de extensão para simplificar a configuração e integração do recurso Gotenberg
@@ -64,6 +64,16 @@ public static class GotenbergExtensions
     public static IResourceBuilder<ProjectResource> WithReference(
         this IResourceBuilder<ProjectResource> project,
         IResourceBuilder<GotenbergResource> gotenberg)
+        => WithReference<ProjectResource>(project, gotenberg);
+
+    /// <summary>
+    /// Injects the Gotenberg base URL and connection reference into an environment-capable consumer.
+    /// </summary>
+    /// <typeparam name="TResource">The consumer resource type.</typeparam>
+    public static IResourceBuilder<TResource> WithReference<TResource>(
+        this IResourceBuilder<TResource> project,
+        IResourceBuilder<GotenbergResource> gotenberg)
+        where TResource : IResourceWithEnvironment
     {
         ArgumentNullException.ThrowIfNull(project);
         ArgumentNullException.ThrowIfNull(gotenberg);

@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.Tests.Unit.GcpPubSub;
+﻿namespace MVFC.Aspire.Helpers.Tests.Unit.GcpPubSub;
 
 public sealed class PubSubEmulatorInitializerTests
 {
@@ -30,7 +30,7 @@ public sealed class PubSubEmulatorInitializerTests
     {
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
-        var consumer = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("consumer");
+        var consumer = builder.AddTestProject("consumer");
         var pubSub = builder.AddGcpPubSub("pubsub")
             .WithConfigurationTimeout(timeoutSeconds)
             .WithPubSubConfigs(new PubSubConfig("project", new MessageConfig("topic", "sub", "/callback")

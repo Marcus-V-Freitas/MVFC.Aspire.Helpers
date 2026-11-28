@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.Tests.Unit.GcpPubSub;
+﻿namespace MVFC.Aspire.Helpers.Tests.Unit.GcpPubSub;
 
 public sealed class PubSubConfigurationResilienceTests
 {
@@ -97,7 +97,7 @@ public sealed class PubSubConfigurationResilienceTests
         var configs = new[] { new PubSubConfig("project", new MessageConfig("topic", "sub", "/callback")) };
         var pubSub = app.AddGcpPubSub("pubsub").WithPubSubConfigs(configs);
 
-        app.AddProject<MVFC_Aspire_Helpers_Playground_Api>("consumer").WithReference(pubSub);
+        app.AddTestProject("consumer").WithReference(pubSub);
 
         var reads = 0;
         var builder = CreateClientBuilder((_, _) =>
@@ -122,8 +122,8 @@ public sealed class PubSubConfigurationResilienceTests
     {
         // Arrange
         var app = DistributedApplication.CreateBuilder([]);
-        var first = app.AddProject<MVFC_Aspire_Helpers_Playground_Api>("first");
-        var second = app.AddProject<MVFC_Aspire_Helpers_Playground_Api>("second");
+        var first = app.AddTestProject("first");
+        var second = app.AddTestProject("second");
         var firstEndpoint = first.Resource.Annotations.OfType<EndpointAnnotation>().Single(e => e.Name == "http");
         var secondEndpoint = second.Resource.Annotations.OfType<EndpointAnnotation>().Single(e => e.Name == "http");
 
@@ -162,7 +162,7 @@ public sealed class PubSubConfigurationResilienceTests
     {
         // Arrange
         var app = DistributedApplication.CreateBuilder([]);
-        var consumer = app.AddProject<MVFC_Aspire_Helpers_Playground_Api>("consumer");
+        var consumer = app.AddTestProject("consumer");
         PubSubConfig[] configs =
             [new("project", new MessageConfig("topic", "sub", "/callback") { PushEndpointReference = consumer.GetEndpoint("http") })];
         var reads = 0;

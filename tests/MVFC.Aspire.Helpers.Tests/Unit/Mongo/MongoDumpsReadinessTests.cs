@@ -1,4 +1,4 @@
-namespace MVFC.Aspire.Helpers.Tests.Unit.Mongo;
+﻿namespace MVFC.Aspire.Helpers.Tests.Unit.Mongo;
 
 public sealed class MongoDumpsReadinessTests
 {
@@ -10,7 +10,7 @@ public sealed class MongoDumpsReadinessTests
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
         var mongo = builder.AddMongoReplicaSet("mongo");
-        var consumer = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var consumer = builder.AddTestProject("api");
         var endpoint = mongo.Resource.Annotations.OfType<EndpointAnnotation>().Single();
         endpoint.AllocatedEndpoint = new AllocatedEndpoint(endpoint, "localhost", 27017);
         var dump = Substitute.For<IMongoClassDump>();
@@ -65,7 +65,7 @@ public sealed class MongoDumpsReadinessTests
     {
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
-        var consumer = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var consumer = builder.AddTestProject("api");
 
         // Act
         var act = () => consumer.WaitForDumps(null!);

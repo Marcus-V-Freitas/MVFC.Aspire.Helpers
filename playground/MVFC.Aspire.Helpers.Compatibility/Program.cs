@@ -5,7 +5,7 @@ var rabbit = builder.AddRabbitMQ("rabbit");
 var spanner = builder.AddGcpSpanner("spanner");
 var wireMock = builder.AddWireMock("wiremock", port: null);
 using var server = wireMock.Resource.Server;
-var consumer = builder.AddProject("consumer", Path.GetFullPath("playground/MVFC.Aspire.Helpers.Compatibility/MVFC.Aspire.Helpers.Compatibility.csproj"))
+var consumer = builder.AddResource(new ProjectResource("consumer"))
     .WithReference(source: mongo)
     .WithReference(redis)
     .WithReference(source: rabbit)
@@ -42,4 +42,4 @@ if (amqp != "amqp://smoke-user:smoke%20%40%3A%2F%25secret@localhost:5672")
 if (!server.IsStarted)
     throw new InvalidOperationException("WireMock package did not start its server.");
 
-Console.WriteLine($"Package consumption verified on {System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription}.");
+Console.WriteLine($"Package consumption verified on {System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription} with Aspire {typeof(DistributedApplication).Assembly.GetName().Version}.");

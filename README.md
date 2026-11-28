@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers
+﻿# MVFC.Aspire.Helpers
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
@@ -84,6 +84,7 @@ dotnet add package MVFC.Aspire.Helpers.RabbitMQ
 dotnet add package MVFC.Aspire.Helpers.Redis
 dotnet add package MVFC.Aspire.Helpers.Keycloak
 dotnet add package MVFC.Aspire.Helpers.ApigeeEmulator
+dotnet add package Aspire.Hosting.Dotnet --version 17.0.0
 ```
 
 ---
@@ -92,7 +93,7 @@ dotnet add package MVFC.Aspire.Helpers.ApigeeEmulator
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
-var api = builder.AddProject<Projects.MyApi>("api");
+var api = builder.AddDotnetProject("api", "../MyApi/MyApi.csproj");
 
 var cloudStorage = builder.AddCloudStorage("cloud-storage")
     .WithBucketFolder("./bucket-data");
@@ -159,7 +160,13 @@ await builder.Build().RunAsync().ConfigureAwait(false);
 
 You can configure MongoDB dumps with `WithDumps` before or after `WithReference`. By default, dumps run once when the project from the first `WithReference` call becomes ready. If startup requires populated data, use `api.WithReference(mongo).WaitForDumps(mongo)`: this waits for a writable primary and shared dump completion before starting the consumer. The playground uses this option. See the [MongoDB helper documentation](src/MVFC.Aspire.Helpers.Mongo/README.md#quick-aspire-usage-apphost).
 
-Floating default container images are pinned to tested SHA256 digests, with existing image overrides preserved. Read [runtime contracts and platform evolution](docs/runtime-contracts.md) for the readiness guarantees, emulator limitations and the Aspire 17/native MongoDB migration assessment. Current .NET 9/10/11 targets and optional local compatibility validation remain unchanged.
+Default images for Cloud Storage, BigQuery, Firestore, Pub/Sub/UI, Spanner, Mailpit, MongoDB, Redis and Redis Commander are pinned to tested SHA256 digests, with existing image overrides preserved. Read [runtime contracts and platform evolution](docs/runtime-contracts.md) for readiness guarantees and emulator limitations. Package assets use Aspire **13.6.5 on .NET 9** and **17.0.0 on .NET 10/11**. The playground uses `Microsoft.NET.Sdk`, `Aspire.Hosting.Dotnet` and `AddDotnetProject`. Existing `ProjectResource` signatures remain available; generic consumer overloads also support the new project model. Package compatibility validation remains optional and outside CI/CD.
+
+### Migration to version 13
+
+Version 13 requires Aspire 17 for .NET 10/11 package assets; .NET 9 assets retain Aspire 13.6.5. Upgrade the AppHost Aspire packages together. Examples using `AddDotnetProject` require `Aspire.Hosting.Dotnet` 17 in the AppHost and a valid path to the consumer project.
+
+.NET 9 AppHosts keep using `builder.AddProject<Projects.MyApi>("api")` and the existing `ProjectResource` signatures. A .NET 10/11 AppHost on Aspire 17 can also orchestrate .NET 9 applications. See the [version 13 changes and migration instructions](CHANGELOG.md#1300---2026-11-27).
 
 ### Pub/Sub: migration to version 12
 
@@ -232,7 +239,7 @@ flowchart TD
     end
 
     subgraph Internals["Internal Mechanisms"]
-        HC[Health checks TCP / gRPC]
+        HC[Health checks HTTP / TCP / MongoDB primary]
         LH[Lifecycle hooks OnResourceReady]
         ENV[Env-var injection WithReference]
         SEED[Seed / bundle files YAML / dumps / realms]
@@ -250,8 +257,8 @@ Several helpers go beyond a simple `AddContainer` call:
 
 | Mechanism                                                                                                   | Helpers that use it                  |
 | ----------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| **`OnResourceReady` lifecycle hook** — provisions topics, schemas or indexes after the container is healthy | PubSub, Firestore, Spanner, BigQuery |
-| **Custom TCP / gRPC health checks**                                                                         | Firestore, Spanner                   |
+| **`OnResourceReady` lifecycle hook** — configures Pub/Sub subscriptions or provisions Spanner instances/databases on resource readiness | PubSub, Spanner |
+| **Custom TCP / MongoDB primary health checks**                                                                         | Spanner, Mongo (opt-in), Redis (opt-in) |
 | **Seed / bundle file generation** — writes temporary YAML or archive files at startup                       | BigQuery, Mongo, Keycloak            |
 | **Automatic env-var injection** — `WithReference(xxx)` sets connection strings and project IDs              | All helpers                          |
 | **Duplicate-prevention annotations** — prevent registering the same resource twice                          | Mongo, PubSub, Spanner, Keycloak     |
@@ -264,16 +271,16 @@ All package versions are managed centrally in [`Directory.Packages.props`](Direc
 
 | Dependency                                      | Version  |
 | ----------------------------------------------- | -------- |
-| `Aspire.Hosting`                                | `13.6.5` |
-| `Google.Cloud.PubSub.V1`                        | `3.39.0` |
+| `Aspire.Hosting`                                | `13.6.5` (.NET 9) / `17.0.0` (.NET 10/11) |
+| `Google.Cloud.PubSub.V1`                        | `3.40.0` |
 | `Google.Cloud.Storage.V1`                       | `5.0.0`  |
-| `Google.Cloud.Firestore`                        | `4.6.0`  |
+| `Google.Cloud.Firestore`                        | `4.7.0`  |
 | `Google.Cloud.BigQuery.V2`                      | `3.12.0` |
 | `Google.Cloud.Spanner.*`                        | `5.12.0` |
-| `MongoDB.Driver`                                | `3.14.0` |
-| `RabbitMQ.Client`                               | `7.2.2`  |
+| `MongoDB.Driver`                                | `3.14.1` |
+| `RabbitMQ.Client`                               | `7.3.0`  |
 | `StackExchange.Redis`                           | `3.4.35` |
-| `WireMock.Net.minimal`                          | `2.31.0` |
+| `WireMock.Net.minimal`                          | `2.35.0` |
 | `Bogus` (seed data)                             | `35.6.5` |
 | `Microsoft.Extensions.Diagnostics.HealthChecks` | per TFM  |
 | `MinVer` (SemVer via git tags)                  | `8.0.0`  |
@@ -305,7 +312,7 @@ Packages are published automatically on CI when a `v*` tag is pushed. Version nu
 ## Requirements
 
 - .NET 9, 10 or 11
-- Aspire.Hosting >= 13.6.5
+- Aspire.Hosting 13.6.5 on .NET 9; Aspire.Hosting 17.0.0 on .NET 10/11. AppHost examples use `Aspire.Hosting.Dotnet` 17 and `AddDotnetProject`; .NET 9 AppHosts retain the `ProjectResource` model.
 - Docker running locally
 
 > **Development environment:** the SDK pin in `global.json` is `10.0.100` (with `latestMajor` roll-forward and pre-releases enabled). Library consumers only need a runtime that targets `net9.0`, `net10.0` or `net11.0`.

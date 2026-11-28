@@ -1,9 +1,36 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [13.0.0] - 2026-11-27
+
+### Added
+
+- Added generic consumer overloads for resource references and MongoDB dump readiness, supporting Aspire 17 `DotnetProjectResource` consumers while preserving the original `ProjectResource` signatures as forwarding entry points.
+- Added regression tests for legacy and modern project references, including Cloud Storage and Mailpit environment resolution.
+
+### Changed
+
+- **Breaking:** Updated Aspire dependencies to 17.0.0 for `net10.0` and `net11.0`. `net9.0` assets retain Aspire 13.6.5. Aligned .NET 10 package patches with Aspire 17 requirements.
+- Updated runtime packages: `Google.Cloud.PubSub.V1` 3.39.0 → 3.40.0, `Google.Cloud.Firestore` 4.6.0 → 4.7.0, `MongoDB.Driver` 3.14.0 → 3.14.1, `RabbitMQ.Client` 7.2.2 → 7.3.0 and `WireMock.Net.minimal` 2.31.0 → 2.35.0.
+- Updated playground/OpenAPI packages: `Scalar.AspNetCore` 2.21.0 → 3.3.0 and `Microsoft.OpenApi` 3.11.0 → 3.11.1 for `net11.0`. Updated .NET 10 authentication, OpenAPI and health-check packages from 10.0.14 to 10.0.15.
+- Updated tooling packages: `MVFC.Pack.Analyzers` 4.0.2 → 5.0.0 and `coverlet.collector` 10.1.0 → 10.1.1. Pinned the .NET 9 Aspire dependency to exactly `[13.6.5]`.
+- Migrated the playground AppHost to `Microsoft.NET.Sdk` and `AddDotnetProject` through `Aspire.Hosting.Dotnet`, without obsolete API calls or warning suppression.
+- Updated English and Portuguese guides with the framework/dependency matrix and modern AppHost examples. Updated the optional local compatibility harness for the new dependency versions; it remains outside CI/CD.
+
+### Fixed
+
+- Corrected English/Portuguese README examples, dependency versions and provisioning diagrams to match the implemented APIs and lifecycle. Standardized missing test phase comments and spacing while preserving combined AAA phases.
+- Resolved Pub/Sub analyzer errors exposed by the analyzer update: extracted project/message validation to reduce cognitive complexity and used `Count == 0` for empty message configurations, preserving validation order, exceptions and subscription deduplication.
+- Preserved passwordless Redis startup on Aspire 17 by marking its deferred secret parameter optional and preserving empty-string environment resolution.
+
+### Upgrading from 12.3.0
+
+- Upgrade .NET 10/11 AppHost dependencies to Aspire 17 together with the helper packages. These package assets now require Aspire 17; .NET 9 assets continue using Aspire 13.6.5.
+- Path-based AppHosts using `AddDotnetProject` must reference `Aspire.Hosting.Dotnet`. Existing helper calls for `ProjectResource` remain available, and .NET 9 workloads can still be orchestrated by a .NET 10/11 AppHost using Aspire 17.
 
 ## [12.3.0] - 2026-11-27
 
@@ -685,6 +712,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cake build script
 - NuGet publish workflow
 
+[13.0.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v12.3.0...v13.0.0
+[12.3.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v12.2.1...v12.3.0
 [12.2.1]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v12.2.0...v12.2.1
 [12.2.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v12.1.0...v12.2.0
 [12.1.0]: https://github.com/Marcus-V-Freitas/MVFC.Aspire.Helpers/compare/v12.0.0...v12.1.0

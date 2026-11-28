@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.GcpBigQuery
+﻿# MVFC.Aspire.Helpers.GcpBigQuery
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
@@ -68,7 +68,10 @@ This project facilitates the configuration and integration of Google Cloud BigQu
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.GcpBigQuery
+dotnet add package Aspire.Hosting.Dotnet --version 17.0.0
 ```
+
+Commands and examples using `AddDotnetProject` target a .NET 10/11 AppHost on Aspire 17. For .NET 9 AppHosts, keep Aspire 13.6.5, omit `Aspire.Hosting.Dotnet` 17 and use `AddProject<Projects.MyApi>("api")`. Adjust the project path to your AppHost.
 
 ## Quick Aspire usage (AppHost)
 
@@ -80,15 +83,15 @@ using MVFC.Aspire.Helpers.GcpBigQuery.Models;
 var builder = DistributedApplication.CreateBuilder(args);
 
 var bigQueryConfig = new BigQueryConfig(
-    ProjectId: "test-project",
-    Dataset: "test_dataset"
+    projectId: "test-project",
+    dataset: "test_dataset"
 );
 
 var bigQuery = builder.AddGcpBigQuery("gcp-bigquery")
                       .WithBigQueryConfigs(bigQueryConfig)
                       .WithDataSeed("./bigquery-data/dump.yaml");
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
+builder.AddDotnetProject("api-example", "../MVFC.Aspire.Helpers.Playground.Api/MVFC.Aspire.Helpers.Playground.Api.csproj")
        .WithReference(bigQuery)
        .WaitFor(bigQuery);
 
@@ -101,8 +104,8 @@ await builder.Build().RunAsync();
 
 | Parameter   | Type    | Default | Description                    |
 | ----------- | ------- | ------- | ------------------------------ |
-| `ProjectId` | string  | —       | GCP project ID.                |
-| `Dataset`   | string? | `null`  | Optional default dataset name. |
+| `projectId` | string  | —       | GCP project ID.                |
+| `dataset`   | string? | `null`  | Optional default dataset name. |
 
 ## Ports
 
@@ -136,7 +139,7 @@ The default image is pinned to a tested SHA256 digest. Select another image/tag 
 ## Requirements
 
 - .NET 9, 10 or 11
-- Aspire.Hosting >= 13.6.5
+- Aspire.Hosting 13.6.5 on .NET 9; Aspire.Hosting 17.0.0 on .NET 10/11. AppHost examples use `Aspire.Hosting.Dotnet` 17 and `AddDotnetProject`; .NET 9 AppHosts retain the `ProjectResource` model.
 - Docker running locally
 - Google.Cloud.BigQuery.V2 >= 3.12.0
 

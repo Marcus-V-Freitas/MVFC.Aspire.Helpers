@@ -284,7 +284,7 @@ public sealed class RabbitMQExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         IResourceBuilder<RabbitMQResource>? rabbitBuilder = null;
 
         // Act
@@ -299,7 +299,7 @@ public sealed class RabbitMQExtensionsTests
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder([]);
-        var project = appBuilder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("api");
+        var project = appBuilder.AddTestProject("api");
         var rabbitBuilder = appBuilder.AddRabbitMQ("rabbit");
 
         // Act

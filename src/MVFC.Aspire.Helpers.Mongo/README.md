@@ -1,4 +1,4 @@
-# MVFC.Aspire.Helpers.Mongo
+﻿# MVFC.Aspire.Helpers.Mongo
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
@@ -77,7 +77,10 @@ Add the NuGet package to your AppHost project:
 
 ```sh
 dotnet add package MVFC.Aspire.Helpers.Mongo
+dotnet add package Aspire.Hosting.Dotnet --version 17.0.0
 ```
+
+Commands and examples using `AddDotnetProject` target a .NET 10/11 AppHost on Aspire 17. For .NET 9 AppHosts, keep Aspire 13.6.5, omit `Aspire.Hosting.Dotnet` 17 and use `AddProject<Projects.MyApi>("api")`. Adjust the project path to your AppHost.
 
 ## Quick Aspire usage (AppHost)
 
@@ -86,6 +89,7 @@ Minimal example in your `AppHost` using Bogus to seed test data:
 ```csharp
 using Aspire.Hosting;
 using Bogus;
+using MongoDB.Bson;
 using MVFC.Aspire.Helpers.Mongo;
 using MVFC.Aspire.Helpers.Mongo.Models;
 
@@ -93,21 +97,23 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 IReadOnlyCollection<IMongoClassDump> dumps =
 [
-    new MongoClassDump<TestDatabase>(
+    new MongoClassDump<BsonDocument>(
         DatabaseName: "TestDatabase",
         CollectionName: "TestCollection",
         Quantity: 100,
-        Faker: new Faker<TestDatabase>()
-            .CustomInstantiator(f => new TestDatabase(
-                f.Person.FirstName,
-                f.Person.Cpf())))
+        Faker: new Faker<BsonDocument>()
+            .CustomInstantiator(f => new BsonDocument
+            {
+                ["name"] = f.Person.FullName,
+                ["email"] = f.Person.Email,
+            }))
 ];
 
 var mongo = builder.AddMongoReplicaSet("mongo")
     .WithPrimaryHealthCheck()
     .WithDataVolume("mongo-data");
 
-builder.AddProject<Projects.MVFC_Aspire_Helpers_Playground_Api>("api-example")
+builder.AddDotnetProject("api-example", "../MVFC.Aspire.Helpers.Playground.Api/MVFC.Aspire.Helpers.Playground.Api.csproj")
        .WithReference(mongo)
        .WaitForDumps(mongo);
 
@@ -139,7 +145,7 @@ sequenceDiagram
     Aspire->>Container: Start container (mongo)
     Container->>Container: Run Replica Set initialization script on first initialization
     Container-->>Aspire: Resource ready
-    Aspire->>Project: Start project with the connection string (WaitFor in this example)
+    Aspire->>Project: Start first referencing project with connection string (legacy flow)
     Project-->>Aspire: Project ready
     Aspire->>Executor: Dispatch the project's ResourceReadyEvent
     Executor->>Container: Execute configured dumps
@@ -152,6 +158,7 @@ sequenceDiagram
 | `WithDockerImage(image, tag)` | Overrides the Docker image used.                    |
 | `WithDumps(dumps)`            | Configures data dumps to execute on initialization. |
 | `WithPrimaryHealthCheck()` | Opts into writable-primary checks with a three-second probe deadline; consumers still need `WaitFor(mongo)`. |
+| `WaitForDumps(mongo)` | Called on the consumer: waits for a writable primary and shared dump completion. |
 | `WithDataVolume(volumeName)`  | Enables persistence with a Docker volume.           |
 
 ## Populating sample data
@@ -173,11 +180,7 @@ sequenceDiagram
   Local Docker volume name used to persist data between debugging sessions.  
   Default: `null` (volume discarded between executions).
 
-- **`connectionStringSection`** (optional):  
-  Path to the configuration section containing the MongoDB connection string.  
-  Default: `"ConnectionStrings:mongo"`.
-
-Each `:` indicates a level/section within the `appsettings.json` file:
+`WithReference` injects `ConnectionStrings:<resource-name>`; the section follows the resource name and there is no `connectionStringSection` parameter. The MongoDB helper also retains the legacy `ConnectionStrings:mongo` key.
 
 ```json
 {
@@ -202,10 +205,10 @@ The default image is pinned to a tested SHA256 digest. Select another image/tag 
 ## Requirements
 
 - .NET 9, 10 or 11
-- Aspire.Hosting >= 13.6.5
+- Aspire.Hosting 13.6.5 on .NET 9; Aspire.Hosting 17.0.0 on .NET 10/11. AppHost examples use `Aspire.Hosting.Dotnet` 17 and `AddDotnetProject`; .NET 9 AppHosts retain the `ProjectResource` model.
 - Docker running locally
-- Bogus >= 35.6.0
-- MongoDB.Driver >= 3.11.1
+- Bogus >= 35.6.5
+- MongoDB.Driver >= 3.14.1
 
 ## License
 

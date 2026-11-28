@@ -120,7 +120,7 @@ public sealed class InfrastructureResilienceTests
         cts.CancelAfter(TimeSpan.FromMinutes(2));
         var builder = CreateBuilder();
         var redis = builder.AddRedis("authenticated-redis", port: 0).WithTcpHealthCheck();
-        var consumer = builder.AddProject<MVFC_Aspire_Helpers_Playground_Api>("settings-consumer").WithReference(redis);
+        var consumer = builder.AddTestProject("settings-consumer").WithReference(redis);
         builder.Resources.Remove(consumer.Resource);
 
         if (password is not null)
